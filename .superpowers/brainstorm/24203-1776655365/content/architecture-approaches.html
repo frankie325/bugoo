@@ -1,0 +1,47 @@
+<h2>系统架构方案选择</h2>
+<p class="subtitle">三条实现路径，各有取舍</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>方案一：纯本地极简</h3>
+      <p><strong>Tauri + SQLite + 系统通知</strong></p>
+      <p>翻译调用 DeepL API（后端转发，避免 CORS），艾宾浩斯算法完全运行在本地，通知用系统原生通知。</p>
+      <p><strong>优点：</strong>最轻量、隐私最好、离线也能工作（本地艾宾浩斯）</p>
+      <p><strong>缺点：</strong>多设备同步需要自己实现文件同步（iCloud/Dropbox）</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>方案二：本地 + 轻量后端</h3>
+      <p><strong>Tauri + SQLite + 一个小后端服务</strong></p>
+      <p>后端只做三件事：①转发 DeepL 翻译请求 ②存储用户生词本（可选） ③推送跨设备提醒通知。</p>
+      <p><strong>优点：</strong>多设备同步天然支持，通知可以跨设备送达</p>
+      <p><strong>缺点：</strong>需要维护一个小型服务端部署</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>方案三：前端为主</h3>
+      <p><strong>Tauri + IndexedDB + Web翻译API</strong></p>
+      <p>用浏览器的 Web Translation API 或第三方翻译 SDK，完全点对点，架构最简单。</p>
+      <p><strong>优点：</strong>开发最快，无后端负担</p>
+      <p><strong>缺点：</strong>翻译 API 稳定性依赖第三方，通知能力较弱</p>
+    </div>
+  </div>
+</div>
+
+<div class="pros-cons" style="margin-top:1.5rem">
+  <div class="pros">
+    <h4>我的推荐</h4>
+    <ul>
+      <li><strong>方案一</strong>最符合"极简"产品定位——功能少所以对云端依赖低，纯本地运行完全可以工作，且数据完全属于用户</li>
+      <li>云同步可以用系统级 iCloud/Dropbox 实现，无需在后端维护用户账户</li>
+    </ul>
+  </div>
+</div>
