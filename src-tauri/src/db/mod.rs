@@ -5,7 +5,7 @@ use tokio::sync::Mutex;
 pub mod migrations;
 pub mod models;
 
-pub use models::{Tag, Word};
+pub use models::Word;
 
 pub struct Database {
     pub conn: Mutex<Connection>,

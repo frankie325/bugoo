@@ -1,17 +1,19 @@
 use std::sync::Arc;
 use tokio::time::{interval, Duration};
 use crate::db::Database;
+use tauri::AppHandle;
+use tauri_plugin_notification::NotificationExt;
 
-pub async fn start_notification_scheduler(db: Arc<Database>) {
+pub async fn start_notification_scheduler(db: Arc<Database>, app: AppHandle) {
     let mut ticker = interval(Duration::from_secs(3600)); // Check every hour
 
     loop {
         ticker.tick().await;
-        check_and_send_notifications(&db).await;
+        check_and_send_notifications(&db, &app).await;
     }
 }
 
-async fn check_and_send_notifications(db: &Arc<Database>) {
+async fn check_and_send_notifications(db: &Arc<Database>, app: &AppHandle) {
     let now = chrono::Utc::now().timestamp();
 
     // Scope guard to end before we collect rows
@@ -35,11 +37,18 @@ async fn check_and_send_notifications(db: &Arc<Database>) {
     }; // guard and stmt dropped here
 
     for (word_id, word, translation) in words {
-        send_review_notification(&word_id, &word, &translation).await;
+        send_review_notification(app, &word_id, &word, &translation);
     }
 }
 
-async fn send_review_notification(word_id: &str, word: &str, translation: &str) {
+fn send_review_notification(app: &AppHandle, _word_id: &str, word: &str, translation: &str) {
     log::info!("复习提醒: {} - {}", word, translation);
-    // TODO: Integrate with Tauri's notification API (tauri-plugin-notification)
+    // Send system notification
+    if let Err(e) = app.notification()
+        .builder()
+        .title("布谷鸟 - 复习提醒")
+        .body(&format!("{}: {}", word, translation))
+        .show() {
+        log::error!("Failed to send notification: {}", e);
+    }
 }

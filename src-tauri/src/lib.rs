@@ -19,6 +19,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             let app_data_dir = app
                 .path()
@@ -32,9 +33,10 @@ pub fn run() {
                 Database::new(db_path).expect("Failed to initialize database");
             let db = Arc::new(database);
             let db_clone = db.clone();
+            let app_handle = app.handle().clone();
             app.manage(db.clone());
             tokio::spawn(async move {
-                start_notification_scheduler(db_clone).await;
+                start_notification_scheduler(db_clone, app_handle).await;
             });
             info!("Database initialized successfully");
 
