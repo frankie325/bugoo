@@ -8,7 +8,7 @@ use crate::scheduler::notification::start_notification_scheduler;
 use log::info;
 use std::path::PathBuf;
 use std::sync::Arc;
-use tauri::{Emitter, Manager};
+use tauri::{Emitter, Manager, async_runtime};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
 
@@ -35,7 +35,7 @@ pub fn run() {
             let db_clone = db.clone();
             let app_handle = app.handle().clone();
             app.manage(db.clone());
-            tokio::spawn(async move {
+            async_runtime::spawn(async move {
                 start_notification_scheduler(db_clone, app_handle).await;
             });
             info!("Database initialized successfully");
@@ -74,6 +74,7 @@ pub fn run() {
             commands::review::get_due_reviews,
             commands::review::submit_review,
             commands::tts::speak_text,
+            commands::window::open_float_window,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

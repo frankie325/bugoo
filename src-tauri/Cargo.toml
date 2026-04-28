@@ -1,7 +1,12 @@
 [package]
-name = "bugoo"
-version = "0.1.0"
+name = "Bugoo"
+version = "1.0.0"
+description = "A cross-platform desktop app for word selection translation with Ebbinghaus spaced repetition memory review"
+authors = ["frankie"]
+license = ""
+repository = ""
 edition = "2021"
+rust-version = "1.95.0"
 
 [lib]
 name = "bugoo_lib"
@@ -25,3 +30,4 @@ chrono = { version = "0.4", features = ["serde"] }
 log = "0.4"
 env_logger = "0.11"
 dirs = "5"
+urlencoding = "2"

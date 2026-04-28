@@ -1,0 +1,17 @@
+{
+  "productName": "Bugoo",
+  "identifier": "com.bugoo",
+  "build": {
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [{ "title": "Bugoo", "width": 800, "height": 600 }],
+    "security": {
+      "capabilities": ["default"]
+    }
+  },
+  "bundle": {
+    "active": false
+  }
+}

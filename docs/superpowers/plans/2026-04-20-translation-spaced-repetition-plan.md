@@ -12,48 +12,66 @@
 
 ## 文件结构
 
-```
-src/  (Rust 后端)
-├── main.rs                      # Tauri 应用入口
-├── lib.rs                       # 库入口
-├── commands/                    # Tauri 命令（与前端通信）
-│   ├── mod.rs
-│   ├── translate.rs             # 翻译命令
-│   ├── words.rs                 # 单词 CRUD
-│   ├── review.rs                # 复习操作
-│   ├── notification.rs          # 通知触发
-│   └── tts.rs                   # TTS 发音
-├── db/
-│   ├── mod.rs                   # 数据库连接
-│   ├── migrations.rs             # SQLite 迁移脚本
-│   └── models.rs                # 数据模型
-├── scheduler/
-│   ├── mod.rs
-│   ├── ebbinghaus.rs            # SM-2 算法实现
-│   └── notification.rs           # 通知调度器（Rust tokio 定时器）
-└── tts/
-    ├── mod.rs
-    ├── mac.rs                   # macOS NSSpeechSynthesizer
-    └── windows.rs               # Windows SAPI
+Tauri 2.x 标准的项目结构：
 
-src-ui/  (React 前端)
-├── index.html
-├── main.tsx
-├── App.tsx
-├── components/
-│   ├── FloatWindow.tsx           # 划词翻译浮窗
-│   ├── WordList.tsx             # 生词本列表
-│   ├── WordDetail.tsx            # 单词详情卡
-│   └── ReviewNotification.tsx   # 复习通知（通知内操作）
-├── hooks/
-│   ├── useTheme.ts              # 双主题自适应
-│   └── useTranslation.ts         # 翻译 hook
-├── styles/
-│   └── globals.css              # 全局样式 + CSS 变量
-└── lib/
-    ├── api.ts                   # Tauri command 调用封装
-    └── constants.ts             # 常量（DeepL API 等）
 ```
+bugoo/                          # 项目根目录
+├── package.json                # 前端 package.json
+├── index.html                  # 前端入口 HTML
+├── src/                        # 前端源码（React/TS）
+│   ├── main.tsx
+│   ├── App.tsx
+│   ├── components/
+│   │   ├── FloatWindow.tsx       # 划词翻译浮窗
+│   │   ├── WordList.tsx         # 生词本列表
+│   │   ├── WordDetail.tsx       # 单词详情卡
+│   │   └── ReviewNotification.tsx # 复习通知
+│   ├── hooks/
+│   │   ├── useTheme.ts         # 双主题自适应
+│   │   └── useTranslation.ts    # 翻译 hook
+│   ├── styles/
+│   │   └── globals.css         # 全局样式 + CSS 变量
+│   └── lib/
+│       ├── api.ts              # Tauri command 调用封装
+│       └── constants.ts         # 常量（DeepL API 等）
+├── src-tauri/                   # Tauri 应用根目录
+│   ├── Cargo.toml               # Rust 包定义
+│   ├── Cargo.lock
+│   ├── build.rs                 # 构建脚本
+│   ├── tauri.conf.json          # Tauri 配置
+│   ├── src/                     # Rust 后端代码
+│   │   ├── main.rs              # Tauri 应用入口
+│   │   ├── lib.rs               # 库入口
+│   │   ├── commands/            # Tauri 命令（与前端通信）
+│   │   │   ├── mod.rs
+│   │   │   ├── translate.rs     # 翻译命令
+│   │   │   ├── words.rs         # 单词 CRUD
+│   │   │   ├── review.rs        # 复习操作
+│   │   │   └── tts.rs           # TTS 发音
+│   │   ├── db/
+│   │   │   ├── mod.rs           # 数据库连接
+│   │   │   ├── migrations.rs     # SQLite 迁移脚本
+│   │   │   └── models.rs         # 数据模型
+│   │   ├── scheduler/
+│   │   │   ├── mod.rs
+│   │   │   ├── ebbinghaus.rs    # SM-2 算法实现
+│   │   │   └── notification.rs  # 通知调度器（Rust tokio 定时器）
+│   │   └── tts/
+│   │       ├── mod.rs
+│   │       ├── mac.rs           # macOS NSSpeechSynthesizer
+│   │       └── windows.rs       # Windows SAPI
+│   ├── icons/
+│   │   ├── icon.png
+│   │   ├── icon.icns
+│   │   └── icon.ico
+│   └── capabilities/
+│       └── default.json          # 安全能力配置
+```
+
+**关键说明：**
+- Tauri 2.x 要求 `Cargo.toml`、`tauri.conf.json`、`build.rs`、`capabilities/` 和 `src/`（Rust代码）都必须在 `src-tauri/` 目录下
+- 前端代码在项目根目录的 `src/` 中（而非 `src-ui/`）
+- `tauri.conf.json` 中的 `frontendDist` 应指向前端构建输出目录（如 `../dist` 或 `src/dist`）
 
 ---
 
@@ -74,9 +92,11 @@ Task 1 (数据库) → Task 2 (算法) → Task 6 (单词CRUD) → Task 7-8 (前
 ## Task 0: 初始化 Tauri 项目
 
 **Files:**
-- Create: `src/main.rs`, `src/lib.rs`, `src/commands/mod.rs`
-- Create: `src-ui/index.html`, `src-ui/main.tsx`, `src-ui/App.tsx`
-- Create: `Cargo.toml`, `tauri.conf.json`, `package.json`, `vite.config.ts`, `tsconfig.json`
+- Create: `src-tauri/src/main.rs`, `src-tauri/src/lib.rs`, `src-tauri/src/commands/mod.rs`
+- Create: `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`, `src-tauri/build.rs`
+- Create: `src-tauri/capabilities/default.json`
+- Create: `src/index.html`, `src/main.tsx`, `src/App.tsx`
+- Create: `package.json`, `vite.config.ts`, `tsconfig.json`
 
 - [ ] **Step 1: 创建项目基础结构**
 
@@ -94,8 +114,17 @@ name = "bugoo"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "bugoo_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
 [dependencies]
-tauri = { version = "2", features = ["macos-notification-state", "windows-notification-state"] }
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-clipboard-manager = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rusqlite = { version = "0.31", features = ["bundled"] }
@@ -114,15 +143,45 @@ dirs = "5"
 {
   "productName": "Bugoo",
   "identifier": "com.bugoo.app",
-  "build": { "devtools": true },
+  "build": {
+    "frontendDist": "../dist"
+  },
   "app": {
     "windows": [{ "title": "Bugoo", "width": 400, "height": 300 }],
-    "macOSPrivateApi": true
+    "security": {
+      "capabilities": ["default"]
+    }
+  },
+  "bundle": {
+    "active": true
   }
 }
 ```
 
-- [ ] **Step 4: 初始化 Git 并提交**
+- [ ] **Step 4: 配置 capabilities/default.json**
+
+```json
+{
+  "$schema": "https://schema.tauri.app/config/2/capability",
+  "identifier": "default",
+  "description": "Main application capability",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "core:event:allow-emit",
+    "core:event:allow-listen",
+    "core:window:default",
+    "clipboard-manager:allow-read-text",
+    "clipboard-manager:allow-write-text",
+    "global-shortcut:allow-register",
+    "global-shortcut:allow-unregister",
+    "global-shortcut:allow-is-registered"
+  ]
+}
+```
+
+- [ ] **Step 5: 初始化 Git 并提交**
 
 ```bash
 git init -b main
@@ -135,15 +194,15 @@ git commit -m "chore: scaffold Tauri project"
 ## Task 1: SQLite 数据库层
 
 **Files:**
-- Create: `src/db/mod.rs`
-- Create: `src/db/migrations.rs`
-- Create: `src/db/models.rs`
-- Modify: `src/lib.rs` — 添加 db 模块初始化
+- Create: `src-tauri/src/db/mod.rs`
+- Create: `src-tauri/src/db/migrations.rs`
+- Create: `src-tauri/src/db/models.rs`
+- Modify: `src-tauri/src/lib.rs` — 添加 db 模块初始化
 
 - [ ] **Step 1: 写数据库迁移测试**
 
 ```rust
-// src/db/migrations.rs
+// src-tauri/src/db/migrations.rs
 use rusqlite::{Connection, Result};
 
 pub fn run_migrations(conn: &Connection) -> Result<()> {
@@ -231,7 +290,7 @@ pub struct Tag {
 - [ ] **Step 3: 写数据库模块初始化**
 
 ```rust
-// src/db/mod.rs
+// src-tauri/src/db/mod.rs
 use rusqlite::Connection;
 use std::path::PathBuf;
 use std::sync::Mutex;
@@ -258,7 +317,7 @@ Expected: 无编译错误
 - [ ] **Step 5: 提交**
 
 ```bash
-git add src/db/ src/lib.rs
+git add src-tauri/src/db/ src-tauri/src/lib.rs
 git commit -m "feat: add SQLite database layer with migrations"
 ```
 
@@ -267,14 +326,14 @@ git commit -m "feat: add SQLite database layer with migrations"
 ## Task 2: 艾宾浩斯算法引擎
 
 **Files:**
-- Create: `src/scheduler/mod.rs`
-- Create: `src/scheduler/ebbinghaus.rs`
-- Test: `src/scheduler/ebbinghaus.rs` — 单元测试
+- Create: `src-tauri/src/scheduler/mod.rs`
+- Create: `src-tauri/src/scheduler/ebbinghaus.rs`
+- Test: `src-tauri/src/scheduler/ebbinghaus.rs` — 单元测试
 
 - [ ] **Step 1: 写 SM-2 算法单元测试**
 
 ```rust
-// src/scheduler/ebbinghaus.rs
+// src-tauri/src/scheduler/ebbinghaus.rs
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -406,7 +465,7 @@ Expected: PASS（5 tests）
 - [ ] **Step 5: 提交**
 
 ```bash
-git add src/scheduler/
+git add src-tauri/src/scheduler/
 git commit -m "feat: implement SM-2 spaced repetition algorithm"
 ```
 
@@ -415,14 +474,14 @@ git commit -m "feat: implement SM-2 spaced repetition algorithm"
 ## Task 3: DeepL 翻译集成
 
 **Files:**
-- Create: `src/commands/translate.rs`
-- Modify: `src/commands/mod.rs`
-- Modify: `src/lib.rs`
+- Create: `src-tauri/src/commands/translate.rs`
+- Modify: `src-tauri/src/commands/mod.rs`
+- Modify: `src-tauri/src/lib.rs`
 
 - [ ] **Step 1: 写 DeepL 翻译函数**
 
 ```rust
-// src/commands/translate.rs
+// src-tauri/src/commands/translate.rs
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -462,7 +521,7 @@ async fn translate_text(text: &str, from: &str, to: &str) -> Result<String, Stri
 - [ ] **Step 2: 添加 Tauri 命令**
 
 ```rust
-// src/commands/mod.rs
+// src-tauri/src/commands/mod.rs
 pub mod translate;
 pub mod words;
 pub mod review;
@@ -473,7 +532,7 @@ pub use translate::translate;
 ```
 
 ```rust
-// src/commands/translate.rs 新增命令
+// src-tauri/src/commands/translate.rs 新增命令
 #[tauri::command]
 pub async fn translate(text: String, source_lang: String, target_lang: String) -> Result<TranslateResponse, String> {
     let translation = translate_text(&text, &source_lang, &target_lang).await?;
@@ -484,7 +543,7 @@ pub async fn translate(text: String, source_lang: String, target_lang: String) -
 - [ ] **Step 3: 前端 API 封装**
 
 ```typescript
-// src-ui/lib/api.ts
+// src/lib/api.ts
 import { invoke } from '@tauri-apps/api/core';
 
 export async function translate(text: string, sourceLang: string, targetLang: string) {
@@ -499,7 +558,7 @@ export async function translate(text: string, sourceLang: string, targetLang: st
 - [ ] **Step 4: 提交**
 
 ```bash
-git add src/commands/translate.rs src/commands/mod.rs src/lib.rs src-ui/lib/api.ts
+git add src-tauri/src/commands/translate.rs src-tauri/src/commands/mod.rs src-tauri/src/lib.rs src/lib/api.ts
 git commit -m "feat: integrate DeepL translation API"
 ```
 
@@ -508,14 +567,14 @@ git commit -m "feat: integrate DeepL translation API"
 ## Task 4: TTS 发音模块
 
 **Files:**
-- Create: `src/tts/mod.rs`
-- Create: `src/tts/mac.rs`
-- Create: `src/tts/windows.rs`
+- Create: `src-tauri/src/tts/mod.rs`
+- Create: `src-tauri/src/tts/mac.rs`
+- Create: `src-tauri/src/tts/windows.rs`
 
 - [ ] **Step 1: TTS trait 定义**
 
 ```rust
-// src/tts/mod.rs
+// src-tauri/src/tts/mod.rs
 #[cfg(target_os = "macos")]
 pub use mac::MacTts;
 
@@ -542,7 +601,7 @@ pub fn new_tts() -> Box<dyn TtsEngine> {
 - [ ] **Step 2: macOS 实现（使用 say 命令）**
 
 ```rust
-// src/tts/mac.rs
+// src-tauri/src/tts/mac.rs
 use crate::tts::TtsEngine;
 use std::process::Command;
 
@@ -567,7 +626,7 @@ impl TtsEngine for MacTts {
 - [ ] **Step 3: Windows 实现（使用 PowerShell SAPI）**
 
 ```rust
-// src/tts/windows.rs
+// src-tauri/src/tts/windows.rs
 use crate::tts::TtsEngine;
 use std::process::Command;
 
@@ -597,7 +656,7 @@ impl TtsEngine for WindowsTts {
 - [ ] **Step 4: 提交**
 
 ```bash
-git add src/tts/
+git add src-tauri/src/tts/
 git commit -m "feat: add TTS engine (macOS say + Windows SAPI)"
 ```
 
@@ -606,13 +665,13 @@ git commit -m "feat: add TTS engine (macOS say + Windows SAPI)"
 ## Task 5: 通知调度器
 
 **Files:**
-- Create: `src/scheduler/notification.rs`
-- Modify: `src/main.rs` — 启动定时器
+- Create: `src-tauri/src/scheduler/notification.rs`
+- Modify: `src-tauri/src/main.rs` — 启动定时器
 
 - [ ] **Step 1: 写通知调度器**
 
 ```rust
-// src/scheduler/notification.rs
+// src-tauri/src/scheduler/notification.rs
 use std::sync::Arc;
 use tokio::time::{interval, Duration};
 use crate::db::Database;
@@ -658,7 +717,7 @@ async fn send_review_notification(word_id: &str, word: &str, translation: &str) 
 - [ ] **Step 2: 集成到 main.rs**
 
 ```rust
-// src/main.rs
+// src-tauri/src/main.rs
 use bugoo_lib::db::Database;
 use bugoo_lib::scheduler::notification::start_notification_scheduler;
 
@@ -692,7 +751,7 @@ fn main() {
 - [ ] **Step 3: 提交**
 
 ```bash
-git add src/scheduler/notification.rs src/main.rs
+git add src-tauri/src/scheduler/notification.rs src-tauri/src/main.rs
 git commit -m "feat: add notification scheduler with hourly review check"
 ```
 
@@ -701,13 +760,13 @@ git commit -m "feat: add notification scheduler with hourly review check"
 ## Task 6: 单词 CRUD 命令
 
 **Files:**
-- Create: `src/commands/words.rs`
-- Create: `src/commands/review.rs`
+- Create: `src-tauri/src/commands/words.rs`
+- Create: `src-tauri/src/commands/review.rs`
 
 - [ ] **Step 1: 写 words 命令**
 
 ```rust
-// src/commands/words.rs
+// src-tauri/src/commands/words.rs
 use crate::db::{Database, Word};
 use crate::scheduler::ebbinghaus::SpacedRepetitionState;
 use chrono::Utc;
@@ -842,7 +901,7 @@ pub fn review_word(
 - [ ] **Step 3: 提交**
 
 ```bash
-git add src/commands/words.rs src/commands/review.rs
+git add src-tauri/src/commands/words.rs src-tauri/src/commands/review.rs
 git commit -m "feat: add word CRUD and review commands"
 ```
 
@@ -851,13 +910,13 @@ git commit -m "feat: add word CRUD and review commands"
 ## Task 7: React 前端 — 划词翻译浮窗
 
 **Files:**
-- Create: `src-ui/components/FloatWindow.tsx`
-- Create: `src-ui/lib/api.ts`
+- Create: `src/components/FloatWindow.tsx`
+- Create: `src/lib/api.ts`
 
 - [ ] **Step 1: 写 FloatWindow 组件**
 
 ```tsx
-// src-ui/components/FloatWindow.tsx
+// src/components/FloatWindow.tsx
 import { useState, useEffect } from 'react';
 import { translate } from '../lib/api';
 
@@ -899,7 +958,7 @@ export function FloatWindow({ selectedText, onAddToWordList, onClose }: Props) {
 - [ ] **Step 2: 提交**
 
 ```bash
-git add src-ui/components/FloatWindow.tsx
+git add src/components/FloatWindow.tsx
 git commit -m "feat: add FloatWindow component for translation popup"
 ```
 
@@ -908,14 +967,14 @@ git commit -m "feat: add FloatWindow component for translation popup"
 ## Task 8: React 前端 — 生词本列表
 
 **Files:**
-- Create: `src-ui/components/WordList.tsx`
-- Create: `src-ui/components/WordDetail.tsx`
-- Modify: `src-ui/App.tsx`
+- Create: `src/components/WordList.tsx`
+- Create: `src/components/WordDetail.tsx`
+- Modify: `src/App.tsx`
 
 - [ ] **Step 1: 写 WordList 组件**
 
 ```tsx
-// src-ui/components/WordList.tsx
+// src/components/WordList.tsx
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 
@@ -969,7 +1028,7 @@ export function WordList() {
 - [ ] **Step 2: 提交**
 
 ```bash
-git add src-ui/components/WordList.tsx src-ui/components/WordDetail.tsx src-ui/App.tsx
+git add src/components/WordList.tsx src/components/WordDetail.tsx src/App.tsx
 git commit -m "feat: add WordList and WordDetail components"
 ```
 
@@ -978,13 +1037,13 @@ git commit -m "feat: add WordList and WordDetail components"
 ## Task 9: 全局划词监听
 
 **Files:**
-- Modify: `src/main.rs` — 添加全局快捷键/选区监听
-- Modify: `src-ui/App.tsx` — 接收选中文字事件
+- Modify: `src-tauri/src/main.rs` — 添加全局快捷键/选区监听
+- Modify: `src/App.tsx` — 接收选中文字事件
 
 - [ ] **Step 1: 添加全局快捷键**
 
 ```rust
-// src/main.rs 中 setup 里添加
+// src-tauri/src/main.rs 中 setup 里添加
 use tauri::GlobalShortcutManager;
 
 app.global_shortcut_manager()
@@ -998,7 +1057,7 @@ app.global_shortcut_manager()
 - [ ] **Step 2: 提交**
 
 ```bash
-git add .
+git add src-tauri/src/ src/
 git commit -m "feat: add global shortcut for text selection translation"
 ```
 
