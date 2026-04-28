@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import { Input, Card, CardBody, CardFooter, Chip, Spinner } from '@heroui/react';
 
 export interface Word {
   id: string;
@@ -56,49 +57,46 @@ export function WordList({ onSelectWord, selectedWordId }: WordListProps) {
   };
 
   return (
-    <div className="word-list">
-      <input
-        className="search-input"
-        type="text"
+    <div className="space-y-4">
+      <Input
         placeholder="搜索单词..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
+        isClearable
       />
 
-      {isLoading && <div className="loading-indicator">加载中...</div>}
+      {isLoading && <Spinner />}
 
-      <div className="word-items">
-        {words.length === 0 && !isLoading && (
-          <div className="empty-state">暂无单词</div>
-        )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {words.map((w) => (
-          <div
+          <Card
             key={w.id}
-            className={`word-item ${selectedWordId === w.id ? 'selected' : ''}`}
-            onClick={() => onSelectWord(w)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                onSelectWord(w);
-              }
-            }}
+            isPressable
+            onPress={() => onSelectWord(w)}
+            className={selectedWordId === w.id ? 'border-primary' : ''}
           >
-            <div className="word-main">
-              <span className="word-text">{w.word}</span>
-              <span className="word-translation">{w.translation}</span>
-            </div>
-            <div className="word-meta">
-              <span className={`word-status status-${w.status}`}>
+            <CardBody>
+              <p className="text-lg font-bold">{w.word}</p>
+              <p className="text-default-500">{w.translation}</p>
+            </CardBody>
+            <CardFooter className="gap-2">
+              <Chip
+                size="sm"
+                color={w.status === 'learning' ? 'warning' : 'success'}
+              >
                 {w.status === 'learning' ? '复习中' : '已记住'}
-              </span>
-              <span className="word-next-review">
+              </Chip>
+              <p className="text-xs text-default-400">
                 下次: {formatNextReview(w.next_review_at)}
-              </span>
-            </div>
-          </div>
+              </p>
+            </CardFooter>
+          </Card>
         ))}
       </div>
+
+      {words.length === 0 && !isLoading && (
+        <div className="text-center py-12 text-default-400">暂无单词</div>
+      )}
     </div>
   );
 }

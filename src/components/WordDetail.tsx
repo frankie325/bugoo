@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import { Button, Card, CardBody, Chip, Divider, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from '@heroui/react';
 import type { Word } from './WordList';
 
 interface WordDetailProps {
@@ -10,6 +11,7 @@ interface WordDetailProps {
 
 export function WordDetail({ word, onBack, onDeleted }: WordDetailProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleSpeak = async () => {
     try {
@@ -20,10 +22,6 @@ export function WordDetail({ word, onBack, onDeleted }: WordDetailProps) {
   };
 
   const handleDelete = async () => {
-    if (!confirm(`确定要删除单词 "${word.word}" 吗？`)) {
-      return;
-    }
-
     setIsDeleting(true);
     try {
       await invoke('delete_word', { wordId: word.id });
@@ -46,82 +44,87 @@ export function WordDetail({ word, onBack, onDeleted }: WordDetailProps) {
   };
 
   return (
-    <div className="word-detail">
-      <button className="back-button" onClick={onBack}>
-        ← 返回
-      </button>
+    <div className="space-y-4">
+      <Button variant="flat" onPress={onBack}>← 返回</Button>
 
-      <div className="word-header">
-        <h1 className="word-title">{word.word}</h1>
-        <button
-          className="speak-button"
-          onClick={handleSpeak}
-          aria-label="播放发音"
-        >
-          🔊
-        </button>
-      </div>
-
-      <p className="word-translation-detail">{word.translation}</p>
-
-      <div className="word-info-section">
-        <div className="info-row">
-          <span className="info-label">状态</span>
-          <span className={`info-value status-${word.status}`}>
-            {word.status === 'learning' ? '复习中' : '已记住'}
-          </span>
-        </div>
-
-        {word.tags && (
-          <div className="info-row">
-            <span className="info-label">标签</span>
-            <span className="info-value">{word.tags || '-'}</span>
+      <Card>
+        <CardBody className="space-y-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">{word.word}</h1>
+              <p className="text-lg text-default-500">{word.translation}</p>
+            </div>
+            <Button variant="bordered" onPress={handleSpeak}>🔊 发音</Button>
           </div>
-        )}
 
-        <div className="info-row">
-          <span className="info-label">下次复习</span>
-          <span className="info-value">
-            {formatTimestamp(word.next_review_at)}
-          </span>
-        </div>
+          <Divider />
 
-        <div className="info-row">
-          <span className="info-label">间隔</span>
-          <span className="info-value">{word.interval} 天</span>
-        </div>
+          <div className="flex gap-2">
+            <Chip color={word.status === 'learning' ? 'warning' : 'success'}>
+              {word.status === 'learning' ? '复习中' : '已记住'}
+            </Chip>
+            {word.tags && word.tags.split(',').filter(Boolean).map((tag) => (
+              <Chip key={tag} variant="flat" size="sm">{tag}</Chip>
+            ))}
+          </div>
 
-        <div className="info-row">
-          <span className="info-label">难度系数</span>
-          <span className="info-value">{word.ease_factor.toFixed(2)}</span>
-        </div>
+          <Divider />
 
-        <div className="info-row">
-          <span className="info-label">复习次数</span>
-          <span className="info-value">{word.repetitions}</span>
-        </div>
-      </div>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-default-400">下次复习</p>
+              <p>{formatTimestamp(word.next_review_at)}</p>
+            </div>
+            <div>
+              <p className="text-default-400">间隔</p>
+              <p>{word.interval} 天</p>
+            </div>
+            <div>
+              <p className="text-default-400">难度系数</p>
+              <p>{word.ease_factor.toFixed(2)}</p>
+            </div>
+            <div>
+              <p className="text-default-400">复习次数</p>
+              <p>{word.repetitions}</p>
+            </div>
+          </div>
 
-      {word.notes && (
-        <div className="word-notes-section">
-          <h3 className="section-title">笔记</h3>
-          <p className="notes-content">{word.notes}</p>
-        </div>
-      )}
+          {word.notes && (
+            <>
+              <Divider />
+              <div>
+                <p className="text-sm font-medium">笔记</p>
+                <p className="text-default-500">{word.notes}</p>
+              </div>
+            </>
+          )}
 
-      <div className="word-meta-section">
-        <p className="meta-text">
-          创建于 {formatTimestamp(word.created_at)}
-        </p>
-      </div>
+          <Divider />
 
-      <button
-        className="delete-button"
-        onClick={handleDelete}
-        disabled={isDeleting}
-      >
-        {isDeleting ? '删除中...' : '删除单词'}
-      </button>
+          <p className="text-xs text-default-400">
+            创建于 {formatTimestamp(word.created_at)}
+          </p>
+        </CardBody>
+      </Card>
+
+      <Button color="danger" variant="flat" onPress={onOpen}>
+        删除单词
+      </Button>
+
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalContent>
+          <ModalHeader>确认删除</ModalHeader>
+          <ModalBody>
+            确定要删除单词 "{word.word}" 吗？此操作无法撤销。
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="flat" onPress={onClose}>取消</Button>
+            <Button color="danger" isLoading={isDeleting} onPress={handleDelete}>
+              删除
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 }
