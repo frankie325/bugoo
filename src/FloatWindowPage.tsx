@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Button, Spinner, Card, CardBody } from '@heroui/react';
 import { translate } from './lib/api';
 import './styles/globals.css';
 
@@ -47,17 +48,31 @@ export function FloatWindowPage({ text }: Props) {
   };
 
   return (
-    <div className="float-window">
-      <div className="float-word">{text}</div>
-      <div className="float-translation">
-        {loading ? '翻译中...' : translation}
-      </div>
-      <div className="float-actions">
-        <button onClick={handleAdd} disabled={!canAdd}>
-          + 添加到生词本
-        </button>
-        <button onClick={handleClose}>关闭</button>
-      </div>
+    <div className="min-h-screen bg-background p-4">
+      <Card>
+        <CardBody className="space-y-4">
+          <div>
+            <p className="text-sm text-default-400">原文</p>
+            <p className="text-xl font-bold">{text}</p>
+          </div>
+          <div>
+            <p className="text-sm text-default-400">翻译</p>
+            {loading ? (
+              <div className="flex justify-center py-4"><Spinner /></div>
+            ) : (
+              <p className={error ? 'text-danger' : ''}>{translation}</p>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button color="primary" isDisabled={!canAdd} onPress={handleAdd} className="flex-1">
+              + 添加到生词本
+            </Button>
+            <Button variant="flat" onPress={handleClose}>
+              关闭
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
     </div>
   );
 }
