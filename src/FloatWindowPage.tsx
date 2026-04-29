@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button, Spinner, Card, CardBody } from '@heroui/react';
+import { Button, Spinner, Card } from '@heroui/react';
 import { translate } from './lib/api';
 import './styles/globals.css';
 
@@ -50,7 +50,7 @@ export function FloatWindowPage({ text }: Props) {
   return (
     <div className="min-h-screen bg-background p-4">
       <Card>
-        <CardBody className="space-y-4">
+        <div className="p-4 space-y-4">
           <div>
             <p className="text-sm text-default-400">原文</p>
             <p className="text-xl font-bold">{text}</p>
@@ -64,14 +64,14 @@ export function FloatWindowPage({ text }: Props) {
             )}
           </div>
           <div className="flex gap-2">
-            <Button color="primary" isDisabled={!canAdd} onPress={handleAdd} className="flex-1">
+            <Button variant="primary" isDisabled={!canAdd} onPress={handleAdd} className="flex-1">
               + 添加到生词本
             </Button>
-            <Button variant="flat" onPress={handleClose}>
+            <Button variant="ghost" onPress={handleClose}>
               关闭
             </Button>
           </div>
-        </CardBody>
+        </div>
       </Card>
     </div>
   );

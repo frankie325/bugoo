@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { Input, Card, CardBody, CardFooter, Chip, Spinner } from '@heroui/react';
+import { Input, Card, Chip, Spinner } from '@heroui/react';
 
 export interface Word {
   id: string;
@@ -62,7 +62,6 @@ export function WordList({ onSelectWord, selectedWordId }: WordListProps) {
         placeholder="搜索单词..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        isClearable
       />
 
       {isLoading && <Spinner />}
@@ -71,25 +70,27 @@ export function WordList({ onSelectWord, selectedWordId }: WordListProps) {
         {words.map((w) => (
           <Card
             key={w.id}
-            isPressable
-            onPress={() => onSelectWord(w)}
             className={selectedWordId === w.id ? 'border-primary' : ''}
           >
-            <CardBody>
+            <button
+              type="button"
+              className="w-full cursor-pointer text-left p-4"
+              onClick={() => onSelectWord(w)}
+            >
               <p className="text-lg font-bold">{w.word}</p>
               <p className="text-default-500">{w.translation}</p>
-            </CardBody>
-            <CardFooter className="gap-2">
-              <Chip
-                size="sm"
-                color={w.status === 'learning' ? 'warning' : 'success'}
-              >
-                {w.status === 'learning' ? '复习中' : '已记住'}
-              </Chip>
-              <p className="text-xs text-default-400">
-                下次: {formatNextReview(w.next_review_at)}
-              </p>
-            </CardFooter>
+              <div className="flex gap-2 mt-2">
+                <Chip
+                  size="sm"
+                  color={w.status === 'learning' ? 'warning' : 'success'}
+                >
+                  {w.status === 'learning' ? '复习中' : '已记住'}
+                </Chip>
+                <p className="text-xs text-default-400">
+                  下次: {formatNextReview(w.next_review_at)}
+                </p>
+              </div>
+            </button>
           </Card>
         ))}
       </div>

@@ -80,7 +80,7 @@ function App() {
       <header className="flex items-center justify-between px-6 py-4 border-b border-divider">
         <h1 className="text-xl font-bold">布谷鸟 - 生词本</h1>
         <Button
-          variant="flat"
+          variant="ghost"
           size="sm"
           onPress={() => setIsDark(d => !d)}
         >

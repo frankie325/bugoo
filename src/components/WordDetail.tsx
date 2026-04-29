@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { Button, Card, CardBody, Chip, Divider, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from '@heroui/react';
+import { Button, Card, Chip, Separator, Modal, ModalDialog, ModalHeader, ModalBody, ModalFooter } from '@heroui/react';
 import type { Word } from './WordList';
 
 interface WordDetailProps {
@@ -11,7 +11,7 @@ interface WordDetailProps {
 
 export function WordDetail({ word, onBack, onDeleted }: WordDetailProps) {
   const [isDeleting, setIsDeleting] = useState(false);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSpeak = async () => {
     try {
@@ -45,30 +45,30 @@ export function WordDetail({ word, onBack, onDeleted }: WordDetailProps) {
 
   return (
     <div className="space-y-4">
-      <Button variant="flat" onPress={onBack}>← 返回</Button>
+      <Button variant="ghost" onPress={onBack}>← 返回</Button>
 
       <Card>
-        <CardBody className="space-y-4">
+        <div className="p-4 space-y-4">
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-3xl font-bold">{word.word}</h1>
               <p className="text-lg text-default-500">{word.translation}</p>
             </div>
-            <Button variant="bordered" onPress={handleSpeak}>🔊 发音</Button>
+            <Button variant="outline" onPress={handleSpeak}>🔊 发音</Button>
           </div>
 
-          <Divider />
+          <Separator />
 
           <div className="flex gap-2">
             <Chip color={word.status === 'learning' ? 'warning' : 'success'}>
               {word.status === 'learning' ? '复习中' : '已记住'}
             </Chip>
             {word.tags && word.tags.split(',').filter(Boolean).map((tag) => (
-              <Chip key={tag} variant="flat" size="sm">{tag}</Chip>
+              <Chip key={tag} variant="soft" size="sm">{tag}</Chip>
             ))}
           </div>
 
-          <Divider />
+          <Separator />
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
@@ -91,7 +91,7 @@ export function WordDetail({ word, onBack, onDeleted }: WordDetailProps) {
 
           {word.notes && (
             <>
-              <Divider />
+              <Separator />
               <div>
                 <p className="text-sm font-medium">笔记</p>
                 <p className="text-default-500">{word.notes}</p>
@@ -99,31 +99,31 @@ export function WordDetail({ word, onBack, onDeleted }: WordDetailProps) {
             </>
           )}
 
-          <Divider />
+          <Separator />
 
           <p className="text-xs text-default-400">
             创建于 {formatTimestamp(word.created_at)}
           </p>
-        </CardBody>
+        </div>
       </Card>
 
-      <Button color="danger" variant="flat" onPress={onOpen}>
+      <Button variant="danger" onPress={() => setIsModalOpen(true)}>
         删除单词
       </Button>
 
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalContent>
+      <Modal isOpen={isModalOpen} onOpenChange={setIsModalOpen}>
+        <ModalDialog>
           <ModalHeader>确认删除</ModalHeader>
           <ModalBody>
             确定要删除单词 "{word.word}" 吗？此操作无法撤销。
           </ModalBody>
           <ModalFooter>
-            <Button variant="flat" onPress={onClose}>取消</Button>
-            <Button color="danger" isLoading={isDeleting} onPress={handleDelete}>
+            <Button variant="ghost" onPress={() => setIsModalOpen(false)}>取消</Button>
+            <Button variant="danger" isPending={isDeleting} onPress={handleDelete}>
               删除
             </Button>
           </ModalFooter>
-        </ModalContent>
+        </ModalDialog>
       </Modal>
     </div>
   );
