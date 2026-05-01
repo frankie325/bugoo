@@ -1,84 +1,51 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+本文件为 Claude Code（claude.ai/code）在处理本代码库时提供指导。
 
-## Project Overview
+## 项目概述
 
-Bugoo (布谷鸟) — a cross-platform desktop app for word selection translation with Ebbinghaus spaced repetition memory review. Core features: select text anywhere to translate, save words to word list, receive review notifications based on spaced repetition algorithm.
+Bugoo（布谷鸟）— 跨平台桌面应用，实现划词翻译和艾宾浩斯遗忘曲线记忆复习。核心功能：全局选中文字即可翻译、保存生词到生词本、根据间隔重复算法接收复习提醒通知。
 
-## Tech Stack
+## 技术栈
 
-- **Backend**: Tauri 2.x with Rust (SQLite via rusqlite, DeepL API, system TTS)
-- **Frontend**: React 18 + TypeScript (Vite)
-- **Database**: SQLite with SM-2 spaced repetition algorithm
-- **Translation**: DeepL API
-- **Notifications**: System notifications via Tauri
+- **后端**：Tauri 2.x + Rust（rusqlite 操作 SQLite、DeepL API、系统 TTS）
+- **前端**：React 19 + TypeScript（Vite）+ HeroUI + Tailwind CSS 4
+- **数据库**：SQLite + SM-2 间隔重复算法
+- **翻译**：DeepL API
+- **通知**：通过 Tauri 发送系统通知
 
-## Project Structure
-
-Tauri 2.x standard layout at project root:
-
-```
-bugoo/
-├── package.json              # Frontend dependencies
-├── index.html               # Frontend entry
-├── vite.config.ts           # Vite config
-├── tsconfig.json            # TypeScript config
-├── src/                     # Frontend source (React/TS)
-│   ├── main.tsx
-│   ├── App.tsx
-│   ├── components/
-│   │   ├── FloatWindow.tsx       # Translation popup
-│   │   ├── WordList.tsx          # Word list
-│   │   ├── WordDetail.tsx        # Word detail card
-│   │   └── ReviewNotification.tsx # Review notification
-│   ├── hooks/
-│   ├── styles/
-│   └── lib/
-├── src-tauri/               # Tauri application
-│   ├── Cargo.toml
-│   ├── build.rs
-│   ├── tauri.conf.json
-│   ├── src/
-│   │   ├── main.rs
-│   │   ├── lib.rs
-│   │   ├── commands/         # Tauri commands (translate, words, review, tts)
-│   │   ├── db/               # SQLite (mod, migrations, models)
-│   │   ├── scheduler/         # SM-2 algorithm + notification scheduler
-│   │   └── tts/              # TTS (macOS say, Windows SAPI)
-│   ├── icons/
-│   └── capabilities/
-└── docs/superpowers/
-    ├── plans/                # Implementation plans
-    └── design/               # Design specs
-```
-
-## Common Commands
+## 常用命令
 
 ```bash
-# Frontend dev
+# 前端开发
 npm run dev
 
-# Tauri dev (full app)
+# Tauri 开发（完整应用）
 npm run tauri dev
 
-# Build
+# 构建 Tauri 应用
 npm run tauri build
 
-# Rust only
-cargo build
-cargo test
+# Rust 单独构建/测试
+cd src-tauri && cargo build
+cd src-tauri && cargo test
 ```
 
-## Architecture Notes
+## 架构说明
+参考 @docs/architecture.md 文档
 
-- `src-tauri/src/lib.rs` — Tauri builder, module initialization
-- `src-tauri/src/commands/` — Tauri commands exposed to frontend (translate, words CRUD, review, tts)
-- `src-tauri/src/db/` — SQLite connection, migrations, models
-- `src-tauri/src/scheduler/ebbinghaus.rs` — SM-2 algorithm implementation
-- `src-tauri/src/scheduler/notification.rs` — Review notification scheduler
-- `src-tauri/src/tts/` — Cross-platform TTS (macOS/Windows)
+### 前端 (`src/`)
+- `App.tsx` — 根组件
+- `lib/api.ts` — Tauri invoke 调用封装（translate、addWord、getWords、deleteWord）
+- `hooks/` — React 自定义 hooks
+- `stores/` — 状态管理
+- `types/` — TypeScript 类型定义
 
-## Superpowers Workflow
+### Tauri 后端 (`src-tauri/src/`)
+- `main.rs` — 应用入口
+- **待实现的命令模块：**
+- **待实现的数据库模块：** 
+- **待实现的调度模块：** 
+- **待实现的 TTS 模块：**
 
-Plans in `docs/superpowers/plans/`, designs in `docs/superpowers/design/`.
+**注意：** Rust 后端大部分模块尚为空实现，需要按模块逐步开发。
