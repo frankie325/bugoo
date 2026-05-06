@@ -6,7 +6,7 @@
     "frontendDist": "../dist"
   },
   "app": {
-    "windows": [{ "title": "Bugoo", "width": 800, "height": 600 }],
+    "windows": [{ "title": "Bugoo", "width": 800, "height": 600 , "decorations": true}],
     "security": {
       "capabilities": ["default"]
     }

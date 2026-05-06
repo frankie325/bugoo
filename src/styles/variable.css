@@ -1,0 +1,12 @@
+:root {
+  /* Override default colors */
+  --accent: oklch(72.27% 0.1920 149.58); /* #22C55E */
+  --success: oklch(73.29% 0.1935 138.30);
+  --default: oklch(0.9588 0.0444 149.58);
+}
+
+[data-theme="dark"] {
+  /* Override dark theme colors */
+  --accent: oklch(72.27% 0.1920 149.58);
+  --success: oklch(73.29% 0.1935 138.30);
+}

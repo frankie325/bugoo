@@ -40,7 +40,7 @@ export function StatusFilter({ words, currentFilter, onFilterChange }: StatusFil
       }}
     >
       {statusOptions.map((option) => (
-        <ListBoxItem key={option.key}>
+        <ListBoxItem key={option.key} className="hover:text-[#3a6b49]">
           {option.label} ({counts[option.key]})
         </ListBoxItem>
       ))}

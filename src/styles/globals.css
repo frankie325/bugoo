@@ -1,2 +1,3 @@
 @import "@heroui/styles";
 @import "tailwindcss";
+@import "./variable.css"

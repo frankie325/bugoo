@@ -2,7 +2,7 @@ import { Home } from './components/Home';
 
 function App() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Home />
     </div>
   );
