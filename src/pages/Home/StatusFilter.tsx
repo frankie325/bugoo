@@ -1,6 +1,6 @@
 import { ListBox, ListBoxItem } from '@heroui/react';
-import type { Word } from '../lib/api';
-import type { FilterStatus } from '../stores/wordStore';
+import type { Word } from '../../lib/api';
+import type { FilterStatus } from '../../stores/wordStore';
 
 interface StatusFilterProps {
   words: Word[];

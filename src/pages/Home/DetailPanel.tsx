@@ -1,5 +1,5 @@
 import { Button } from '@heroui/react';
-import type { Word } from '../lib/api';
+import type { Word } from '../../lib/api';
 
 interface DetailPanelProps {
   word: Word;

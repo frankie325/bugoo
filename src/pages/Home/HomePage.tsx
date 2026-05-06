@@ -7,14 +7,14 @@ import { WordGrid } from "./WordGrid";
 import { WordList } from "./WordList";
 import { BottomBanner } from "./BottomBanner";
 import { DetailPanel } from "./DetailPanel";
-import { useWords } from "../hooks/useWords";
-import { useWordStore, type FilterStatus } from "../stores/wordStore";
+import { useWords } from "../../hooks/useWords";
+import { useWordStore, type FilterStatus } from "../../stores/wordStore";
 import { Avatar } from "@heroui/react";
-import type { Word } from "../lib/api";
+import type { Word } from "../../lib/api";
 
 type ViewMode = "grid" | "list";
 
-export function Home() {
+export function HomePage() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");

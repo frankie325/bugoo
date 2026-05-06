@@ -1,4 +1,4 @@
-import type { Word } from '../lib/api';
+import type { Word } from '../../lib/api';
 
 interface WordListProps {
   words: Word[];

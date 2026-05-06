@@ -1,9 +1,9 @@
-import { Home } from './components/Home';
+import { HomePage } from './pages/Home/HomePage';
 
 function App() {
   return (
     <div className="min-h-screen">
-      <Home />
+      <HomePage />
     </div>
   );
 }
