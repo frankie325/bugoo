@@ -1,12 +1,43 @@
 :root {
   /* Override default colors */
-  --accent: oklch(72.27% 0.1920 149.58); /* #22C55E */
-  --success: oklch(73.29% 0.1935 138.30);
-  --default: oklch(0.9588 0.0444 149.58);
+  /* 系统主色#22C55E */
+  --accent-1: #f0fff3;
+  --accent-2: #c8f7d3;
+  --accent-3: #98ebae;
+  --accent-4: #6dde8f;
+  --accent-5: #45d174;
+  --accent-6: #22c55e;
+  --accent-7: #139e4b;
+  --accent-8: #087839;
+  --accent-9: #025227;
+  --accent-10: #002b16;
+  --accent: var(--accent-6);
 }
 
 [data-theme="dark"] {
   /* Override dark theme colors */
-  --accent: oklch(72.27% 0.1920 149.58);
-  --success: oklch(73.29% 0.1935 138.30);
+  --accent-1: #12231a;
+  --accent-2: #143722;
+  --accent-3: #18492a;
+  --accent-4: #1a6435;
+  --accent-5: #1d8744;
+  --accent-6: #20aa53;
+  --accent-7: #40be6a;
+  --accent-8: #69d489;
+  --accent-9: #94e5a9;
+  --accent-10: #c4f2cf;
+  --accent: var(--accent-6);
+}
+
+@theme {
+  --color-accent-1: var(--accent-1);
+  --color-accent-2: var(--accent-2);
+  --color-accent-3: var(--accent-3);
+  --color-accent-4: var(--accent-4);
+  --color-accent-5: var(--accent-5);
+  --color-accent-6: var(--accent-6);
+  --color-accent-7: var(--accent-7);
+  --color-accent-8: var(--accent-8);
+  --color-accent-9: var(--accent-9);
+  --color-accent-10: var(--accent-10);
 }

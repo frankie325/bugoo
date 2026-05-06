@@ -1,3 +1,9 @@
 @import "@heroui/styles";
 @import "tailwindcss";
-@import "./variable.css"
+@import "./variable.css";
+
+@layer base {
+  html {
+    color: var(--color-foreground);
+  }
+}

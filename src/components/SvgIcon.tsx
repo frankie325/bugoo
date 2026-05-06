@@ -5,8 +5,8 @@ export default function SvgIcon({
   ...props
 }: {
   name: string;
-  prefix: string;
-  color: string;
+  prefix?: string;
+  color?: string;
   [prop: string]: any;
 }) {
   const symbolId = `#${prefix}-${name}`;

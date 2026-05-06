@@ -71,7 +71,7 @@ export function HomePage() {
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="bg-background w-56 border-r border-divider p-4 flex flex-col gap-2">
+      <aside className="bg-background w-60 p-4 flex flex-col gap-4">
         <div className="flex items-center">
           <Avatar size="lg">
             <Avatar.Image
@@ -97,7 +97,7 @@ export function HomePage() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col">
         {/* TopBar */}
-        <header className="h-14 border-b border-divider px-4 flex items-center gap-4">
+        <header className="h-14 px-4 flex items-center gap-4">
           <SearchInput value={searchQuery} onChange={setSearchQuery} />
           <ViewToggle mode={viewMode} onModeChange={setViewMode} />
         </header>
