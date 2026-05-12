@@ -1,8 +1,10 @@
 import { useSettingsStore } from "../../../stores/settingsStore";
 import { Card, Separator, CheckboxGroup, Checkbox, Input } from "@heroui/react";
 import { SettingItem } from "../components/SettingItem";
+import { useTranslation } from "react-i18next";
 
 export function NotificationPanel() {
+  const { t } = useTranslation();
   const settings = useSettingsStore((state) => state.settings);
   const updateSetting = useSettingsStore((state) => state.updateSetting);
 
@@ -23,11 +25,11 @@ export function NotificationPanel() {
   return (
     <Card>
       <Card.Header>
-        <Card.Title>通知设置</Card.Title>
+        <Card.Title>{t("settings.notification.title")}</Card.Title>
       </Card.Header>
       <Card.Content>
         {/* 提醒时间 */}
-        <SettingItem title="提醒时间" description="设置每日提醒时间段">
+        <SettingItem title={t("settings.notification.reminderTime.title")} description={t("settings.notification.reminderTime.desc")}>
           <div className="flex items-center gap-2">
             <Input
               type="time"
@@ -37,7 +39,7 @@ export function NotificationPanel() {
               }
               className="w-36"
             />
-            <span className="text-default-500">—</span>
+            <span className="text-default-500">{t("settings.notification.timeDash")}</span>
             <Input
               type="time"
               value={reminderEndTime}
@@ -50,7 +52,7 @@ export function NotificationPanel() {
         <Separator />
 
         {/* 通知类型 */}
-        <SettingItem title="通知类型" description="选择需要接收的通知类型">
+        <SettingItem title={t("settings.notification.types.title")} description={t("settings.notification.types.desc")}>
           <CheckboxGroup
             className="flex flex-row gap-4"
             value={notificationTypes}
@@ -74,25 +76,25 @@ export function NotificationPanel() {
               <Checkbox.Control>
                 <Checkbox.Indicator />
               </Checkbox.Control>
-              每日复习提醒
+              {t("settings.notification.dailyReview")}
             </Checkbox>
             <Checkbox value="forgetting">
               <Checkbox.Control>
                 <Checkbox.Indicator />
               </Checkbox.Control>
-              即将遗忘提醒
+              {t("settings.notification.forgetting")}
             </Checkbox>
             <Checkbox value="streak">
               <Checkbox.Control>
                 <Checkbox.Indicator />
               </Checkbox.Control>
-              连续学习提醒
+              {t("settings.notification.streak")}
             </Checkbox>
             <Checkbox value="achievement">
               <Checkbox.Control>
                 <Checkbox.Indicator />
               </Checkbox.Control>
-              成就通知
+              {t("settings.notification.achievement")}
             </Checkbox>
           </CheckboxGroup>
         </SettingItem>

@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "Bugoo",
+    "tagline": "単語翻訳と記憶復習",
+    "loading": "読み込み中...",
+    "emptyState": "単語がありません",
+    "emptyAction": "追加する"
+  },
+  "home": {
+    "searchPlaceholder": "単語を検索...",
+    "viewGrid": "グリッド",
+    "viewList": "リスト",
+    "tagsLabel": "タグ",
+    "status": {
+      "all": "すべて",
+      "dueToday": "今日の復習",
+      "learning": "学習中",
+      "mastered": "記憶済み",
+      "newWord": "新規追加",
+      "label": "学習",
+      "ariaLabel": "ステータスフィルター"
+    },
+    "banner": {
+      "progress": "🔥 今日の学習進捗 {{dueCount}} / {{totalCount}}",
+      "startReview": "復習を開始 +5 XP"
+    },
+    "detail": {
+      "title": "単語の詳細",
+      "close": "閉じる",
+      "memoryProgress": "記憶の進捗",
+      "memoryStrength": "記憶の強さ",
+      "interval": "間隔",
+      "reviewCount": "復習回数",
+      "remember": "😄 覚えている",
+      "fuzzy": "🤔 少しあいまい",
+      "forgot": "😵 まったく覚えていない",
+      "days": "{{days}}日"
+    }
+  },
+  "settings": {
+    "tabs": {
+      "general": "一般",
+      "translation": "翻訳",
+      "learning": "学習",
+      "notification": "通知",
+      "appearance": "外観",
+      "shortcuts": "ショートカット",
+      "about": "について"
+    },
+    "ariaLabel": "設定ナビゲーション",
+    "listAriaLabel": "設定カテゴリ",
+    "general": {
+      "title": "一般設定",
+      "themeColor": {
+        "title": "テーマカラー",
+        "desc": "アプリのアクセントカラーを選択"
+      },
+      "startup": {
+        "title": "起動時に開く",
+        "desc": "アプリ起動時にメインウィンドウを自動的に開く"
+      },
+      "autoUpdate": {
+        "title": "自動更新",
+        "desc": "アップデートを確認して自動インストール"
+      },
+      "closeBehavior": {
+        "title": "閉じる動作",
+        "desc": "メインウィンドウを閉じるときの動作"
+      },
+      "minimize": "トレイに最小化",
+      "quit": "アプリを終了",
+      "language": {
+        "title": "表示言語",
+        "desc": "アプリの表示言語を選択"
+      },
+      "color": {
+        "green": "緑",
+        "blue": "青",
+        "purple": "紫"
+      }
+    },
+    "translation": {
+      "title": "翻訳設定",
+      "engine": {
+        "title": "翻訳エンジン",
+        "desc": "デフォルトの翻訳サービスを選択"
+      },
+      "engineLabel": "翻訳エンジン",
+      "engineDeepL": "DeepL",
+      "engineGoogle": "Google",
+      "engineOpenAI": "OpenAI",
+      "engineCustom": "カスタム",
+      "endpoint": {
+        "title": "API エンドポイント",
+        "desc": "翻訳サービスの API エンドポイント"
+      },
+      "endpointPlaceholder": "https://api.example.com",
+      "apiKey": {
+        "title": "API キー",
+        "desc": "翻訳サービスの認証キー"
+      },
+      "apiKeyPlaceholder": "sk-xxx"
+    },
+    "review": {
+      "title": "復習設定",
+      "dailyLimit": {
+        "title": "1日の復習上限",
+        "desc": "1日あたりの最大復習単語数"
+      },
+      "reviewPace": {
+        "title": "復習のペース",
+        "desc": "習熟度に応じて復習頻度を調整"
+      },
+      "hintStrategy": {
+        "title": "ヒント戦略",
+        "desc": "記憶時のヒントの表示方法"
+      },
+      "selection": {
+        "title": "選択範囲の設定"
+      },
+      "selectionEnable": {
+        "title": "選択翻訳を有効にする",
+        "desc": "テキスト選択時に翻訳を自動表示"
+      },
+      "autoSpeak": {
+        "title": "自動発音",
+        "desc": "翻訳表示後に単語を自動読み上げ"
+      },
+      "autoClose": {
+        "title": "自動クローズ",
+        "desc": "フォーカスを失ったときにポップアップを自動的に閉じる"
+      },
+      "pace": {
+        "relaxed": "ゆったり",
+        "normal": "標準",
+        "intense": "しっかり"
+      },
+      "hint": {
+        "progressive": "段階的ヒント",
+        "immediate": "すぐに答えを表示"
+      },
+      "custom": "カスタム"
+    },
+    "notification": {
+      "title": "通知設定",
+      "reminderTime": {
+        "title": "リマインダー時間",
+        "desc": "1日のリマインダー時間帯を設定"
+      },
+      "timeDash": "—",
+      "types": {
+        "title": "通知タイプ",
+        "desc": "受信する通知の種類を選択"
+      },
+      "dailyReview": "毎日の復習リマインダー",
+      "forgetting": "忘却間近の通知",
+      "streak": "継続学習リマインダー",
+      "achievement": "実績通知"
+    },
+    "appearance": {
+      "title": "外観とパーソナライズ",
+      "theme": {
+        "title": "テーマ",
+        "desc": "配色を選択"
+      },
+      "themeAriaLabel": "テーマ",
+      "themeLight": "ライト",
+      "themeDark": "ダーク",
+      "themeSystem": "システムに従う",
+      "themeColor": {
+        "title": "テーマカラー",
+        "desc": "アプリのアクセントカラーを選択"
+      },
+      "cardStyle": {
+        "title": "カードスタイル",
+        "desc": "単語カードの表示スタイル"
+      },
+      "fontSize": {
+        "title": "フォントサイズ",
+        "desc": "アプリのフォントサイズを選択"
+      },
+      "fontSizeAriaLabel": "フォントサイズ",
+      "styleSimple": "シンプル",
+      "styleRich": "リッチ",
+      "fontSmall": "小",
+      "fontMedium": "中",
+      "fontLarge": "大",
+      "color": {
+        "green": "緑",
+        "blue": "青",
+        "purple": "紫"
+      }
+    },
+    "shortcuts": {
+      "title": "ショートカットキー",
+      "startReview": {
+        "title": "復習を開始",
+        "desc": "復習セッションをすぐに開始"
+      },
+      "translation": {
+        "title": "選択翻訳",
+        "desc": "テキスト選択後に自動翻訳"
+      },
+      "addWord": {
+        "title": "単語を追加",
+        "desc": "単語を手動で語彙に追加"
+      },
+      "openApp": {
+        "title": "メイン画面を開く",
+        "desc": "メインウィンドウを表示"
+      }
+    },
+    "about": {
+      "title": "について",
+      "version": "バージョン {{version}}",
+      "tagline": "選択翻訳 · エビングハウス記憶 · 間隔復習",
+      "checkUpdate": "アップデートを確認",
+      "feedback": "フィードバック",
+      "helpDoc": "ヘルプドキュメント",
+      "license": "オープンソースライセンス",
+      "footer": "Made with ❤️ by Bugoo Team"
+    }
+  }
+}

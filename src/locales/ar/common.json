@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "Bugoo",
+    "tagline": "ترجمة الكلمات والتكرار المتباعد",
+    "loading": "جارٍ التحميل...",
+    "emptyState": "لا توجد كلمات",
+    "emptyAction": "إضافة"
+  },
+  "home": {
+    "searchPlaceholder": "البحث عن كلمات...",
+    "viewGrid": "شبكة",
+    "viewList": "قائمة",
+    "tagsLabel": "الوسوم",
+    "status": {
+      "all": "الكل",
+      "dueToday": "للمراجعة اليوم",
+      "learning": "قيد المراجعة",
+      "mastered": "متقن",
+      "newWord": "جديد",
+      "label": "التعلم",
+      "ariaLabel": "تصفية الحالة"
+    },
+    "banner": {
+      "progress": "🔥 تقدم اليوم {{dueCount}} / {{totalCount}}",
+      "startReview": "بدء المراجعة +5 XP"
+    },
+    "detail": {
+      "title": "تفاصيل الكلمة",
+      "close": "إغلاق",
+      "memoryProgress": "تقدم الحفظ",
+      "memoryStrength": "قوة الذاكرة",
+      "interval": "الفاصل",
+      "reviewCount": "عدد المراجعات",
+      "remember": "😄 أتذكر",
+      "fuzzy": "🤔 غير واضح",
+      "forgot": "😵 نسيت",
+      "days": "{{days}} يوم"
+    }
+  },
+  "settings": {
+    "tabs": {
+      "general": "عام",
+      "translation": "الترجمة",
+      "learning": "التعلم",
+      "notification": "الإشعارات",
+      "appearance": "المظهر",
+      "shortcuts": "الاختصارات",
+      "about": "حول"
+    },
+    "ariaLabel": "التنقل في الإعدادات",
+    "listAriaLabel": "تصنيفات الإعدادات",
+    "general": {
+      "title": "الإعدادات العامة",
+      "themeColor": {
+        "title": "لون السمة",
+        "desc": "اختر اللون الرئيسي للتطبيق"
+      },
+      "startup": {
+        "title": "الفتح عند التشغيل",
+        "desc": "فتح النافذة الرئيسية تلقائياً عند بدء التشغيل"
+      },
+      "autoUpdate": {
+        "title": "التحديث التلقائي",
+        "desc": "التحقق من التحديثات وتثبيتها تلقائياً"
+      },
+      "closeBehavior": {
+        "title": "سلوك الإغلاق",
+        "desc": "الإجراء عند إغلاق النافذة الرئيسية"
+      },
+      "minimize": "تصغير إلى الخلفية",
+      "quit": "إنهاء التطبيق",
+      "language": {
+        "title": "لغة الواجهة",
+        "desc": "اختر لغة واجهة التطبيق"
+      },
+      "color": {
+        "green": "أخضر",
+        "blue": "أزرق",
+        "purple": "بنفسجي"
+      }
+    },
+    "translation": {
+      "title": "إعدادات الترجمة",
+      "engine": {
+        "title": "محرك الترجمة",
+        "desc": "اختر خدمة الترجمة الافتراضية"
+      },
+      "engineLabel": "محرك الترجمة",
+      "engineDeepL": "DeepL",
+      "engineGoogle": "Google",
+      "engineOpenAI": "OpenAI",
+      "engineCustom": "مخصص",
+      "endpoint": {
+        "title": "عنوان API",
+        "desc": "عنوان واجهة خدمة الترجمة"
+      },
+      "endpointPlaceholder": "https://api.example.com",
+      "apiKey": {
+        "title": "مفتاح API",
+        "desc": "مفتاح المصادقة لخدمة الترجمة"
+      },
+      "apiKeyPlaceholder": "sk-xxx"
+    },
+    "review": {
+      "title": "إعدادات المراجعة",
+      "dailyLimit": {
+        "title": "الحد اليومي للمراجعة",
+        "desc": "أقصى عدد كلمات للمراجعة يومياً"
+      },
+      "reviewPace": {
+        "title": "وتيرة المراجعة",
+        "desc": "ضبط تكرار المراجعة حسب مستوى الإتقان"
+      },
+      "hintStrategy": {
+        "title": "استراتيجية التلميحات",
+        "desc": "طريقة عرض التلميحات أثناء المراجعة"
+      },
+      "selection": {
+        "title": "إعدادات التحديد"
+      },
+      "selectionEnable": {
+        "title": "تفعيل الترجمة بالتحديد",
+        "desc": "إظهار الترجمة تلقائياً عند تحديد النص"
+      },
+      "autoSpeak": {
+        "title": "النطق التلقائي",
+        "desc": "قراءة الكلمة تلقائياً بعد الترجمة"
+      },
+      "autoClose": {
+        "title": "الإغلاق التلقائي",
+        "desc": "إغلاق النافذة المنبثقة تلقائياً عند فقدان التركيز"
+      },
+      "pace": {
+        "relaxed": "مريح",
+        "normal": "قياسي",
+        "intense": "مكثف"
+      },
+      "hint": {
+        "progressive": "تلميحات تدريجية",
+        "immediate": "إظهار الإجابة مباشرة"
+      },
+      "custom": "مخصص"
+    },
+    "notification": {
+      "title": "إعدادات الإشعارات",
+      "reminderTime": {
+        "title": "وقت التذكير",
+        "desc": "تحديد فترة التذكير اليومية"
+      },
+      "timeDash": "—",
+      "types": {
+        "title": "أنواع الإشعارات",
+        "desc": "اختر أنواع الإشعارات التي ترغب في تلقيها"
+      },
+      "dailyReview": "تذكير المراجعة اليومية",
+      "forgetting": "تذكير وشيك النسيان",
+      "streak": "تذكير الاستمرارية",
+      "achievement": "إشعارات الإنجازات"
+    },
+    "appearance": {
+      "title": "المظهر والتخصيص",
+      "theme": {
+        "title": "السمة",
+        "desc": "اختر نظام الألوان للتطبيق"
+      },
+      "themeAriaLabel": "السمة",
+      "themeLight": "فاتح",
+      "themeDark": "داكن",
+      "themeSystem": "النظام",
+      "themeColor": {
+        "title": "لون السمة",
+        "desc": "اختر اللون الرئيسي للتطبيق"
+      },
+      "cardStyle": {
+        "title": "نمط البطاقة",
+        "desc": "نمط عرض بطاقات الكلمات"
+      },
+      "fontSize": {
+        "title": "حجم الخط",
+        "desc": "اختر حجم خط التطبيق"
+      },
+      "fontSizeAriaLabel": "حجم الخط",
+      "styleSimple": "بسيط",
+      "styleRich": "غني",
+      "fontSmall": "صغير",
+      "fontMedium": "متوسط",
+      "fontLarge": "كبير",
+      "color": {
+        "green": "أخضر",
+        "blue": "أزرق",
+        "purple": "بنفسجي"
+      }
+    },
+    "shortcuts": {
+      "title": "الاختصارات",
+      "startReview": {
+        "title": "بدء المراجعة",
+        "desc": "بدء جلسة مراجعة سريعة"
+      },
+      "translation": {
+        "title": "الترجمة بالتحديد",
+        "desc": "ترجمة تلقائية عند تحديد النص"
+      },
+      "addWord": {
+        "title": "إضافة كلمة سريعة",
+        "desc": "إضافة كلمة جديدة إلى القاموس يدوياً"
+      },
+      "openApp": {
+        "title": "فتح الواجهة الرئيسية",
+        "desc": "إظهار النافذة الرئيسية"
+      }
+    },
+    "about": {
+      "title": "حول",
+      "version": "الإصدار {{version}}",
+      "tagline": "ترجمة بالتحديد · ذاكرة إبنجهاوس · تكرار متباعد",
+      "checkUpdate": "التحقق من التحديثات",
+      "feedback": "ملاحظات",
+      "helpDoc": "وثائق المساعدة",
+      "license": "رخصة مفتوحة المصدر",
+      "footer": "مصنوع بـ ❤️ بواسطة فريق Bugoo"
+    }
+  }
+}

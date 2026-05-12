@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "Bugoo",
+    "tagline": "Tradução de palavras e repetição espaçada",
+    "loading": "Carregando...",
+    "emptyState": "Nenhuma palavra",
+    "emptyAction": "Adicionar"
+  },
+  "home": {
+    "searchPlaceholder": "Pesquisar palavras...",
+    "viewGrid": "Grade",
+    "viewList": "Lista",
+    "tagsLabel": "Etiquetas",
+    "status": {
+      "all": "Todas",
+      "dueToday": "Pendentes hoje",
+      "learning": "Aprendendo",
+      "mastered": "Dominadas",
+      "newWord": "Novas",
+      "label": "Status",
+      "ariaLabel": "Filtro de status"
+    },
+    "banner": {
+      "progress": "🔥 Progresso de hoje {{dueCount}} / {{totalCount}}",
+      "startReview": "Iniciar revisão +5 XP"
+    },
+    "detail": {
+      "title": "Detalhes da palavra",
+      "close": "Fechar",
+      "memoryProgress": "Progresso de memorização",
+      "memoryStrength": "Força de memorização",
+      "interval": "Intervalo",
+      "reviewCount": "Vezes revisada",
+      "remember": "😄 Lembro",
+      "fuzzy": "🤔 Um pouco confusa",
+      "forgot": "😵 Não lembro",
+      "days": "{{days}} dias"
+    }
+  },
+  "settings": {
+    "tabs": {
+      "general": "Geral",
+      "translation": "Tradução",
+      "learning": "Aprendizado",
+      "notification": "Notificações",
+      "appearance": "Aparência",
+      "shortcuts": "Atalhos",
+      "about": "Sobre"
+    },
+    "ariaLabel": "Navegação de configurações",
+    "listAriaLabel": "Categorias de configuração",
+    "general": {
+      "title": "Configurações gerais",
+      "themeColor": {
+        "title": "Cor do tema",
+        "desc": "Escolher a cor principal do aplicativo"
+      },
+      "startup": {
+        "title": "Abrir na inicialização",
+        "desc": "Abrir a janela principal automaticamente ao iniciar"
+      },
+      "autoUpdate": {
+        "title": "Atualização automática",
+        "desc": "Verificar e instalar atualizações automaticamente"
+      },
+      "closeBehavior": {
+        "title": "Comportamento ao fechar",
+        "desc": "Ação ao fechar a janela principal"
+      },
+      "minimize": "Minimizar para a bandeja",
+      "quit": "Sair do aplicativo",
+      "language": {
+        "title": "Idioma da interface",
+        "desc": "Selecionar o idioma da interface"
+      },
+      "color": {
+        "green": "Verde",
+        "blue": "Azul",
+        "purple": "Roxo"
+      }
+    },
+    "translation": {
+      "title": "Configurações de tradução",
+      "engine": {
+        "title": "Mecanismo de tradução",
+        "desc": "Selecionar o serviço de tradução padrão"
+      },
+      "engineLabel": "Mecanismo de tradução",
+      "engineDeepL": "DeepL",
+      "engineGoogle": "Google",
+      "engineOpenAI": "OpenAI",
+      "engineCustom": "Personalizado",
+      "endpoint": {
+        "title": "Endereço da API",
+        "desc": "Endereço do endpoint do serviço de tradução"
+      },
+      "endpointPlaceholder": "https://api.example.com",
+      "apiKey": {
+        "title": "Chave da API",
+        "desc": "Chave de autenticação do serviço de tradução"
+      },
+      "apiKeyPlaceholder": "sk-xxx"
+    },
+    "review": {
+      "title": "Configurações de revisão",
+      "dailyLimit": {
+        "title": "Limite diário de revisão",
+        "desc": "Número máximo de palavras para revisar por dia"
+      },
+      "reviewPace": {
+        "title": "Ritmo de revisão",
+        "desc": "Ajustar a frequência de revisão conforme o nível de domínio"
+      },
+      "hintStrategy": {
+        "title": "Estratégia de dica",
+        "desc": "Método de dica ao lembrar"
+      },
+      "selection": {
+        "title": "Configurações de seleção"
+      },
+      "selectionEnable": {
+        "title": "Ativar tradução por seleção",
+        "desc": "Exibir tradução automaticamente ao selecionar texto"
+      },
+      "autoSpeak": {
+        "title": "Pronúncia automática",
+        "desc": "Reproduzir a palavra automaticamente ao exibir a tradução"
+      },
+      "autoClose": {
+        "title": "Fechamento automático",
+        "desc": "Fechar o pop-up ao perder o foco"
+      },
+      "pace": {
+        "relaxed": "Tranquilo",
+        "normal": "Normal",
+        "intense": "Intenso"
+      },
+      "hint": {
+        "progressive": "Dica progressiva",
+        "immediate": "Exibir resposta diretamente"
+      },
+      "custom": "Personalizado"
+    },
+    "notification": {
+      "title": "Configurações de notificação",
+      "reminderTime": {
+        "title": "Horário de lembrete",
+        "desc": "Definir o período de lembrete diário"
+      },
+      "timeDash": "—",
+      "types": {
+        "title": "Tipo de notificação",
+        "desc": "Selecionar os tipos de notificação para receber"
+      },
+      "dailyReview": "Lembrete de revisão diária",
+      "forgetting": "Lembrete de esquecimento iminente",
+      "streak": "Lembrete de sequência de estudo",
+      "achievement": "Notificação de conquistas"
+    },
+    "appearance": {
+      "title": "Aparência e personalização",
+      "theme": {
+        "title": "Tema",
+        "desc": "Selecionar o esquema de cores do aplicativo"
+      },
+      "themeAriaLabel": "Tema",
+      "themeLight": "Claro",
+      "themeDark": "Escuro",
+      "themeSystem": "Seguir o sistema",
+      "themeColor": {
+        "title": "Cor do tema",
+        "desc": "Escolher a cor principal do aplicativo"
+      },
+      "cardStyle": {
+        "title": "Estilo do cartão",
+        "desc": "Estilo de exibição dos cartões de palavras"
+      },
+      "fontSize": {
+        "title": "Tamanho da fonte",
+        "desc": "Selecionar o tamanho da fonte do aplicativo"
+      },
+      "fontSizeAriaLabel": "Tamanho da fonte",
+      "styleSimple": "Simples",
+      "styleRich": "Detalhado",
+      "fontSmall": "Pequeno",
+      "fontMedium": "Médio",
+      "fontLarge": "Grande",
+      "color": {
+        "green": "Verde",
+        "blue": "Azul",
+        "purple": "Roxo"
+      }
+    },
+    "shortcuts": {
+      "title": "Atalhos de teclado",
+      "startReview": {
+        "title": "Iniciar revisão",
+        "desc": "Iniciar rapidamente uma sessão de revisão"
+      },
+      "translation": {
+        "title": "Tradução por seleção",
+        "desc": "Traduzir automaticamente o texto selecionado"
+      },
+      "addWord": {
+        "title": "Adicionar palavra rapidamente",
+        "desc": "Adicionar manualmente uma nova palavra ao vocabulário"
+      },
+      "openApp": {
+        "title": "Abrir janela principal",
+        "desc": "Exibir a janela principal"
+      }
+    },
+    "about": {
+      "title": "Sobre",
+      "version": "Versão {{version}}",
+      "tagline": "Tradução por seleção · Memória de Ebbinghaus · Revisão espaçada",
+      "checkUpdate": "Verificar atualizações",
+      "feedback": "Enviar feedback",
+      "helpDoc": "Documentação de ajuda",
+      "license": "Licença de código aberto",
+      "footer": "Made with ❤️ by Bugoo Team"
+    }
+  }
+}

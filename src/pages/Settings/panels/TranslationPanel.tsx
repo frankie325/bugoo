@@ -1,15 +1,17 @@
 import { useSettingsStore } from "../../../stores/settingsStore";
 import { Card, Select, ListBox, Input, Separator, Label } from "@heroui/react";
 import { SettingItem } from "../components/SettingItem";
+import { useTranslation } from "react-i18next";
 
-const engineOptions = [
-  { label: "DeepL", value: "deepl" },
-  { label: "Google", value: "google" },
-  { label: "OpenAI", value: "openai" },
-  { label: "自定义", value: "custom" },
+const engineOptionKeys = [
+  { i18nKey: "engineDeepL", value: "deepl" },
+  { i18nKey: "engineGoogle", value: "google" },
+  { i18nKey: "engineOpenAI", value: "openai" },
+  { i18nKey: "engineCustom", value: "custom" },
 ];
 
 export function TranslationPanel() {
+  const { t } = useTranslation();
   const settings = useSettingsStore((state) => state.settings);
   const updateSetting = useSettingsStore((state) => state.updateSetting);
 
@@ -20,11 +22,11 @@ export function TranslationPanel() {
   return (
     <Card>
       <Card.Header>
-        <Card.Title>翻译设置</Card.Title>
+        <Card.Title>{t("settings.translation.title")}</Card.Title>
       </Card.Header>
       <Card.Content>
         {/* 翻译引擎 */}
-        <SettingItem title="翻译引擎" description="选择默认翻译服务">
+        <SettingItem title={t("settings.translation.engine.title")} description={t("settings.translation.engine.desc")}>
           <Select
             className="w-40"
             value={translationEngine}
@@ -32,20 +34,20 @@ export function TranslationPanel() {
               value && updateSetting("translationEngine", String(value))
             }
           >
-            <Label>翻译引擎</Label>
+            <Label>{t("settings.translation.engineLabel")}</Label>
             <Select.Trigger>
               <Select.Value />
               <Select.Indicator />
             </Select.Trigger>
             <Select.Popover>
               <ListBox>
-                {engineOptions.map((opt) => (
+                {engineOptionKeys.map((opt) => (
                   <ListBox.Item
                     key={opt.value}
                     id={opt.value}
-                    textValue={opt.label}
+                    textValue={t(`settings.translation.${opt.i18nKey}`)}
                   >
-                    {opt.label}
+                    {t(`settings.translation.${opt.i18nKey}`)}
                     <ListBox.ItemIndicator />
                   </ListBox.Item>
                 ))}
@@ -57,11 +59,11 @@ export function TranslationPanel() {
         <Separator />
 
         {/* API地址 */}
-        <SettingItem title="API地址" description="翻译服务的接口地址">
+        <SettingItem title={t("settings.translation.endpoint.title")} description={t("settings.translation.endpoint.desc")}>
           <Input
             value={apiEndpoint}
             onChange={(e) => updateSetting("apiEndpoint", e.target.value)}
-            placeholder="https://api.example.com"
+            placeholder={t("settings.translation.endpointPlaceholder")}
             className="w-64"
           />
         </SettingItem>
@@ -69,11 +71,11 @@ export function TranslationPanel() {
         <Separator />
 
         {/* API秘钥 */}
-        <SettingItem title="API秘钥" description="翻译服务的认证密钥">
+        <SettingItem title={t("settings.translation.apiKey.title")} description={t("settings.translation.apiKey.desc")}>
           <Input
             value={apiKey}
             onChange={(e) => updateSetting("apiKey", e.target.value)}
-            placeholder="sk-xxx"
+            placeholder={t("settings.translation.apiKeyPlaceholder")}
             type="password"
             className="w-64"
           />

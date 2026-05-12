@@ -1,4 +1,5 @@
 import { Button, ButtonGroup } from '@heroui/react';
+import { useTranslation } from 'react-i18next';
 
 type ViewMode = 'grid' | 'list';
 
@@ -8,6 +9,7 @@ interface ViewToggleProps {
 }
 
 export function ViewToggle({ mode, onModeChange }: ViewToggleProps) {
+  const { t } = useTranslation();
   return (
     <ButtonGroup>
       <Button
@@ -15,14 +17,14 @@ export function ViewToggle({ mode, onModeChange }: ViewToggleProps) {
         variant={mode === 'grid' ? 'primary' : 'ghost'}
         onPress={() => onModeChange('grid')}
       >
-        Grid
+        {t("home.viewGrid")}
       </Button>
       <Button
         size="sm"
         variant={mode === 'list' ? 'primary' : 'ghost'}
         onPress={() => onModeChange('list')}
       >
-        List
+        {t("home.viewList")}
       </Button>
     </ButtonGroup>
   );

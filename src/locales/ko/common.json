@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "Bugoo",
+    "tagline": "단어 번역과 기억 복습",
+    "loading": "로딩 중...",
+    "emptyState": "단어가 없습니다",
+    "emptyAction": "추가하기"
+  },
+  "home": {
+    "searchPlaceholder": "단어 검색...",
+    "viewGrid": "그리드",
+    "viewList": "목록",
+    "tagsLabel": "태그",
+    "status": {
+      "all": "전체",
+      "dueToday": "오늘 복습할 단어",
+      "learning": "학습 중",
+      "mastered": "기억됨",
+      "newWord": "새로 추가",
+      "label": "학습",
+      "ariaLabel": "상태 필터"
+    },
+    "banner": {
+      "progress": "🔥 오늘 학습 진행률 {{dueCount}} / {{totalCount}}",
+      "startReview": "복습 시작 +5 XP"
+    },
+    "detail": {
+      "title": "단어 상세",
+      "close": "닫기",
+      "memoryProgress": "기억 진행률",
+      "memoryStrength": "기억 강도",
+      "interval": "간격",
+      "reviewCount": "복습 횟수",
+      "remember": "😄 기억해요",
+      "fuzzy": "🤔 조금 헷갈려요",
+      "forgot": "😵 전혀 모르겠어요",
+      "days": "{{days}}일"
+    }
+  },
+  "settings": {
+    "tabs": {
+      "general": "일반",
+      "translation": "번역",
+      "learning": "학습",
+      "notification": "알림",
+      "appearance": "외관",
+      "shortcuts": "단축키",
+      "about": "정보"
+    },
+    "ariaLabel": "설정 탐색",
+    "listAriaLabel": "설정 분류",
+    "general": {
+      "title": "일반 설정",
+      "themeColor": {
+        "title": "테마 색상",
+        "desc": "앱의 강조 색상을 선택"
+      },
+      "startup": {
+        "title": "시작 시 열기",
+        "desc": "앱 시작 시 메인 창을 자동으로 엽니다"
+      },
+      "autoUpdate": {
+        "title": "자동 업데이트",
+        "desc": "업데이트를 확인하고 자동으로 설치합니다"
+      },
+      "closeBehavior": {
+        "title": "닫기 동작",
+        "desc": "메인 창을 닫을 때의 동작"
+      },
+      "minimize": "트레이로 최소화",
+      "quit": "앱 종료",
+      "language": {
+        "title": "인터페이스 언어",
+        "desc": "앱 인터페이스 언어를 선택"
+      },
+      "color": {
+        "green": "초록",
+        "blue": "파랑",
+        "purple": "보라"
+      }
+    },
+    "translation": {
+      "title": "번역 설정",
+      "engine": {
+        "title": "번역 엔진",
+        "desc": "기본 번역 서비스를 선택"
+      },
+      "engineLabel": "번역 엔진",
+      "engineDeepL": "DeepL",
+      "engineGoogle": "Google",
+      "engineOpenAI": "OpenAI",
+      "engineCustom": "사용자 정의",
+      "endpoint": {
+        "title": "API 주소",
+        "desc": "번역 서비스의 API 엔드포인트"
+      },
+      "endpointPlaceholder": "https://api.example.com",
+      "apiKey": {
+        "title": "API 키",
+        "desc": "번역 서비스의 인증 키"
+      },
+      "apiKeyPlaceholder": "sk-xxx"
+    },
+    "review": {
+      "title": "복습 설정",
+      "dailyLimit": {
+        "title": "일일 복습 상한",
+        "desc": "하루 최대 복습할 단어 수"
+      },
+      "reviewPace": {
+        "title": "복습 속도",
+        "desc": "숙련도에 따라 복습 빈도를 조정"
+      },
+      "hintStrategy": {
+        "title": "힌트 전략",
+        "desc": "기억할 때 힌트 제공 방식"
+      },
+      "selection": {
+        "title": "선택 영역 설정"
+      },
+      "selectionEnable": {
+        "title": "선택 번역 사용",
+        "desc": "텍스트 선택 시 번역 팝업 자동 표시"
+      },
+      "autoSpeak": {
+        "title": "자동 발음",
+        "desc": "번역 표시 후 단어를 자동으로 읽어줍니다"
+      },
+      "autoClose": {
+        "title": "자동 닫기",
+        "desc": "포커스를 잃으면 팝업을 자동으로 닫습니다"
+      },
+      "pace": {
+        "relaxed": "여유",
+        "normal": "표준",
+        "intense": "강화"
+      },
+      "hint": {
+        "progressive": "점진적 힌트",
+        "immediate": "답변 바로 표시"
+      },
+      "custom": "사용자 정의"
+    },
+    "notification": {
+      "title": "알림 설정",
+      "reminderTime": {
+        "title": "알림 시간",
+        "desc": "일일 알림 시간대 설정"
+      },
+      "timeDash": "—",
+      "types": {
+        "title": "알림 유형",
+        "desc": "수신할 알림 유형을 선택"
+      },
+      "dailyReview": "매일 복습 알림",
+      "forgetting": "망각 임박 알림",
+      "streak": "연속 학습 알림",
+      "achievement": "성과 알림"
+    },
+    "appearance": {
+      "title": "외관 및 개인화",
+      "theme": {
+        "title": "테마",
+        "desc": "색상 구성표를 선택"
+      },
+      "themeAriaLabel": "테마",
+      "themeLight": "라이트",
+      "themeDark": "다크",
+      "themeSystem": "시스템 설정 따르기",
+      "themeColor": {
+        "title": "테마 색상",
+        "desc": "앱의 강조 색상을 선택"
+      },
+      "cardStyle": {
+        "title": "카드 스타일",
+        "desc": "단어 카드의 표시 스타일"
+      },
+      "fontSize": {
+        "title": "글꼴 크기",
+        "desc": "앱 글꼴 크기를 선택"
+      },
+      "fontSizeAriaLabel": "글꼴 크기",
+      "styleSimple": "간결",
+      "styleRich": "풍부",
+      "fontSmall": "작게",
+      "fontMedium": "중간",
+      "fontLarge": "크게",
+      "color": {
+        "green": "초록",
+        "blue": "파랑",
+        "purple": "보라"
+      }
+    },
+    "shortcuts": {
+      "title": "단축키",
+      "startReview": {
+        "title": "복습 시작",
+        "desc": "복습 세션을 빠르게 시작"
+      },
+      "translation": {
+        "title": "선택 번역",
+        "desc": "텍스트 선택 후 자동 번역"
+      },
+      "addWord": {
+        "title": "빠른 단어 추가",
+        "desc": "수동으로 단어장에 단어 추가"
+      },
+      "openApp": {
+        "title": "메인 화면 열기",
+        "desc": "메인 창 표시"
+      }
+    },
+    "about": {
+      "title": "정보",
+      "version": "버전 {{version}}",
+      "tagline": "선택 번역 · 에빙하우스 기억 · 간격 복습",
+      "checkUpdate": "업데이트 확인",
+      "feedback": "의견 보내기",
+      "helpDoc": "도움말 문서",
+      "license": "오픈소스 라이선스",
+      "footer": "Made with ❤️ by Bugoo Team"
+    }
+  }
+}

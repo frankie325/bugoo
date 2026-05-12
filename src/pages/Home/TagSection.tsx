@@ -1,4 +1,5 @@
 import { Chip } from '@heroui/react';
+import { useTranslation } from 'react-i18next';
 
 interface TagSectionProps {
   tags: string[];
@@ -7,9 +8,10 @@ interface TagSectionProps {
 }
 
 export function TagSection({ tags, selectedTag, onTagSelect }: TagSectionProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-sm font-medium text-gray-500">标签</span>
+      <span className="text-sm font-medium text-gray-500">{t("home.tagsLabel")}</span>
       <div className="flex flex-wrap gap-1">
         {tags.map((tag) => (
           <Chip

@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "布穀鳥",
+    "tagline": "劃詞翻譯與記憶複習",
+    "loading": "載入中...",
+    "emptyState": "暫無單字",
+    "emptyAction": "去新增"
+  },
+  "home": {
+    "searchPlaceholder": "搜尋單字...",
+    "viewGrid": "網格",
+    "viewList": "列表",
+    "tagsLabel": "標籤",
+    "status": {
+      "all": "全部",
+      "dueToday": "今天待複習",
+      "learning": "複習中",
+      "mastered": "已記住",
+      "newWord": "新新增",
+      "label": "學習",
+      "ariaLabel": "狀態篩選"
+    },
+    "banner": {
+      "progress": "🔥 今日學習進度 {{dueCount}} / {{totalCount}}",
+      "startReview": "開始複習 +5 XP"
+    },
+    "detail": {
+      "title": "單字詳情",
+      "close": "關閉",
+      "memoryProgress": "記憶進度",
+      "memoryStrength": "記憶強度",
+      "interval": "間隔",
+      "reviewCount": "複習次數",
+      "remember": "😄 我記住了",
+      "fuzzy": "🤔 有點模糊",
+      "forgot": "😵 完全不會",
+      "days": "{{days}}天"
+    }
+  },
+  "settings": {
+    "tabs": {
+      "general": "一般",
+      "translation": "翻譯",
+      "learning": "學習",
+      "notification": "通知",
+      "appearance": "外觀",
+      "shortcuts": "快捷鍵",
+      "about": "關於"
+    },
+    "ariaLabel": "設定導航",
+    "listAriaLabel": "設定分類",
+    "general": {
+      "title": "一般設定",
+      "themeColor": {
+        "title": "主題顏色",
+        "desc": "選擇應用程式主色調"
+      },
+      "startup": {
+        "title": "啟動時開啟",
+        "desc": "應用程式啟動時自動開啟主視窗"
+      },
+      "autoUpdate": {
+        "title": "自動更新",
+        "desc": "檢查並自動安裝更新"
+      },
+      "closeBehavior": {
+        "title": "關閉行為",
+        "desc": "關閉主視窗時的操作"
+      },
+      "minimize": "最小化到背景",
+      "quit": "退出應用程式",
+      "language": {
+        "title": "介面語言",
+        "desc": "選擇應用程式介面語言"
+      },
+      "color": {
+        "green": "綠色",
+        "blue": "藍色",
+        "purple": "紫色"
+      }
+    },
+    "translation": {
+      "title": "翻譯設定",
+      "engine": {
+        "title": "翻譯引擎",
+        "desc": "選擇預設翻譯服務"
+      },
+      "engineLabel": "翻譯引擎",
+      "engineDeepL": "DeepL",
+      "engineGoogle": "Google",
+      "engineOpenAI": "OpenAI",
+      "engineCustom": "自訂",
+      "endpoint": {
+        "title": "API 位址",
+        "desc": "翻譯服務的介面位址"
+      },
+      "endpointPlaceholder": "https://api.example.com",
+      "apiKey": {
+        "title": "API 金鑰",
+        "desc": "翻譯服務的驗證金鑰"
+      },
+      "apiKeyPlaceholder": "sk-xxx"
+    },
+    "review": {
+      "title": "複習設定",
+      "dailyLimit": {
+        "title": "每日複習上限",
+        "desc": "每天最多複習的單字數"
+      },
+      "reviewPace": {
+        "title": "複習節奏",
+        "desc": "根據掌握程度調整複習頻率"
+      },
+      "hintStrategy": {
+        "title": "提示策略",
+        "desc": "記憶時的提示方式"
+      },
+      "selection": {
+        "title": "劃詞設定"
+      },
+      "selectionEnable": {
+        "title": "啟用劃詞翻譯",
+        "desc": "選取文字時自動彈出翻譯"
+      },
+      "autoSpeak": {
+        "title": "自動發音",
+        "desc": "顯示翻譯後自動朗讀單字"
+      },
+      "autoClose": {
+        "title": "自動關閉",
+        "desc": "失去焦點時自動關閉彈窗"
+      },
+      "pace": {
+        "relaxed": "輕鬆",
+        "normal": "標準",
+        "intense": "強化"
+      },
+      "hint": {
+        "progressive": "漸進提示",
+        "immediate": "直接顯示答案"
+      },
+      "custom": "自訂"
+    },
+    "notification": {
+      "title": "通知設定",
+      "reminderTime": {
+        "title": "提醒時間",
+        "desc": "設定每日提醒時間區段"
+      },
+      "timeDash": "—",
+      "types": {
+        "title": "通知類型",
+        "desc": "選擇需要接收的通知類型"
+      },
+      "dailyReview": "每日複習提醒",
+      "forgetting": "即將遺忘提醒",
+      "streak": "連續學習提醒",
+      "achievement": "成就通知"
+    },
+    "appearance": {
+      "title": "外觀與個人化",
+      "theme": {
+        "title": "主題",
+        "desc": "選擇應用程式配色方案"
+      },
+      "themeAriaLabel": "主題",
+      "themeLight": "淺色",
+      "themeDark": "深色",
+      "themeSystem": "跟隨系統",
+      "themeColor": {
+        "title": "主題顏色",
+        "desc": "選擇應用程式主色調"
+      },
+      "cardStyle": {
+        "title": "卡片風格",
+        "desc": "單字卡片的顯示風格"
+      },
+      "fontSize": {
+        "title": "字型大小",
+        "desc": "選擇應用程式字型大小"
+      },
+      "fontSizeAriaLabel": "字型大小",
+      "styleSimple": "簡潔",
+      "styleRich": "豐富",
+      "fontSmall": "小",
+      "fontMedium": "中",
+      "fontLarge": "大",
+      "color": {
+        "green": "綠色",
+        "blue": "藍色",
+        "purple": "紫色"
+      }
+    },
+    "shortcuts": {
+      "title": "快捷鍵",
+      "startReview": {
+        "title": "開始複習",
+        "desc": "快速開始一輪複習"
+      },
+      "translation": {
+        "title": "劃詞翻譯",
+        "desc": "選取文字後自動翻譯"
+      },
+      "addWord": {
+        "title": "快速新增單字",
+        "desc": "手動新增生字到詞庫"
+      },
+      "openApp": {
+        "title": "開啟主介面",
+        "desc": "顯示主視窗"
+      }
+    },
+    "about": {
+      "title": "關於",
+      "version": "版本 {{version}}",
+      "tagline": "劃詞翻譯 · 艾賓豪斯記憶 · 間隔複習",
+      "checkUpdate": "檢查更新",
+      "feedback": "意見回饋",
+      "helpDoc": "說明文件",
+      "license": "開放原始碼授權",
+      "footer": "Made with ❤️ by Bugoo Team"
+    }
+  }
+}

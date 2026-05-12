@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "Bugoo",
+    "tagline": "शब्द अनुवाद और अंतराल दोहराव",
+    "loading": "लोड हो रहा है...",
+    "emptyState": "कोई शब्द नहीं",
+    "emptyAction": "जोड़ें"
+  },
+  "home": {
+    "searchPlaceholder": "शब्द खोजें...",
+    "viewGrid": "ग्रिड",
+    "viewList": "सूची",
+    "tagsLabel": "टैग",
+    "status": {
+      "all": "सभी",
+      "dueToday": "आज की समीक्षा",
+      "learning": "सीख रहे हैं",
+      "mastered": "याद हो गया",
+      "newWord": "नया",
+      "label": "सीखना",
+      "ariaLabel": "स्थिति फ़िल्टर"
+    },
+    "banner": {
+      "progress": "🔥 आज की प्रगति {{dueCount}} / {{totalCount}}",
+      "startReview": "समीक्षा शुरू करें +5 XP"
+    },
+    "detail": {
+      "title": "शब्द विवरण",
+      "close": "बंद करें",
+      "memoryProgress": "याद रखने की प्रगति",
+      "memoryStrength": "याददाश्त की ताकत",
+      "interval": "अंतराल",
+      "reviewCount": "समीक्षा संख्या",
+      "remember": "😄 याद है",
+      "fuzzy": "🤔 थोड़ा धुंधला",
+      "forgot": "😵 भूल गया",
+      "days": "{{days}} दिन"
+    }
+  },
+  "settings": {
+    "tabs": {
+      "general": "सामान्य",
+      "translation": "अनुवाद",
+      "learning": "सीखना",
+      "notification": "सूचना",
+      "appearance": "रूप-रंग",
+      "shortcuts": "शॉर्टकट",
+      "about": "बारे में"
+    },
+    "ariaLabel": "सेटिंग नेविगेशन",
+    "listAriaLabel": "सेटिंग श्रेणियाँ",
+    "general": {
+      "title": "सामान्य सेटिंग",
+      "themeColor": {
+        "title": "थीम रंग",
+        "desc": "एप्लिकेशन का मुख्य रंग चुनें"
+      },
+      "startup": {
+        "title": "स्टार्टअप पर खोलें",
+        "desc": "एप्लिकेशन शुरू होने पर मुख्य विंडो स्वचालित रूप से खोलें"
+      },
+      "autoUpdate": {
+        "title": "स्वचालित अपडेट",
+        "desc": "अपडेट जांचें और स्वचालित रूप से इंस्टॉल करें"
+      },
+      "closeBehavior": {
+        "title": "बंद करने का व्यवहार",
+        "desc": "मुख्य विंडो बंद करने पर कार्रवाई"
+      },
+      "minimize": "बैकग्राउंड में छोटा करें",
+      "quit": "एप्लिकेशन से बाहर निकलें",
+      "language": {
+        "title": "इंटरफ़ेस भाषा",
+        "desc": "एप्लिकेशन इंटरफ़ेस भाषा चुनें"
+      },
+      "color": {
+        "green": "हरा",
+        "blue": "नीला",
+        "purple": "बैंगनी"
+      }
+    },
+    "translation": {
+      "title": "अनुवाद सेटिंग",
+      "engine": {
+        "title": "अनुवाद इंजन",
+        "desc": "डिफ़ॉल्ट अनुवाद सेवा चुनें"
+      },
+      "engineLabel": "अनुवाद इंजन",
+      "engineDeepL": "DeepL",
+      "engineGoogle": "Google",
+      "engineOpenAI": "OpenAI",
+      "engineCustom": "कस्टम",
+      "endpoint": {
+        "title": "API पता",
+        "desc": "अनुवाद सेवा का इंटरफ़ेस पता"
+      },
+      "endpointPlaceholder": "https://api.example.com",
+      "apiKey": {
+        "title": "API कुंजी",
+        "desc": "अनुवाद सेवा की प्रमाणीकरण कुंजी"
+      },
+      "apiKeyPlaceholder": "sk-xxx"
+    },
+    "review": {
+      "title": "समीक्षा सेटिंग",
+      "dailyLimit": {
+        "title": "दैनिक समीक्षा सीमा",
+        "desc": "प्रतिदिन समीक्षा करने योग्य अधिकतम शब्द"
+      },
+      "reviewPace": {
+        "title": "समीक्षा गति",
+        "desc": "दक्षता स्तर के अनुसार समीक्षा आवृत्ति समायोजित करें"
+      },
+      "hintStrategy": {
+        "title": "संकेत रणनीति",
+        "desc": "याद करते समय संकेत देने का तरीका"
+      },
+      "selection": {
+        "title": "चयन सेटिंग"
+      },
+      "selectionEnable": {
+        "title": "चयन अनुवाद सक्षम करें",
+        "desc": "टेक्स्ट चुनने पर स्वचालित रूप से अनुवाद दिखाएँ"
+      },
+      "autoSpeak": {
+        "title": "स्वचालित उच्चारण",
+        "desc": "अनुवाद दिखाने के बाद स्वचालित रूप से शब्द पढ़ें"
+      },
+      "autoClose": {
+        "title": "स्वचालित बंद",
+        "desc": "फ़ोकस खोने पर पॉपअप स्वचालित रूप से बंद करें"
+      },
+      "pace": {
+        "relaxed": "आरामदेह",
+        "normal": "मानक",
+        "intense": "गहन"
+      },
+      "hint": {
+        "progressive": "क्रमिक संकेत",
+        "immediate": "सीधे उत्तर दिखाएँ"
+      },
+      "custom": "कस्टम"
+    },
+    "notification": {
+      "title": "सूचना सेटिंग",
+      "reminderTime": {
+        "title": "याद दिलाने का समय",
+        "desc": "दैनिक याद दिलाने की अवधि निर्धारित करें"
+      },
+      "timeDash": "—",
+      "types": {
+        "title": "सूचना प्रकार",
+        "desc": "प्राप्त करने के लिए सूचना प्रकार चुनें"
+      },
+      "dailyReview": "दैनिक समीक्षा अनुस्मारक",
+      "forgetting": "भूलने का अनुस्मारक",
+      "streak": "लगातार सीखने का अनुस्मारक",
+      "achievement": "उपलब्धि सूचना"
+    },
+    "appearance": {
+      "title": "रूप-रंग और वैयक्तिकरण",
+      "theme": {
+        "title": "थीम",
+        "desc": "एप्लिकेशन के लिए रंग योजना चुनें"
+      },
+      "themeAriaLabel": "थीम",
+      "themeLight": "हल्का",
+      "themeDark": "गहरा",
+      "themeSystem": "सिस्टम के अनुसार",
+      "themeColor": {
+        "title": "थीम रंग",
+        "desc": "एप्लिकेशन का मुख्य रंग चुनें"
+      },
+      "cardStyle": {
+        "title": "कार्ड शैली",
+        "desc": "शब्द कार्ड का प्रदर्शन शैली"
+      },
+      "fontSize": {
+        "title": "फ़ॉन्ट आकार",
+        "desc": "एप्लिकेशन का फ़ॉन्ट आकार चुनें"
+      },
+      "fontSizeAriaLabel": "फ़ॉन्ट आकार",
+      "styleSimple": "सरल",
+      "styleRich": "समृद्ध",
+      "fontSmall": "छोटा",
+      "fontMedium": "मध्यम",
+      "fontLarge": "बड़ा",
+      "color": {
+        "green": "हरा",
+        "blue": "नीला",
+        "purple": "बैंगनी"
+      }
+    },
+    "shortcuts": {
+      "title": "शॉर्टकट",
+      "startReview": {
+        "title": "समीक्षा शुरू करें",
+        "desc": "त्वरित समीक्षा सत्र शुरू करें"
+      },
+      "translation": {
+        "title": "चयन अनुवाद",
+        "desc": "टेक्स्ट चुनने पर स्वचालित अनुवाद"
+      },
+      "addWord": {
+        "title": "त्वरित शब्द जोड़ें",
+        "desc": "शब्दकोश में मैन्युअल रूप से नया शब्द जोड़ें"
+      },
+      "openApp": {
+        "title": "मुख्य इंटरफ़ेस खोलें",
+        "desc": "मुख्य विंडो दिखाएँ"
+      }
+    },
+    "about": {
+      "title": "बारे में",
+      "version": "संस्करण {{version}}",
+      "tagline": "चयन अनुवाद · एबिंगहॉस स्मृति · अंतराल दोहराव",
+      "checkUpdate": "अपडेट जाँचें",
+      "feedback": "प्रतिक्रिया",
+      "helpDoc": "सहायता दस्तावेज़",
+      "license": "खुला स्रोत लाइसेंस",
+      "footer": "Bugoo टीम द्वारा ❤️ से बनाया गया"
+    }
+  }
+}

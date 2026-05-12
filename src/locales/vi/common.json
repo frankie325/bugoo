@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "Bugoo",
+    "tagline": "Dịch từ và ôn tập cách quãng",
+    "loading": "Đang tải...",
+    "emptyState": "Không có từ nào",
+    "emptyAction": "Thêm"
+  },
+  "home": {
+    "searchPlaceholder": "Tìm kiếm từ...",
+    "viewGrid": "Lưới",
+    "viewList": "Danh sách",
+    "tagsLabel": "Thẻ",
+    "status": {
+      "all": "Tất cả",
+      "dueToday": "Cần ôn hôm nay",
+      "learning": "Đang ôn",
+      "mastered": "Đã nhớ",
+      "newWord": "Mới thêm",
+      "label": "Học tập",
+      "ariaLabel": "Lọc trạng thái"
+    },
+    "banner": {
+      "progress": "🔥 Tiến độ hôm nay {{dueCount}} / {{totalCount}}",
+      "startReview": "Bắt đầu ôn tập +5 XP"
+    },
+    "detail": {
+      "title": "Chi tiết từ",
+      "close": "Đóng",
+      "memoryProgress": "Tiến độ ghi nhớ",
+      "memoryStrength": "Độ ghi nhớ",
+      "interval": "Khoảng cách",
+      "reviewCount": "Số lần ôn tập",
+      "remember": "😄 Tôi nhớ",
+      "fuzzy": "🤔 Hơi mơ hồ",
+      "forgot": "😵 Hoàn toàn quên",
+      "days": "{{days}} ngày"
+    }
+  },
+  "settings": {
+    "tabs": {
+      "general": "Chung",
+      "translation": "Dịch thuật",
+      "learning": "Học tập",
+      "notification": "Thông báo",
+      "appearance": "Giao diện",
+      "shortcuts": "Phím tắt",
+      "about": "Giới thiệu"
+    },
+    "ariaLabel": "Điều hướng cài đặt",
+    "listAriaLabel": "Danh mục cài đặt",
+    "general": {
+      "title": "Cài đặt chung",
+      "themeColor": {
+        "title": "Màu chủ đề",
+        "desc": "Chọn màu chính của ứng dụng"
+      },
+      "startup": {
+        "title": "Mở khi khởi động",
+        "desc": "Tự động mở cửa sổ chính khi khởi động ứng dụng"
+      },
+      "autoUpdate": {
+        "title": "Tự động cập nhật",
+        "desc": "Kiểm tra và tự động cài đặt bản cập nhật"
+      },
+      "closeBehavior": {
+        "title": "Hành vi đóng",
+        "desc": "Hành động khi đóng cửa sổ chính"
+      },
+      "minimize": "Thu nhỏ vào nền",
+      "quit": "Thoát ứng dụng",
+      "language": {
+        "title": "Ngôn ngữ giao diện",
+        "desc": "Chọn ngôn ngữ giao diện ứng dụng"
+      },
+      "color": {
+        "green": "Xanh lá",
+        "blue": "Xanh dương",
+        "purple": "Tím"
+      }
+    },
+    "translation": {
+      "title": "Cài đặt dịch thuật",
+      "engine": {
+        "title": "Công cụ dịch",
+        "desc": "Chọn dịch vụ dịch thuật mặc định"
+      },
+      "engineLabel": "Công cụ dịch",
+      "engineDeepL": "DeepL",
+      "engineGoogle": "Google",
+      "engineOpenAI": "OpenAI",
+      "engineCustom": "Tùy chỉnh",
+      "endpoint": {
+        "title": "Địa chỉ API",
+        "desc": "Địa chỉ giao diện của dịch vụ dịch thuật"
+      },
+      "endpointPlaceholder": "https://api.example.com",
+      "apiKey": {
+        "title": "Khóa API",
+        "desc": "Khóa xác thực cho dịch vụ dịch thuật"
+      },
+      "apiKeyPlaceholder": "sk-xxx"
+    },
+    "review": {
+      "title": "Cài đặt ôn tập",
+      "dailyLimit": {
+        "title": "Giới hạn ôn tập hàng ngày",
+        "desc": "Số từ tối đa có thể ôn mỗi ngày"
+      },
+      "reviewPace": {
+        "title": "Nhịp độ ôn tập",
+        "desc": "Điều chỉnh tần suất ôn tập theo mức độ thành thạo"
+      },
+      "hintStrategy": {
+        "title": "Chiến lược gợi ý",
+        "desc": "Cách hiển thị gợi ý khi ghi nhớ"
+      },
+      "selection": {
+        "title": "Cài đặt chọn từ"
+      },
+      "selectionEnable": {
+        "title": "Bật dịch khi chọn",
+        "desc": "Tự động hiển thị bản dịch khi chọn văn bản"
+      },
+      "autoSpeak": {
+        "title": "Tự động phát âm",
+        "desc": "Tự động đọc từ sau khi hiển thị bản dịch"
+      },
+      "autoClose": {
+        "title": "Tự động đóng",
+        "desc": "Tự động đóng cửa sổ khi mất tiêu điểm"
+      },
+      "pace": {
+        "relaxed": "Thoải mái",
+        "normal": "Tiêu chuẩn",
+        "intense": "Tăng cường"
+      },
+      "hint": {
+        "progressive": "Gợi ý dần dần",
+        "immediate": "Hiển thị đáp án ngay"
+      },
+      "custom": "Tùy chỉnh"
+    },
+    "notification": {
+      "title": "Cài đặt thông báo",
+      "reminderTime": {
+        "title": "Thời gian nhắc nhở",
+        "desc": "Đặt khung giờ nhắc nhở hàng ngày"
+      },
+      "timeDash": "—",
+      "types": {
+        "title": "Loại thông báo",
+        "desc": "Chọn loại thông báo bạn muốn nhận"
+      },
+      "dailyReview": "Nhắc nhở ôn tập hàng ngày",
+      "forgetting": "Nhắc nhở sắp quên",
+      "streak": "Nhắc nhở học liên tục",
+      "achievement": "Thông báo thành tích"
+    },
+    "appearance": {
+      "title": "Giao diện và cá nhân hóa",
+      "theme": {
+        "title": "Chủ đề",
+        "desc": "Chọn bảng màu cho ứng dụng"
+      },
+      "themeAriaLabel": "Chủ đề",
+      "themeLight": "Sáng",
+      "themeDark": "Tối",
+      "themeSystem": "Theo hệ thống",
+      "themeColor": {
+        "title": "Màu chủ đề",
+        "desc": "Chọn màu chính của ứng dụng"
+      },
+      "cardStyle": {
+        "title": "Kiểu thẻ",
+        "desc": "Kiểu hiển thị của thẻ từ vựng"
+      },
+      "fontSize": {
+        "title": "Cỡ chữ",
+        "desc": "Chọn cỡ chữ cho ứng dụng"
+      },
+      "fontSizeAriaLabel": "Cỡ chữ",
+      "styleSimple": "Đơn giản",
+      "styleRich": "Phong phú",
+      "fontSmall": "Nhỏ",
+      "fontMedium": "Vừa",
+      "fontLarge": "Lớn",
+      "color": {
+        "green": "Xanh lá",
+        "blue": "Xanh dương",
+        "purple": "Tím"
+      }
+    },
+    "shortcuts": {
+      "title": "Phím tắt",
+      "startReview": {
+        "title": "Bắt đầu ôn tập",
+        "desc": "Bắt đầu một phiên ôn tập nhanh"
+      },
+      "translation": {
+        "title": "Dịch khi chọn",
+        "desc": "Tự động dịch khi chọn văn bản"
+      },
+      "addWord": {
+        "title": "Thêm từ nhanh",
+        "desc": "Thêm từ mới vào từ điển thủ công"
+      },
+      "openApp": {
+        "title": "Mở giao diện chính",
+        "desc": "Hiển thị cửa sổ chính"
+      }
+    },
+    "about": {
+      "title": "Giới thiệu",
+      "version": "Phiên bản {{version}}",
+      "tagline": "Dịch khi chọn · Trí nhớ Ebbinghaus · Ôn tập cách quãng",
+      "checkUpdate": "Kiểm tra cập nhật",
+      "feedback": "Phản hồi",
+      "helpDoc": "Tài liệu trợ giúp",
+      "license": "Giấy phép mã nguồn mở",
+      "footer": "Được tạo với ❤️ bởi nhóm Bugoo"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { Button } from '@heroui/react';
+import { useTranslation } from 'react-i18next';
 import type { Word } from '../../lib/api';
 
 interface DetailPanelProps {
@@ -7,12 +8,13 @@ interface DetailPanelProps {
 }
 
 export function DetailPanel({ word, onClose }: DetailPanelProps) {
+  const { t } = useTranslation();
   return (
     <aside className="w-80 border-l border-divider bg-background p-4 flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium">单词详情</h2>
+        <h2 className="text-lg font-medium">{t("home.detail.title")}</h2>
         <Button size="sm" variant="ghost" onPress={onClose}>
-          关闭
+          {t("home.detail.close")}
         </Button>
       </div>
 
@@ -38,30 +40,30 @@ export function DetailPanel({ word, onClose }: DetailPanelProps) {
       )}
 
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium">记忆进度</span>
+        <span className="text-sm font-medium">{t("home.detail.memoryProgress")}</span>
         <div className="flex justify-between text-sm">
-          <span>记忆强度</span>
+          <span>{t("home.detail.memoryStrength")}</span>
           <span>{Math.round(word.ease_factor * 100)}%</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span>间隔</span>
-          <span>{word.interval}天</span>
+          <span>{t("home.detail.interval")}</span>
+          <span>{t("home.detail.days", { days: word.interval })}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span>复习次数</span>
+          <span>{t("home.detail.reviewCount")}</span>
           <span>{word.repetitions}</span>
         </div>
       </div>
 
       <div className="mt-auto flex flex-col gap-2">
         <Button variant="ghost" className="text-success">
-          😄 我记住了
+          {t("home.detail.remember")}
         </Button>
         <Button variant="ghost" className="text-warning">
-          🤔 有点模糊
+          {t("home.detail.fuzzy")}
         </Button>
         <Button variant="ghost" className="text-danger">
-          😵 完全不会
+          {t("home.detail.forgot")}
         </Button>
       </div>
     </aside>

@@ -9,25 +9,27 @@ import {
   parseColor,
 } from "@heroui/react";
 import { SettingItem } from "../components/SettingItem";
+import { useTranslation } from "react-i18next";
 
-const themeColors = [
-  { label: "绿色", color: "#10b981" },
-  { label: "蓝色", color: "#3b82f6" },
-  { label: "紫色", color: "#8b5cf6" },
+const themeColorKeys = [
+  { colorKey: "green", color: "#10b981" },
+  { colorKey: "blue", color: "#3b82f6" },
+  { colorKey: "purple", color: "#8b5cf6" },
 ];
 
-const cardStyleOptions = [
-  { label: "简洁", value: "simple" },
-  { label: "丰富", value: "rich" },
+const cardStyleKeys = [
+  { i18nKey: "styleSimple", value: "simple" },
+  { i18nKey: "styleRich", value: "rich" },
 ];
 
-const fontSizeOptions = [
-  { label: "小", value: "small" },
-  { label: "中", value: "medium" },
-  { label: "大", value: "large" },
+const fontSizeKeys = [
+  { i18nKey: "fontSmall", value: "small" },
+  { i18nKey: "fontMedium", value: "medium" },
+  { i18nKey: "fontLarge", value: "large" },
 ];
 
 export function AppearancePanel() {
+  const { t } = useTranslation();
   const settings = useSettingsStore((state) => state.settings);
   const updateSetting = useSettingsStore((state) => state.updateSetting);
 
@@ -41,27 +43,27 @@ export function AppearancePanel() {
   return (
     <Card>
       <Card.Header>
-        <Card.Title>外观与个性化</Card.Title>
+        <Card.Title>{t("settings.appearance.title")}</Card.Title>
       </Card.Header>
       <Card.Content>
         {/* 主题 */}
-        <SettingItem title="主题" description="选择应用配色方案">
+        <SettingItem title={t("settings.appearance.theme.title")} description={t("settings.appearance.theme.desc")}>
           <Tabs
             selectedKey={theme}
             onSelectionChange={(key) => updateSetting("theme", key as string)}
           >
             <Tabs.ListContainer>
-              <Tabs.List aria-label="主题">
+              <Tabs.List aria-label={t("settings.appearance.themeAriaLabel")}>
                 <Tabs.Tab id="light">
-                  浅色
+                  {t("settings.appearance.themeLight")}
                   <Tabs.Indicator />
                 </Tabs.Tab>
                 <Tabs.Tab id="dark">
-                  深色
+                  {t("settings.appearance.themeDark")}
                   <Tabs.Indicator />
                 </Tabs.Tab>
                 <Tabs.Tab id="system">
-                  跟随系统
+                  {t("settings.appearance.themeSystem")}
                   <Tabs.Indicator />
                 </Tabs.Tab>
               </Tabs.List>
@@ -72,15 +74,15 @@ export function AppearancePanel() {
         <Separator />
 
         {/* 主题颜色 */}
-        <SettingItem title="主题颜色" description="选择应用主色调">
+        <SettingItem title={t("settings.appearance.themeColor.title")} description={t("settings.appearance.themeColor.desc")}>
           <ColorSwatchPicker
             value={colorValue}
             onChange={(color) =>
               updateSetting("themeColor", color.toString("hex"))
             }
           >
-            {themeColors.map((c) => (
-              <ColorSwatchPicker.Item key={c.label} color={c.color}>
+            {themeColorKeys.map((c) => (
+              <ColorSwatchPicker.Item key={c.colorKey} color={c.color}>
                 <ColorSwatchPicker.Swatch color={c.color} />
                 <ColorSwatchPicker.Indicator />
               </ColorSwatchPicker.Item>
@@ -91,18 +93,18 @@ export function AppearancePanel() {
         <Separator />
 
         {/* 卡片风格 */}
-        <SettingItem title="卡片风格" description="单词卡片的显示风格">
+        <SettingItem title={t("settings.appearance.cardStyle.title")} description={t("settings.appearance.cardStyle.desc")}>
           <RadioGroup
             className="flex flex-row gap-4"
             value={cardStyle}
             onChange={(val) => updateSetting("cardStyle", val)}
           >
-            {cardStyleOptions.map((opt) => (
+            {cardStyleKeys.map((opt) => (
               <Radio key={opt.value} value={opt.value}>
                 <Radio.Control>
                   <Radio.Indicator />
                 </Radio.Control>
-                {opt.label}
+                {t(`settings.appearance.${opt.i18nKey}`)}
               </Radio>
             ))}
           </RadioGroup>
@@ -111,7 +113,7 @@ export function AppearancePanel() {
         <Separator />
 
         {/* 字体大小 */}
-        <SettingItem title="字体大小" description="选择应用字体大小">
+        <SettingItem title={t("settings.appearance.fontSize.title")} description={t("settings.appearance.fontSize.desc")}>
           <Tabs
             selectedKey={fontSize}
             onSelectionChange={(key) =>
@@ -119,10 +121,10 @@ export function AppearancePanel() {
             }
           >
             <Tabs.ListContainer>
-              <Tabs.List aria-label="字体大小">
-                {fontSizeOptions.map((opt) => (
+              <Tabs.List aria-label={t("settings.appearance.fontSizeAriaLabel")}>
+                {fontSizeKeys.map((opt) => (
                   <Tabs.Tab key={opt.value} id={opt.value}>
-                    {opt.label}
+                    {t(`settings.appearance.${opt.i18nKey}`)}
                     <Tabs.Indicator />
                   </Tabs.Tab>
                 ))}

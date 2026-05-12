@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "Bugoo",
+    "tagline": "Wortübersetzung und verteiltes Wiederholen",
+    "loading": "Wird geladen...",
+    "emptyState": "Keine Wörter",
+    "emptyAction": "Hinzufügen"
+  },
+  "home": {
+    "searchPlaceholder": "Wörter suchen...",
+    "viewGrid": "Raster",
+    "viewList": "Liste",
+    "tagsLabel": "Tags",
+    "status": {
+      "all": "Alle",
+      "dueToday": "Heute fällig",
+      "learning": "Lernend",
+      "mastered": "Gelernt",
+      "newWord": "Neu",
+      "label": "Status",
+      "ariaLabel": "Statusfilter"
+    },
+    "banner": {
+      "progress": "🔥 Heutiger Fortschritt {{dueCount}} / {{totalCount}}",
+      "startReview": "Wiederholung starten +5 XP"
+    },
+    "detail": {
+      "title": "Wortdetails",
+      "close": "Schließen",
+      "memoryProgress": "Erinnerungsfortschritt",
+      "memoryStrength": "Erinnerungsstärke",
+      "interval": "Intervall",
+      "reviewCount": "Wiederholungen",
+      "remember": "😄 Ich erinnere mich",
+      "fuzzy": "🤔 Etwas unscharf",
+      "forgot": "😵 Vergessen",
+      "days": "{{days}} Tage"
+    }
+  },
+  "settings": {
+    "tabs": {
+      "general": "Allgemein",
+      "translation": "Übersetzung",
+      "learning": "Lernen",
+      "notification": "Benachrichtigungen",
+      "appearance": "Aussehen",
+      "shortcuts": "Tastenkombinationen",
+      "about": "Über"
+    },
+    "ariaLabel": "Einstellungsnavigation",
+    "listAriaLabel": "Einstellungskategorien",
+    "general": {
+      "title": "Allgemeine Einstellungen",
+      "themeColor": {
+        "title": "Designfarbe",
+        "desc": "Primärfarbe der Anwendung auswählen"
+      },
+      "startup": {
+        "title": "Beim Start öffnen",
+        "desc": "Hauptfenster automatisch beim Start öffnen"
+      },
+      "autoUpdate": {
+        "title": "Automatische Aktualisierung",
+        "desc": "Updates automatisch prüfen und installieren"
+      },
+      "closeBehavior": {
+        "title": "Schließverhalten",
+        "desc": "Aktion beim Schließen des Hauptfensters"
+      },
+      "minimize": "In den Hintergrund minimieren",
+      "quit": "Anwendung beenden",
+      "language": {
+        "title": "Oberflächensprache",
+        "desc": "Sprache der Benutzeroberfläche auswählen"
+      },
+      "color": {
+        "green": "Grün",
+        "blue": "Blau",
+        "purple": "Lila"
+      }
+    },
+    "translation": {
+      "title": "Übersetzungseinstellungen",
+      "engine": {
+        "title": "Übersetzungsdienst",
+        "desc": "Standardübersetzungsdienst auswählen"
+      },
+      "engineLabel": "Übersetzungsdienst",
+      "engineDeepL": "DeepL",
+      "engineGoogle": "Google",
+      "engineOpenAI": "OpenAI",
+      "engineCustom": "Benutzerdefiniert",
+      "endpoint": {
+        "title": "API-Adresse",
+        "desc": "Endpunktadresse des Übersetzungsdienstes"
+      },
+      "endpointPlaceholder": "https://api.example.com",
+      "apiKey": {
+        "title": "API-Schlüssel",
+        "desc": "Authentifizierungsschlüssel des Übersetzungsdienstes"
+      },
+      "apiKeyPlaceholder": "sk-xxx"
+    },
+    "review": {
+      "title": "Wiederholungseinstellungen",
+      "dailyLimit": {
+        "title": "Tägliches Wiederholungslimit",
+        "desc": "Maximale Anzahl von Wörtern pro Tag zum Wiederholen"
+      },
+      "reviewPace": {
+        "title": "Wiederholungstempo",
+        "desc": "Wiederholungshäufigkeit basierend auf dem Kenntnisstand anpassen"
+      },
+      "hintStrategy": {
+        "title": "Hinweisstrategie",
+        "desc": "Hinweismethode beim Erinnern"
+      },
+      "selection": {
+        "title": "Auswahl-Einstellungen"
+      },
+      "selectionEnable": {
+        "title": "Übersetzung bei Auswahl aktivieren",
+        "desc": "Automatisch Übersetzung bei Textauswahl anzeigen"
+      },
+      "autoSpeak": {
+        "title": "Automatische Aussprache",
+        "desc": "Wort automatisch vorlesen beim Anzeigen der Übersetzung"
+      },
+      "autoClose": {
+        "title": "Automatisches Schließen",
+        "desc": "Popup beim Fokusverlust schließen"
+      },
+      "pace": {
+        "relaxed": "Entspannt",
+        "normal": "Normal",
+        "intense": "Intensiv"
+      },
+      "hint": {
+        "progressive": "Schrittweiser Hinweis",
+        "immediate": "Antwort direkt anzeigen"
+      },
+      "custom": "Benutzerdefiniert"
+    },
+    "notification": {
+      "title": "Benachrichtigungseinstellungen",
+      "reminderTime": {
+        "title": "Erinnerungszeit",
+        "desc": "Täglichen Erinnerungszeitraum festlegen"
+      },
+      "timeDash": "—",
+      "types": {
+        "title": "Benachrichtigungstyp",
+        "desc": "Zu empfangende Benachrichtigungstypen auswählen"
+      },
+      "dailyReview": "Tägliche Wiederholungserinnerung",
+      "forgetting": "Erinnerung bei drohendem Vergessen",
+      "streak": "Lernserien-Erinnerung",
+      "achievement": "Erfolgsbenachrichtigung"
+    },
+    "appearance": {
+      "title": "Aussehen und Personalisierung",
+      "theme": {
+        "title": "Design",
+        "desc": "Farbschema der Anwendung auswählen"
+      },
+      "themeAriaLabel": "Design",
+      "themeLight": "Hell",
+      "themeDark": "Dunkel",
+      "themeSystem": "Systemeinstellung",
+      "themeColor": {
+        "title": "Designfarbe",
+        "desc": "Primärfarbe der Anwendung auswählen"
+      },
+      "cardStyle": {
+        "title": "Kartenstil",
+        "desc": "Anzeigestil der Wortkarten"
+      },
+      "fontSize": {
+        "title": "Schriftgröße",
+        "desc": "Schriftgröße der Anwendung auswählen"
+      },
+      "fontSizeAriaLabel": "Schriftgröße",
+      "styleSimple": "Einfach",
+      "styleRich": "Ausführlich",
+      "fontSmall": "Klein",
+      "fontMedium": "Mittel",
+      "fontLarge": "Groß",
+      "color": {
+        "green": "Grün",
+        "blue": "Blau",
+        "purple": "Lila"
+      }
+    },
+    "shortcuts": {
+      "title": "Tastenkombinationen",
+      "startReview": {
+        "title": "Wiederholung starten",
+        "desc": "Schnell eine Wiederholungssitzung starten"
+      },
+      "translation": {
+        "title": "Übersetzung bei Auswahl",
+        "desc": "Ausgewählten Text automatisch übersetzen"
+      },
+      "addWord": {
+        "title": "Wort schnell hinzufügen",
+        "desc": "Manuell ein neues Wort zum Wortschatz hinzufügen"
+      },
+      "openApp": {
+        "title": "Hauptfenster öffnen",
+        "desc": "Hauptfenster anzeigen"
+      }
+    },
+    "about": {
+      "title": "Über",
+      "version": "Version {{version}}",
+      "tagline": "Übersetzung bei Auswahl · Ebbinghaus-Gedächtnis · Verteiltes Wiederholen",
+      "checkUpdate": "Auf Updates prüfen",
+      "feedback": "Rückmeldung geben",
+      "helpDoc": "Hilfedokumentation",
+      "license": "Open-Source-Lizenz",
+      "footer": "Made with ❤️ by Bugoo Team"
+    }
+  }
+}

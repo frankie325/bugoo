@@ -1,6 +1,7 @@
 import { useSettingsStore } from "../../../stores/settingsStore";
 import { Card, Kbd, Separator } from "@heroui/react";
 import { SettingItem } from "../components/SettingItem";
+import { useTranslation } from "react-i18next";
 
 function ShortcutDisplay({ shortcut }: { shortcut: string }) {
   const keys = shortcut.split("+");
@@ -14,6 +15,7 @@ function ShortcutDisplay({ shortcut }: { shortcut: string }) {
 }
 
 export function ShortcutsPanel() {
+  const { t } = useTranslation();
   const settings = useSettingsStore((state) => state.settings);
 
   const shortcutStartReview = settings.shortcutStartReview || "Cmd+Enter";
@@ -24,32 +26,32 @@ export function ShortcutsPanel() {
   return (
     <Card>
       <Card.Header>
-        <Card.Title>快捷键</Card.Title>
+        <Card.Title>{t("settings.shortcuts.title")}</Card.Title>
       </Card.Header>
       <Card.Content>
         {/* 开始复习 */}
-        <SettingItem title="开始复习" description="快速开始一轮复习">
+        <SettingItem title={t("settings.shortcuts.startReview.title")} description={t("settings.shortcuts.startReview.desc")}>
           <ShortcutDisplay shortcut={shortcutStartReview} />
         </SettingItem>
 
         <Separator />
 
         {/* 划词翻译 */}
-        <SettingItem title="划词翻译" description="选中文本后自动翻译">
+        <SettingItem title={t("settings.shortcuts.translation.title")} description={t("settings.shortcuts.translation.desc")}>
           <ShortcutDisplay shortcut={shortcutTranslation} />
         </SettingItem>
 
         <Separator />
 
         {/* 快速添加单词 */}
-        <SettingItem title="快速添加单词" description="手动添加生词到词库">
+        <SettingItem title={t("settings.shortcuts.addWord.title")} description={t("settings.shortcuts.addWord.desc")}>
           <ShortcutDisplay shortcut={shortcutNewWord} />
         </SettingItem>
 
         <Separator />
 
         {/* 打开主界面 */}
-        <SettingItem title="打开主界面" description="显示主窗口">
+        <SettingItem title={t("settings.shortcuts.openApp.title")} description={t("settings.shortcuts.openApp.desc")}>
           <ShortcutDisplay shortcut={shortcutOpenApp} />
         </SettingItem>
       </Card.Content>

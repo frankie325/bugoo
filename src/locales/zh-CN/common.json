@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "布谷鸟",
+    "tagline": "划词翻译与记忆复习",
+    "loading": "加载中...",
+    "emptyState": "暂无单词",
+    "emptyAction": "去添加"
+  },
+  "home": {
+    "searchPlaceholder": "搜索单词...",
+    "viewGrid": "网格",
+    "viewList": "列表",
+    "tagsLabel": "标签",
+    "status": {
+      "all": "全部",
+      "dueToday": "今天待复习",
+      "learning": "复习中",
+      "mastered": "已记住",
+      "newWord": "新添加",
+      "label": "学习",
+      "ariaLabel": "状态筛选"
+    },
+    "banner": {
+      "progress": "🔥 今日学习进度 {{dueCount}} / {{totalCount}}",
+      "startReview": "开始复习 +5 XP"
+    },
+    "detail": {
+      "title": "单词详情",
+      "close": "关闭",
+      "memoryProgress": "记忆进度",
+      "memoryStrength": "记忆强度",
+      "interval": "间隔",
+      "reviewCount": "复习次数",
+      "remember": "😄 我记住了",
+      "fuzzy": "🤔 有点模糊",
+      "forgot": "😵 完全不会",
+      "days": "{{days}}天"
+    }
+  },
+  "settings": {
+    "tabs": {
+      "general": "通用",
+      "translation": "翻译",
+      "learning": "学习",
+      "notification": "通知",
+      "appearance": "外观",
+      "shortcuts": "快捷键",
+      "about": "关于"
+    },
+    "ariaLabel": "设置导航",
+    "listAriaLabel": "设置分类",
+    "general": {
+      "title": "通用设置",
+      "themeColor": {
+        "title": "主题颜色",
+        "desc": "选择应用主色调"
+      },
+      "startup": {
+        "title": "启动时打开",
+        "desc": "应用启动时自动打开主窗口"
+      },
+      "autoUpdate": {
+        "title": "自动更新",
+        "desc": "检查并自动安装更新"
+      },
+      "closeBehavior": {
+        "title": "关闭行为",
+        "desc": "关闭主窗口时的操作"
+      },
+      "minimize": "最小化到后台",
+      "quit": "退出应用",
+      "language": {
+        "title": "界面语言",
+        "desc": "选择应用界面语言"
+      },
+      "color": {
+        "green": "绿色",
+        "blue": "蓝色",
+        "purple": "紫色"
+      }
+    },
+    "translation": {
+      "title": "翻译设置",
+      "engine": {
+        "title": "翻译引擎",
+        "desc": "选择默认翻译服务"
+      },
+      "engineLabel": "翻译引擎",
+      "engineDeepL": "DeepL",
+      "engineGoogle": "Google",
+      "engineOpenAI": "OpenAI",
+      "engineCustom": "自定义",
+      "endpoint": {
+        "title": "API地址",
+        "desc": "翻译服务的接口地址"
+      },
+      "endpointPlaceholder": "https://api.example.com",
+      "apiKey": {
+        "title": "API秘钥",
+        "desc": "翻译服务的认证密钥"
+      },
+      "apiKeyPlaceholder": "sk-xxx"
+    },
+    "review": {
+      "title": "复习设置",
+      "dailyLimit": {
+        "title": "每日复习上限",
+        "desc": "每天最多复习的单词数"
+      },
+      "reviewPace": {
+        "title": "复习节奏",
+        "desc": "根据掌握程度调整复习频率"
+      },
+      "hintStrategy": {
+        "title": "提示策略",
+        "desc": "记忆时的提示方式"
+      },
+      "selection": {
+        "title": "划词设置"
+      },
+      "selectionEnable": {
+        "title": "启用划词翻译",
+        "desc": "选中文字时自动弹出翻译"
+      },
+      "autoSpeak": {
+        "title": "自动发音",
+        "desc": "显示翻译后自动朗读单词"
+      },
+      "autoClose": {
+        "title": "自动关闭",
+        "desc": "失去焦点时自动关闭弹窗"
+      },
+      "pace": {
+        "relaxed": "轻松",
+        "normal": "标准",
+        "intense": "强化"
+      },
+      "hint": {
+        "progressive": "渐进提示",
+        "immediate": "直接显示答案"
+      },
+      "custom": "自定义"
+    },
+    "notification": {
+      "title": "通知设置",
+      "reminderTime": {
+        "title": "提醒时间",
+        "desc": "设置每日提醒时间段"
+      },
+      "timeDash": "—",
+      "types": {
+        "title": "通知类型",
+        "desc": "选择需要接收的通知类型"
+      },
+      "dailyReview": "每日复习提醒",
+      "forgetting": "即将遗忘提醒",
+      "streak": "连续学习提醒",
+      "achievement": "成就通知"
+    },
+    "appearance": {
+      "title": "外观与个性化",
+      "theme": {
+        "title": "主题",
+        "desc": "选择应用配色方案"
+      },
+      "themeAriaLabel": "主题",
+      "themeLight": "浅色",
+      "themeDark": "深色",
+      "themeSystem": "跟随系统",
+      "themeColor": {
+        "title": "主题颜色",
+        "desc": "选择应用主色调"
+      },
+      "cardStyle": {
+        "title": "卡片风格",
+        "desc": "单词卡片的显示风格"
+      },
+      "fontSize": {
+        "title": "字体大小",
+        "desc": "选择应用字体大小"
+      },
+      "fontSizeAriaLabel": "字体大小",
+      "styleSimple": "简洁",
+      "styleRich": "丰富",
+      "fontSmall": "小",
+      "fontMedium": "中",
+      "fontLarge": "大",
+      "color": {
+        "green": "绿色",
+        "blue": "蓝色",
+        "purple": "紫色"
+      }
+    },
+    "shortcuts": {
+      "title": "快捷键",
+      "startReview": {
+        "title": "开始复习",
+        "desc": "快速开始一轮复习"
+      },
+      "translation": {
+        "title": "划词翻译",
+        "desc": "选中文本后自动翻译"
+      },
+      "addWord": {
+        "title": "快速添加单词",
+        "desc": "手动添加生词到词库"
+      },
+      "openApp": {
+        "title": "打开主界面",
+        "desc": "显示主窗口"
+      }
+    },
+    "about": {
+      "title": "关于",
+      "version": "版本 {{version}}",
+      "tagline": "划词翻译 · 艾宾浩斯记忆 · 间隔复习",
+      "checkUpdate": "检查更新",
+      "feedback": "意见反馈",
+      "helpDoc": "帮助文档",
+      "license": "开源许可",
+      "footer": "Made with ❤️ by Bugoo Team"
+    }
+  }
+}

@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "Bugoo",
+    "tagline": "Terjemahan kata dan pengulangan berjarak",
+    "loading": "Memuat...",
+    "emptyState": "Tidak ada kata",
+    "emptyAction": "Tambah"
+  },
+  "home": {
+    "searchPlaceholder": "Cari kata...",
+    "viewGrid": "Grid",
+    "viewList": "Daftar",
+    "tagsLabel": "Tag",
+    "status": {
+      "all": "Semua",
+      "dueToday": "Perlu diulang hari ini",
+      "learning": "Sedang dipelajari",
+      "mastered": "Sudah dihafal",
+      "newWord": "Baru",
+      "label": "Belajar",
+      "ariaLabel": "Filter status"
+    },
+    "banner": {
+      "progress": "🔥 Progres hari ini {{dueCount}} / {{totalCount}}",
+      "startReview": "Mulai pengulangan +5 XP"
+    },
+    "detail": {
+      "title": "Detail kata",
+      "close": "Tutup",
+      "memoryProgress": "Progres memori",
+      "memoryStrength": "Kekuatan memori",
+      "interval": "Interval",
+      "reviewCount": "Jumlah pengulangan",
+      "remember": "😄 Saya ingat",
+      "fuzzy": "🤔 Agak kabur",
+      "forgot": "😵 Lupa sama sekali",
+      "days": "{{days}} hari"
+    }
+  },
+  "settings": {
+    "tabs": {
+      "general": "Umum",
+      "translation": "Terjemahan",
+      "learning": "Belajar",
+      "notification": "Notifikasi",
+      "appearance": "Tampilan",
+      "shortcuts": "Pintasan",
+      "about": "Tentang"
+    },
+    "ariaLabel": "Navigasi pengaturan",
+    "listAriaLabel": "Kategori pengaturan",
+    "general": {
+      "title": "Pengaturan umum",
+      "themeColor": {
+        "title": "Warna tema",
+        "desc": "Pilih warna utama aplikasi"
+      },
+      "startup": {
+        "title": "Buka saat startup",
+        "desc": "Buka jendela utama secara otomatis saat aplikasi dimulai"
+      },
+      "autoUpdate": {
+        "title": "Pembaruan otomatis",
+        "desc": "Periksa dan instal pembaruan secara otomatis"
+      },
+      "closeBehavior": {
+        "title": "Perilaku penutupan",
+        "desc": "Tindakan saat menutup jendela utama"
+      },
+      "minimize": "Minimalkan ke latar belakang",
+      "quit": "Keluar dari aplikasi",
+      "language": {
+        "title": "Bahasa antarmuka",
+        "desc": "Pilih bahasa antarmuka aplikasi"
+      },
+      "color": {
+        "green": "Hijau",
+        "blue": "Biru",
+        "purple": "Ungu"
+      }
+    },
+    "translation": {
+      "title": "Pengaturan terjemahan",
+      "engine": {
+        "title": "Mesin penerjemah",
+        "desc": "Pilih layanan terjemahan default"
+      },
+      "engineLabel": "Mesin penerjemah",
+      "engineDeepL": "DeepL",
+      "engineGoogle": "Google",
+      "engineOpenAI": "OpenAI",
+      "engineCustom": "Kustom",
+      "endpoint": {
+        "title": "Alamat API",
+        "desc": "Alamat antarmuka layanan terjemahan"
+      },
+      "endpointPlaceholder": "https://api.example.com",
+      "apiKey": {
+        "title": "Kunci API",
+        "desc": "Kunci autentikasi untuk layanan terjemahan"
+      },
+      "apiKeyPlaceholder": "sk-xxx"
+    },
+    "review": {
+      "title": "Pengaturan pengulangan",
+      "dailyLimit": {
+        "title": "Batas pengulangan harian",
+        "desc": "Jumlah maksimal kata yang diulang per hari"
+      },
+      "reviewPace": {
+        "title": "Kecepatan pengulangan",
+        "desc": "Sesuaikan frekuensi pengulangan berdasarkan tingkat penguasaan"
+      },
+      "hintStrategy": {
+        "title": "Strategi petunjuk",
+        "desc": "Cara memberikan petunjuk saat mengingat"
+      },
+      "selection": {
+        "title": "Pengaturan seleksi"
+      },
+      "selectionEnable": {
+        "title": "Aktifkan terjemahan seleksi",
+        "desc": "Tampilkan terjemahan otomatis saat memilih teks"
+      },
+      "autoSpeak": {
+        "title": "Ucapkan otomatis",
+        "desc": "Membacakan kata secara otomatis setelah terjemahan"
+      },
+      "autoClose": {
+        "title": "Tutup otomatis",
+        "desc": "Tutup popup secara otomatis saat kehilangan fokus"
+      },
+      "pace": {
+        "relaxed": "Santai",
+        "normal": "Standar",
+        "intense": "Intensif"
+      },
+      "hint": {
+        "progressive": "Petunjuk bertahap",
+        "immediate": "Tampilkan jawaban langsung"
+      },
+      "custom": "Kustom"
+    },
+    "notification": {
+      "title": "Pengaturan notifikasi",
+      "reminderTime": {
+        "title": "Waktu pengingat",
+        "desc": "Atur rentang waktu pengingat harian"
+      },
+      "timeDash": "—",
+      "types": {
+        "title": "Jenis notifikasi",
+        "desc": "Pilih jenis notifikasi yang ingin diterima"
+      },
+      "dailyReview": "Pengingat pengulangan harian",
+      "forgetting": "Pengingat akan lupa",
+      "streak": "Pengingat belajar beruntun",
+      "achievement": "Notifikasi pencapaian"
+    },
+    "appearance": {
+      "title": "Tampilan dan personalisasi",
+      "theme": {
+        "title": "Tema",
+        "desc": "Pilih skema warna untuk aplikasi"
+      },
+      "themeAriaLabel": "Tema",
+      "themeLight": "Terang",
+      "themeDark": "Gelap",
+      "themeSystem": "Sistem",
+      "themeColor": {
+        "title": "Warna tema",
+        "desc": "Pilih warna utama aplikasi"
+      },
+      "cardStyle": {
+        "title": "Gaya kartu",
+        "desc": "Gaya tampilan kartu kata"
+      },
+      "fontSize": {
+        "title": "Ukuran font",
+        "desc": "Pilih ukuran font aplikasi"
+      },
+      "fontSizeAriaLabel": "Ukuran font",
+      "styleSimple": "Sederhana",
+      "styleRich": "Kaya",
+      "fontSmall": "Kecil",
+      "fontMedium": "Sedang",
+      "fontLarge": "Besar",
+      "color": {
+        "green": "Hijau",
+        "blue": "Biru",
+        "purple": "Ungu"
+      }
+    },
+    "shortcuts": {
+      "title": "Pintasan",
+      "startReview": {
+        "title": "Mulai pengulangan",
+        "desc": "Mulai sesi pengulangan dengan cepat"
+      },
+      "translation": {
+        "title": "Terjemahan seleksi",
+        "desc": "Terjemahan otomatis saat memilih teks"
+      },
+      "addWord": {
+        "title": "Tambah kata cepat",
+        "desc": "Tambahkan kata baru ke kosakata secara manual"
+      },
+      "openApp": {
+        "title": "Buka antarmuka utama",
+        "desc": "Tampilkan jendela utama"
+      }
+    },
+    "about": {
+      "title": "Tentang",
+      "version": "Versi {{version}}",
+      "tagline": "Terjemahan seleksi · Memori Ebbinghaus · Pengulangan berjarak",
+      "checkUpdate": "Periksa pembaruan",
+      "feedback": "Masukan",
+      "helpDoc": "Dokumen bantuan",
+      "license": "Lisensi sumber terbuka",
+      "footer": "Dibuat dengan ❤️ oleh Tim Bugoo"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { Button } from '@heroui/react';
+import { useTranslation } from 'react-i18next';
 
 interface BottomBannerProps {
   dueCount: number;
@@ -6,14 +7,14 @@ interface BottomBannerProps {
 }
 
 export function BottomBanner({ dueCount, totalCount }: BottomBannerProps) {
+  const { t } = useTranslation();
   const progress = totalCount > 0 ? Math.round((dueCount / totalCount) * 100) : 0;
 
   return (
     <div className="h-14 border-t border-divider px-4 flex items-center justify-between bg-primary-50">
       <div className="flex items-center gap-2">
-        <span>🔥</span>
         <span className="text-sm">
-          今日学习进度 {dueCount} / {totalCount}
+          {t("home.banner.progress", { dueCount, totalCount })}
         </span>
         <div className="w-24 h-2 bg-foreground-200 rounded-full overflow-hidden">
           <div
@@ -24,7 +25,7 @@ export function BottomBanner({ dueCount, totalCount }: BottomBannerProps) {
         <span className="text-sm text-foreground-500">{progress}%</span>
       </div>
       <Button size="sm">
-        开始复习 +5 XP
+        {t("home.banner.startReview")}
       </Button>
     </div>
   );

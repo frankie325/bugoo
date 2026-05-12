@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { SearchInput } from "./SearchInput";
 import { ViewToggle } from "./ViewToggle";
 import { StatusFilter } from "./StatusFilter";
@@ -17,6 +18,7 @@ import type { Word } from "../../lib/api";
 type ViewMode = "grid" | "list";
 
 export function HomePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
@@ -83,7 +85,7 @@ export function HomePage() {
             />
             <Avatar.Fallback>SM</Avatar.Fallback>
           </Avatar>
-          <span className="ml-2 font-bold">Bugoo</span>
+          <span className="ml-2 font-bold">{t("app.name")}</span>
         </div>
         <StatusFilter
           words={words}
@@ -114,13 +116,13 @@ export function HomePage() {
         <div className="flex-1 overflow-auto p-4">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
-              <span className="text-foreground-400">加载中...</span>
+              <span className="text-foreground-400">{t("app.loading")}</span>
             </div>
           ) : filteredWords.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-4">
-              <span className="text-foreground-400">暂无单词</span>
+              <span className="text-foreground-400">{t("app.emptyState")}</span>
               <button className="px-4 py-2 bg-primary text-primary-foreground rounded">
-                去添加
+                {t("app.emptyAction")}
               </button>
             </div>
           ) : viewMode === "grid" ? (

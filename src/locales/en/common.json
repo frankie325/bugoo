@@ -1,0 +1,224 @@
+{
+  "app": {
+    "name": "Bugoo",
+    "tagline": "Word Translation & Spaced Repetition",
+    "loading": "Loading...",
+    "emptyState": "No words yet",
+    "emptyAction": "Add Words"
+  },
+  "home": {
+    "searchPlaceholder": "Search words...",
+    "viewGrid": "Grid",
+    "viewList": "List",
+    "tagsLabel": "Tags",
+    "status": {
+      "all": "All",
+      "dueToday": "Due Today",
+      "learning": "Learning",
+      "mastered": "Mastered",
+      "newWord": "New",
+      "label": "Status",
+      "ariaLabel": "Filter by status"
+    },
+    "banner": {
+      "progress": "🔥 Today's progress {{dueCount}} / {{totalCount}}",
+      "startReview": "Start Review +5 XP"
+    },
+    "detail": {
+      "title": "Word Details",
+      "close": "Close",
+      "memoryProgress": "Memory Progress",
+      "memoryStrength": "Memory Strength",
+      "interval": "Interval",
+      "reviewCount": "Reviews",
+      "remember": "😄 I remember",
+      "fuzzy": "🤔 A bit fuzzy",
+      "forgot": "😵 Don't remember",
+      "days": "{{days}}d"
+    }
+  },
+  "settings": {
+    "tabs": {
+      "general": "General",
+      "translation": "Translation",
+      "learning": "Learning",
+      "notification": "Notification",
+      "appearance": "Appearance",
+      "shortcuts": "Shortcuts",
+      "about": "About"
+    },
+    "ariaLabel": "Settings navigation",
+    "listAriaLabel": "Settings categories",
+    "general": {
+      "title": "General Settings",
+      "themeColor": {
+        "title": "Theme Color",
+        "desc": "Choose the app's accent color"
+      },
+      "startup": {
+        "title": "Open on Startup",
+        "desc": "Automatically open the main window when the app starts"
+      },
+      "autoUpdate": {
+        "title": "Auto Update",
+        "desc": "Check and install updates automatically"
+      },
+      "closeBehavior": {
+        "title": "Close Behavior",
+        "desc": "Action when closing the main window"
+      },
+      "minimize": "Minimize to Tray",
+      "quit": "Quit App",
+      "language": {
+        "title": "Interface Language",
+        "desc": "Choose the app language"
+      },
+      "color": {
+        "green": "Green",
+        "blue": "Blue",
+        "purple": "Purple"
+      }
+    },
+    "translation": {
+      "title": "Translation Settings",
+      "engine": {
+        "title": "Translation Engine",
+        "desc": "Select the default translation service"
+      },
+      "engineLabel": "Translation Engine",
+      "engineDeepL": "DeepL",
+      "engineGoogle": "Google",
+      "engineOpenAI": "OpenAI",
+      "engineCustom": "Custom",
+      "endpoint": {
+        "title": "API Endpoint",
+        "desc": "API endpoint URL for the translation service"
+      },
+      "endpointPlaceholder": "https://api.example.com",
+      "apiKey": {
+        "title": "API Key",
+        "desc": "Authentication key for the translation service"
+      },
+      "apiKeyPlaceholder": "sk-xxx"
+    },
+    "review": {
+      "title": "Review Settings",
+      "dailyLimit": {
+        "title": "Daily Review Limit",
+        "desc": "Maximum number of words to review per day"
+      },
+      "reviewPace": {
+        "title": "Review Pace",
+        "desc": "Adjust review frequency based on mastery level"
+      },
+      "hintStrategy": {
+        "title": "Hint Strategy",
+        "desc": "How hints are provided during recall"
+      },
+      "selection": {
+        "title": "Selection Settings"
+      },
+      "selectionEnable": {
+        "title": "Enable Selection Translation",
+        "desc": "Show translation popup when selecting text"
+      },
+      "autoSpeak": {
+        "title": "Auto Speak",
+        "desc": "Automatically read the word aloud after translation"
+      },
+      "autoClose": {
+        "title": "Auto Close",
+        "desc": "Automatically close the popup when losing focus"
+      },
+      "pace": {
+        "relaxed": "Relaxed",
+        "normal": "Normal",
+        "intense": "Intense"
+      },
+      "hint": {
+        "progressive": "Progressive Hints",
+        "immediate": "Show Answer Immediately"
+      },
+      "custom": "Custom"
+    },
+    "notification": {
+      "title": "Notification Settings",
+      "reminderTime": {
+        "title": "Reminder Time",
+        "desc": "Set the daily reminder time range"
+      },
+      "timeDash": "—",
+      "types": {
+        "title": "Notification Types",
+        "desc": "Choose which notifications to receive"
+      },
+      "dailyReview": "Daily Review Reminder",
+      "forgetting": "Nearing Forgetting",
+      "streak": "Learning Streak",
+      "achievement": "Achievement Notifications"
+    },
+    "appearance": {
+      "title": "Appearance & Personalization",
+      "theme": {
+        "title": "Theme",
+        "desc": "Choose the color scheme"
+      },
+      "themeAriaLabel": "Theme",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "themeSystem": "System",
+      "themeColor": {
+        "title": "Theme Color",
+        "desc": "Choose the app's accent color"
+      },
+      "cardStyle": {
+        "title": "Card Style",
+        "desc": "Display style for word cards"
+      },
+      "fontSize": {
+        "title": "Font Size",
+        "desc": "Choose the app font size"
+      },
+      "fontSizeAriaLabel": "Font Size",
+      "styleSimple": "Simple",
+      "styleRich": "Rich",
+      "fontSmall": "Small",
+      "fontMedium": "Medium",
+      "fontLarge": "Large",
+      "color": {
+        "green": "Green",
+        "blue": "Blue",
+        "purple": "Purple"
+      }
+    },
+    "shortcuts": {
+      "title": "Keyboard Shortcuts",
+      "startReview": {
+        "title": "Start Review",
+        "desc": "Quickly start a review session"
+      },
+      "translation": {
+        "title": "Selection Translation",
+        "desc": "Automatically translate selected text"
+      },
+      "addWord": {
+        "title": "Quick Add Word",
+        "desc": "Manually add a word to the vocabulary"
+      },
+      "openApp": {
+        "title": "Open Main Window",
+        "desc": "Show the main window"
+      }
+    },
+    "about": {
+      "title": "About",
+      "version": "Version {{version}}",
+      "tagline": "Selection Translation · Ebbinghaus Memory · Spaced Repetition",
+      "checkUpdate": "Check for Updates",
+      "feedback": "Feedback",
+      "helpDoc": "Help Documentation",
+      "license": "Open Source License",
+      "footer": "Made with ❤️ by Bugoo Team"
+    }
+  }
+}
