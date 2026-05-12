@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from "@tauri-apps/api/core";
 
 export interface TranslationResult {
   translation: string;
@@ -36,7 +36,7 @@ export async function translate(
   sourceLang: string,
   targetLang: string,
 ): Promise<TranslationResult> {
-  return invoke('translate_text', {
+  return invoke("translate_text", {
     text,
     sourceLang,
     targetLang,
@@ -46,11 +46,11 @@ export async function translate(
 export async function addWord(
   word: string,
   translation: string,
-  sourceLang: string = 'EN',
-  targetLang: string = 'ZH',
-  tags: string = '',
+  sourceLang: string = "EN",
+  targetLang: string = "ZH",
+  tags: string = "",
 ): Promise<Word> {
-  return invoke('add_word', {
+  return invoke("add_word", {
     word,
     translation,
     sourceLang,
@@ -60,13 +60,28 @@ export async function addWord(
 }
 
 export async function getWords(search?: string): Promise<Word[]> {
-  return invoke('get_words', { search });
+  return invoke("get_words", { search });
 }
 
 export async function deleteWord(wordId: string): Promise<void> {
-  return invoke('delete_word', { wordId });
+  return invoke("delete_word", { wordId });
 }
 
-export async function updateWord(wordId: string, updates: WordUpdate): Promise<Word> {
-  return invoke('update_word', { wordId, updates });
+export async function updateWord(
+  wordId: string,
+  updates: WordUpdate,
+): Promise<Word> {
+  return invoke("update_word", { wordId, updates });
+}
+
+export async function getSettings(): Promise<Record<string, string>> {
+  return invoke("get_settings");
+}
+
+export async function setSetting(key: string, value: string): Promise<void> {
+  return invoke("set_setting", { key, value });
+}
+
+export async function seedSettings(): Promise<Record<string, string>> {
+  return invoke("seed_settings");
 }

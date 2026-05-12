@@ -9,12 +9,15 @@ import { BottomBanner } from "./BottomBanner";
 import { DetailPanel } from "./DetailPanel";
 import { useWords } from "../../hooks/useWords";
 import { useWordStore, type FilterStatus } from "../../stores/wordStore";
-import { Avatar } from "@heroui/react";
+import { Avatar, Button } from "@heroui/react";
+import { Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { Word } from "../../lib/api";
 
 type ViewMode = "grid" | "list";
 
 export function HomePage() {
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
@@ -92,6 +95,11 @@ export function HomePage() {
           selectedTag={selectedTag}
           onTagSelect={setSelectedTag}
         />
+        <div className="mt-auto">
+          <Button variant="ghost" onClick={() => navigate("/settings")}>
+            <Settings size={18} />
+          </Button>
+        </div>
       </aside>
 
       {/* Main Content */}

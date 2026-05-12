@@ -27,3 +27,6 @@ dist-ssr
 .superpowers/**
 .claude/**
 docs/**
+# heroui-agents-md
+.heroui-docs/
+skills-lock.json

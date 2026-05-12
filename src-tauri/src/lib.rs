@@ -85,6 +85,9 @@ pub fn run() {
             commands::review::submit_review,
             commands::tts::speak_text,
             commands::window::open_float_window,
+            commands::settings::get_settings,
+            commands::settings::set_setting,
+            commands::settings::seed_settings,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
