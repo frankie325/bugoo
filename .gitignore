@@ -26,6 +26,9 @@ dist-ssr
 /src-tauri/target/**
 .superpowers/**
 .claude/**
+.agents/**
+CLAUDE.md
+AGENTS.md
 docs/**
 # heroui-agents-md
 .heroui-docs/
