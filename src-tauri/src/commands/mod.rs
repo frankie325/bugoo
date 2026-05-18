@@ -1,5 +1,6 @@
 pub mod review;
 pub mod settings;
+pub mod tags;
 pub mod translate;
 pub mod tts;
 pub mod window;

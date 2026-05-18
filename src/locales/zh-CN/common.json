@@ -35,7 +35,21 @@
       "fuzzy": "🤔 有点模糊",
       "forgot": "😵 完全不会",
       "days": "{{days}}天"
-    }
+    },
+    "addTag": "添加标签",
+    "tagNameLabel": "标签名称",
+    "tagNamePlaceholder": "名称",
+    "tagColorLabel": "标签颜色",
+    "tagSave": "保存",
+    "editTag": "编辑标签",
+    "deleteTagTitle": "删除标签",
+    "deleteTagConfirm": "确认删除标签「{{name}}」？删除后已关联的单词将保留但不再显示此标签。",
+    "deleteTagCancel": "取消",
+    "deleteTagConfirmBtn": "删除",
+    "tagContextEdit": "编辑",
+    "tagContextDelete": "删除",
+    "tagContextCreateAbove": "在上方创建",
+    "tagContextCreateBelow": "在下方创建"
   },
   "settings": {
     "tabs": {

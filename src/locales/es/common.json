@@ -35,7 +35,22 @@
       "fuzzy": "🤔 Un poco difusa",
       "forgot": "😵 No lo recuerdo",
       "days": "{{days}} días"
-    }
+    },
+    "addTag": "Agregar etiqueta",
+    "tagNameLabel": "Nombre de etiqueta",
+    "tagNamePlaceholder": "Nombre",
+    "tagColorLabel": "Color de etiqueta",
+    "tagSave": "Guardar",
+    "editTag": "Editar etiqueta",
+    "deleteTag": "Eliminar etiqueta",
+    "deleteTagTitle": "Eliminar etiqueta",
+    "deleteTagConfirm": "¿Está seguro de eliminar la etiqueta \"{{name}}\"?",
+    "deleteTagCancel": "Cancelar",
+    "deleteTagConfirmBtn": "Eliminar",
+    "tagContextEdit": "Editar",
+    "tagContextDelete": "Eliminar",
+    "tagContextCreateAbove": "Crear arriba",
+    "tagContextCreateBelow": "Crear abajo"
   },
   "settings": {
     "tabs": {

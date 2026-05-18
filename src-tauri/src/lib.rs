@@ -88,6 +88,11 @@ pub fn run() {
             commands::settings::get_settings,
             commands::settings::set_setting,
             commands::settings::seed_settings,
+            commands::tags::get_tags,
+            commands::tags::create_tag,
+            commands::tags::update_tag,
+            commands::tags::delete_tag,
+            commands::tags::reorder_tags,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

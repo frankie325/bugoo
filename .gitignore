@@ -33,3 +33,5 @@ docs/**
 # heroui-agents-md
 .heroui-docs/
 skills-lock.json
+materials/**
+**/__tests__/**

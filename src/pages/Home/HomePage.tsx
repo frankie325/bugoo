@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { SearchInput } from "./SearchInput";
 import { ViewToggle } from "./ViewToggle";
@@ -14,8 +14,18 @@ import { Avatar, Button } from "@heroui/react";
 import { Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Word } from "../../lib/api";
+import type { TagItem } from "../../types/tag";
+import { getTags, createTag, deleteTag, updateTag } from "../../lib/api";
+import { getNextSortOrder, type TagCreatePlacement } from "../../lib/tagSort";
 
 type ViewMode = "grid" | "list";
+
+function getWordTagIds(tags: string): string[] {
+  return tags
+    .split(/[,\s]+/)
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+}
 
 export function HomePage() {
   const { t } = useTranslation();
@@ -24,11 +34,17 @@ export function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [tags, setTags] = useState<TagItem[]>([]);
 
   const selectedWord = useWordStore((state) => state.selectedWord);
   const setSelectedWord = useWordStore((state) => state.setSelectedWord);
 
   const { data: words = [], isLoading } = useWords(searchQuery || undefined);
+
+  // 加载标签
+  useEffect(() => {
+    getTags().then(setTags);
+  }, []);
 
   const filteredWords = useMemo(() => {
     let result = words;
@@ -38,11 +54,20 @@ export function HomePage() {
     }
 
     if (selectedTag) {
-      result = result.filter((w) => w.tags.includes(selectedTag));
+      result = result.filter((w) => getWordTagIds(w.tags).includes(selectedTag));
     }
 
     return result;
   }, [words, filterStatus, selectedTag]);
+
+  const tagCounts = useMemo(() => {
+    return words.reduce<Record<string, number>>((counts, word) => {
+      for (const tagId of getWordTagIds(word.tags)) {
+        counts[tagId] = (counts[tagId] ?? 0) + 1;
+      }
+      return counts;
+    }, {});
+  }, [words]);
 
   const dueCount = useMemo(() => {
     return words.filter((w) => {
@@ -50,19 +75,6 @@ export function HomePage() {
       if (!nextReview) return false;
       return nextReview <= Date.now();
     }).length;
-  }, [words]);
-
-  const allTags = useMemo(() => {
-    const tagSet = new Set<string>();
-    words.forEach((w) => {
-      if (w.tags) {
-        w.tags.split(",").forEach((t) => {
-          const trimmed = t.trim();
-          if (trimmed) tagSet.add(trimmed);
-        });
-      }
-    });
-    return Array.from(tagSet).sort();
   }, [words]);
 
   const handleWordClick = (word: Word) => {
@@ -73,10 +85,65 @@ export function HomePage() {
     setSelectedWord(null);
   };
 
+  const handleTagCreate = useCallback(
+    async (
+      name: string,
+      color: string,
+      options?: {
+        anchorTagId?: string;
+        placement?: TagCreatePlacement;
+      },
+    ) => {
+      const result = getNextSortOrder(
+        tags,
+        options?.placement ?? "end",
+        options?.anchorTagId,
+      );
+
+      if (result.kind === "insert") {
+        const newTag = await createTag({ name, color, sort_order: result.order });
+        setTags((prev) =>
+          [...prev, newTag].sort((a, b) => a.sort_order - b.sort_order),
+        );
+      } else {
+        // Update each existing tag's sort_order individually to preserve the gap for the new tag
+        for (const t of result.reorderedTags) {
+          await updateTag(t.id, { sort_order: t.sort_order });
+        }
+        const newTag = await createTag({ name, color, sort_order: result.newOrder });
+        setTags(
+          [...result.reorderedTags, newTag].sort((a, b) => a.sort_order - b.sort_order),
+        );
+      }
+    },
+    [tags],
+  );
+
+  const handleTagUpdate = useCallback(
+    async (tagId: string, name: string, color: string) => {
+      const updatedTag = await updateTag(tagId, { name, color });
+      setTags((prev) =>
+        prev
+          .map((tag) => (tag.id === tagId ? updatedTag : tag))
+          .sort((a, b) => a.sort_order - b.sort_order),
+      );
+    },
+    [],
+  );
+
+  const handleTagDelete = useCallback(async (tagId: string) => {
+    await deleteTag(tagId);
+    setTags((prev) => prev.filter((t) => t.id !== tagId));
+  }, []);
+
+  const handleTagReorder = useCallback((reorderedTags: TagItem[]) => {
+    setTags(reorderedTags);
+  }, []);
+
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="bg-background w-60 p-4 flex flex-col gap-4">
+      <aside className="w-60 p-4 flex flex-col gap-4">
         <div className="flex items-center">
           <Avatar size="lg">
             <Avatar.Image
@@ -93,9 +160,14 @@ export function HomePage() {
           onFilterChange={setFilterStatus}
         />
         <TagSection
-          tags={allTags}
+          tags={tags}
+          tagCounts={tagCounts}
           selectedTag={selectedTag}
           onTagSelect={setSelectedTag}
+          onTagCreate={handleTagCreate}
+          onTagUpdate={handleTagUpdate}
+          onTagDelete={handleTagDelete}
+          onTagReorder={handleTagReorder}
         />
         <div className="mt-auto">
           <Button variant="ghost" onClick={() => navigate("/settings")}>
@@ -105,7 +177,7 @@ export function HomePage() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col bg-background">
         {/* TopBar */}
         <header className="h-14 px-4 flex items-center gap-4">
           <SearchInput value={searchQuery} onChange={setSearchQuery} />

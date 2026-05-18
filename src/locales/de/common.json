@@ -35,7 +35,22 @@
       "fuzzy": "🤔 Etwas unscharf",
       "forgot": "😵 Vergessen",
       "days": "{{days}} Tage"
-    }
+    },
+    "addTag": "Tag hinzufügen",
+    "tagNameLabel": "Tag-Name",
+    "tagNamePlaceholder": "Name",
+    "tagColorLabel": "Tag-Farbe",
+    "tagSave": "Speichern",
+    "editTag": "Tag bearbeiten",
+    "deleteTag": "Tag löschen",
+    "deleteTagTitle": "Tag löschen",
+    "deleteTagConfirm": "Möchten Sie den Tag \"{{name}}\" wirklich löschen?",
+    "deleteTagCancel": "Abbrechen",
+    "deleteTagConfirmBtn": "Löschen",
+    "tagContextEdit": "Bearbeiten",
+    "tagContextDelete": "Löschen",
+    "tagContextCreateAbove": "Oberhalb erstellen",
+    "tagContextCreateBelow": "Unterhalb erstellen"
   },
   "settings": {
     "tabs": {

@@ -1,10 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
 
-export interface TranslationResult {
-  translation: string;
-  detected_source_lang: string | null;
-}
-
 export interface Word {
   id: string;
   word: string;
@@ -29,18 +24,6 @@ export interface WordUpdate {
   tags?: string;
   notes?: string;
   status?: string;
-}
-
-export async function translate(
-  text: string,
-  sourceLang: string,
-  targetLang: string,
-): Promise<TranslationResult> {
-  return invoke("translate_text", {
-    text,
-    sourceLang,
-    targetLang,
-  });
 }
 
 export async function addWord(
@@ -72,16 +55,4 @@ export async function updateWord(
   updates: WordUpdate,
 ): Promise<Word> {
   return invoke("update_word", { wordId, updates });
-}
-
-export async function getSettings(): Promise<Record<string, string>> {
-  return invoke("get_settings");
-}
-
-export async function setSetting(key: string, value: string): Promise<void> {
-  return invoke("set_setting", { key, value });
-}
-
-export async function seedSettings(): Promise<Record<string, string>> {
-  return invoke("seed_settings");
 }

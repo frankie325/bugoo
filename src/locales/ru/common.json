@@ -35,7 +35,22 @@
       "fuzzy": "🤔 Сомневаюсь",
       "forgot": "😵 Не помню",
       "days": "{{days}} дн."
-    }
+    },
+    "addTag": "Добавить тег",
+    "tagNameLabel": "Имя тега",
+    "tagNamePlaceholder": "Имя",
+    "tagColorLabel": "Цвет тега",
+    "tagSave": "Сохранить",
+    "editTag": "Изменить тег",
+    "deleteTag": "Удалить тег",
+    "deleteTagTitle": "Удалить тег",
+    "deleteTagConfirm": "Вы уверены, что хотите удалить тег \"{{name}}\"?",
+    "deleteTagCancel": "Отмена",
+    "deleteTagConfirmBtn": "Удалить",
+    "tagContextEdit": "Изменить",
+    "tagContextDelete": "Удалить",
+    "tagContextCreateAbove": "Создать выше",
+    "tagContextCreateBelow": "Создать ниже"
   },
   "settings": {
     "tabs": {

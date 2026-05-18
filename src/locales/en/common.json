@@ -35,7 +35,21 @@
       "fuzzy": "🤔 A bit fuzzy",
       "forgot": "😵 Don't remember",
       "days": "{{days}}d"
-    }
+    },
+    "addTag": "Add Tag",
+    "tagNameLabel": "Tag Name",
+    "tagNamePlaceholder": "Name",
+    "tagColorLabel": "Tag Color",
+    "tagSave": "Save",
+    "editTag": "Edit Tag",
+    "deleteTagTitle": "Delete Tag",
+    "deleteTagConfirm": "Are you sure you want to delete the tag \"{{name}}\"? Associated words will remain but won't show this tag.",
+    "deleteTagCancel": "Cancel",
+    "deleteTagConfirmBtn": "Delete",
+    "tagContextEdit": "Edit",
+    "tagContextDelete": "Delete",
+    "tagContextCreateAbove": "Create Above",
+    "tagContextCreateBelow": "Create Below"
   },
   "settings": {
     "tabs": {
