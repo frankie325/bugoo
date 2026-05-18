@@ -1,11 +1,11 @@
-import type { Word } from '../../lib/api';
+import type { Word } from '../../../lib/api';
 
 interface WordListProps {
   words: Word[];
   onWordClick: (word: Word) => void;
 }
 
-export function WordList({ words, onWordClick }: WordListProps) {
+export default function WordList({ words, onWordClick }: WordListProps) {
   return (
     <div className="flex flex-col gap-2">
       {words.map((word) => (

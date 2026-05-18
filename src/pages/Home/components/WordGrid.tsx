@@ -1,12 +1,12 @@
 import { Card } from '@heroui/react';
-import type { Word } from '../../lib/api';
+import type { Word } from '../../../lib/api';
 
 interface WordGridProps {
   words: Word[];
   onWordClick: (word: Word) => void;
 }
 
-export function WordGrid({ words, onWordClick }: WordGridProps) {
+export default function WordGrid({ words, onWordClick }: WordGridProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
       {words.map((word) => (

@@ -1,13 +1,15 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { SearchInput } from "./SearchInput";
-import { ViewToggle } from "./ViewToggle";
-import { StatusFilter } from "./StatusFilter";
-import { TagSection } from "./TagSection";
-import { WordGrid } from "./WordGrid";
-import { WordList } from "./WordList";
-import { BottomBanner } from "./BottomBanner";
-import { DetailPanel } from "./DetailPanel";
+import {
+  ViewToggle,
+  WordList,
+  WordGrid,
+  BottomBanner,
+  DetailPanel,
+  SearchInput,
+  StatusFilter,
+  TagSection,
+} from "./components";
 import { useWords } from "../../hooks/useWords";
 import { useWordStore, type FilterStatus } from "../../stores/wordStore";
 import { Avatar, Button } from "@heroui/react";
@@ -54,7 +56,9 @@ export function HomePage() {
     }
 
     if (selectedTag) {
-      result = result.filter((w) => getWordTagIds(w.tags).includes(selectedTag));
+      result = result.filter((w) =>
+        getWordTagIds(w.tags).includes(selectedTag),
+      );
     }
 
     return result;
@@ -101,7 +105,11 @@ export function HomePage() {
       );
 
       if (result.kind === "insert") {
-        const newTag = await createTag({ name, color, sort_order: result.order });
+        const newTag = await createTag({
+          name,
+          color,
+          sort_order: result.order,
+        });
         setTags((prev) =>
           [...prev, newTag].sort((a, b) => a.sort_order - b.sort_order),
         );
@@ -110,9 +118,15 @@ export function HomePage() {
         for (const t of result.reorderedTags) {
           await updateTag(t.id, { sort_order: t.sort_order });
         }
-        const newTag = await createTag({ name, color, sort_order: result.newOrder });
+        const newTag = await createTag({
+          name,
+          color,
+          sort_order: result.newOrder,
+        });
         setTags(
-          [...result.reorderedTags, newTag].sort((a, b) => a.sort_order - b.sort_order),
+          [...result.reorderedTags, newTag].sort(
+            (a, b) => a.sort_order - b.sort_order,
+          ),
         );
       }
     },

@@ -6,7 +6,7 @@ interface BottomBannerProps {
   totalCount: number;
 }
 
-export function BottomBanner({ dueCount, totalCount }: BottomBannerProps) {
+export default function BottomBanner({ dueCount, totalCount }: BottomBannerProps) {
   const { t } = useTranslation();
   const progress = totalCount > 0 ? Math.round((dueCount / totalCount) * 100) : 0;
 

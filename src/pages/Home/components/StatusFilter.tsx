@@ -1,7 +1,7 @@
 import { ListBox, ListBoxItem, Chip } from "@heroui/react";
 import { useTranslation } from "react-i18next";
-import type { Word } from "../../lib/api";
-import type { FilterStatus } from "../../stores/wordStore";
+import type { Word } from "../../../lib/api";
+import type { FilterStatus } from "../../../stores/wordStore";
 import { Album, SquarePlus, ScanEye, ListChecks } from "lucide-react";
 import { JSX } from "react";
 import FireSvg from "@src/assets/svg/fire.svg";
@@ -27,7 +27,7 @@ const statusLabelKeys: Record<FilterStatus, string> = {
   new: "home.status.newWord",
 };
 
-export function StatusFilter({
+export default function StatusFilter({
   words,
   currentFilter,
   onFilterChange,

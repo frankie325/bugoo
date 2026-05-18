@@ -1,14 +1,14 @@
 import { Button, ButtonGroup } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
 
-type ViewMode = 'grid' | 'list';
+export type ViewMode = 'grid' | 'list';
 
 interface ViewToggleProps {
   mode: ViewMode;
   onModeChange: (mode: ViewMode) => void;
 }
 
-export function ViewToggle({ mode, onModeChange }: ViewToggleProps) {
+export default function ViewToggle({ mode, onModeChange }: ViewToggleProps) {
   const { t } = useTranslation();
   return (
     <ButtonGroup>

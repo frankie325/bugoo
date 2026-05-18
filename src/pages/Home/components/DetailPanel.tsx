@@ -1,13 +1,13 @@
 import { Button } from '@heroui/react';
 import { useTranslation } from 'react-i18next';
-import type { Word } from '../../lib/api';
+import type { Word } from '../../../lib/api';
 
 interface DetailPanelProps {
   word: Word;
   onClose: () => void;
 }
 
-export function DetailPanel({ word, onClose }: DetailPanelProps) {
+export default function DetailPanel({ word, onClose }: DetailPanelProps) {
   const { t } = useTranslation();
   return (
     <aside className="w-80 border-l border-divider bg-background p-4 flex flex-col gap-4">

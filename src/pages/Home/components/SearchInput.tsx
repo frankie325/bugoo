@@ -6,7 +6,7 @@ interface SearchInputProps {
   onChange: (value: string) => void;
 }
 
-export function SearchInput({ value, onChange }: SearchInputProps) {
+export default function SearchInput({ value, onChange }: SearchInputProps) {
   const { t } = useTranslation();
   return (
     <Input
