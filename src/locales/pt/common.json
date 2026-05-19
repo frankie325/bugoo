@@ -34,7 +34,16 @@
       "remember": "😄 Lembro",
       "fuzzy": "🤔 Um pouco confusa",
       "forgot": "😵 Não lembro",
-      "days": "{{days}} dias"
+      "days": "{{days}} dias",
+      "definitions": "Definições",
+      "examples": "Exemplos",
+      "memoryTip": "Dica de memorização",
+      "wordDetail": "Detalhes",
+      "generateDetail": "Gerar detalhes",
+      "generatingDetail": "Gerando...",
+      "detailLoadFailed": "Falha ao carregar detalhes",
+      "retryLoadDetail": "Tentar novamente",
+      "noDetail": "Ainda sem detalhes"
     },
     "addTag": "Adicionar tag",
     "tagNameLabel": "Nome da tag",
@@ -114,7 +123,27 @@
         "title": "Chave da API",
         "desc": "Chave de autenticação do serviço de tradução"
       },
-      "apiKeyPlaceholder": "sk-xxx"
+      "apiKeyPlaceholder": "sk-xxx",
+      "model": {
+        "title": "Translation Model",
+        "desc": "Large model ID used for quick translation and word detail generation"
+      },
+      "modelPlaceholder": "gpt-4o-mini",
+      "prompt": {
+        "title": "Translation Prompt",
+        "desc": "Add terminology, tone, or output style constraints for quick translation"
+      },
+      "promptPlaceholder": "Example: keep software product terms consistent and only return natural Chinese",
+      "wordDetailPrompt": {
+        "title": "Word Detail Prompt",
+        "desc": "Add extra constraints for generating examples, definitions, and memory tips"
+      },
+      "wordDetailPromptPlaceholder": "Example: make examples close to daily usage and keep memory tips short and clear",
+      "timeout": {
+        "title": "Request Timeout",
+        "desc": "Translation and detail generation requests fail automatically after this time"
+      },
+      "timeoutLabel": "ms"
     },
     "review": {
       "title": "Configurações de revisão",

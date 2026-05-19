@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use crate::commands::AppState;
+use std::collections::HashMap;
 
 #[tauri::command]
 pub fn get_settings(state: tauri::State<AppState>) -> Result<HashMap<String, String>, String> {
@@ -9,7 +9,9 @@ pub fn get_settings(state: tauri::State<AppState>) -> Result<HashMap<String, Str
         .map_err(|e| e.to_string())?;
 
     let rows = stmt
-        .query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))
+        .query_map([], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+        })
         .map_err(|e| e.to_string())?;
 
     let mut settings = HashMap::new();
@@ -55,9 +57,13 @@ pub fn seed_settings(state: tauri::State<AppState>) -> Result<(), String> {
         ("autoSpeak", "false"),
         ("autoClose", "true"),
         // 翻译设置
-        ("translationEngine", "deepl"),
-        ("apiEndpoint", ""),
+        ("translationEngine", "openai"),
+        ("apiEndpoint", "https://api.openai.com/v1"),
         ("apiKey", ""),
+        ("translationModel", "gpt-4o-mini"),
+        ("translationPrompt", ""),
+        ("wordDetailPrompt", ""),
+        ("translationTimeoutMs", "15000"),
         // 外观设置
         ("themeColor", "#10b981"),
         ("cardStyle", "rich"),

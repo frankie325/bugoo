@@ -1,5 +1,5 @@
-use rusqlite::{params, Connection, OptionalExtension, Result};
 use crate::domain::models::tag::{Tag, TagCreateInput, TagUpdateInput};
+use rusqlite::{params, Connection, OptionalExtension, Result};
 
 /// 初始化标签表
 pub fn create_table(conn: &Connection) -> Result<()> {
@@ -45,7 +45,14 @@ pub fn create_tag(conn: &Connection, input: TagCreateInput) -> Result<Tag> {
     conn.execute(
         "INSERT INTO tags (id, name, color, sort_order, created_at, updated_at)
          VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-        params![tag.id, tag.name, tag.color, tag.sort_order, tag.created_at, tag.updated_at],
+        params![
+            tag.id,
+            tag.name,
+            tag.color,
+            tag.sort_order,
+            tag.created_at,
+            tag.updated_at
+        ],
     )?;
 
     Ok(tag)
@@ -53,14 +60,19 @@ pub fn create_tag(conn: &Connection, input: TagCreateInput) -> Result<Tag> {
 
 /// 更新标签
 pub fn update_tag(conn: &Connection, id: &str, input: TagUpdateInput) -> Result<Tag> {
-    let existing = find_tag_by_id(conn, id)?
-        .ok_or(rusqlite::Error::QueryReturnedNoRows)?;
+    let existing = find_tag_by_id(conn, id)?.ok_or(rusqlite::Error::QueryReturnedNoRows)?;
 
     let updated = existing.apply_update(input);
 
     conn.execute(
         "UPDATE tags SET name = ?1, color = ?2, sort_order = ?3, updated_at = ?4 WHERE id = ?5",
-        params![updated.name, updated.color, updated.sort_order, updated.updated_at, updated.id],
+        params![
+            updated.name,
+            updated.color,
+            updated.sort_order,
+            updated.updated_at,
+            updated.id
+        ],
     )?;
 
     Ok(updated)
@@ -195,7 +207,8 @@ mod tests {
                 color: Some("#ef4444".to_string()),
                 sort_order: None,
             },
-        ).unwrap();
+        )
+        .unwrap();
 
         assert_eq!(updated.name, "EN");
         assert_eq!(updated.color, "#ef4444");
@@ -266,7 +279,8 @@ mod tests {
         let b = create_tag(&conn, make_input("B", "#bbb", 1)).unwrap();
         let c = create_tag(&conn, make_input("C", "#ccc", 2)).unwrap();
 
-        let reordered = reorder_tags(&conn, vec![c.id.clone(), a.id.clone(), b.id.clone()]).unwrap();
+        let reordered =
+            reorder_tags(&conn, vec![c.id.clone(), a.id.clone(), b.id.clone()]).unwrap();
 
         assert_eq!(reordered[0].name, "C");
         assert_eq!(reordered[0].sort_order, 0);

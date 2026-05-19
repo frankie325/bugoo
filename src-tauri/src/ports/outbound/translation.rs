@@ -1,0 +1,98 @@
+use serde::{Deserialize, Serialize};
+use std::future::Future;
+use std::pin::Pin;
+use thiserror::Error;
+
+pub type TranslationFuture<'a> =
+    Pin<Box<dyn Future<Output = Result<TranslationResult, TranslationError>> + Send + 'a>>;
+
+#[derive(Debug, Clone)]
+pub struct TranslationRequest {
+    pub text: String,
+    pub source_lang: String,
+    pub target_lang: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct TranslationConfig {
+    pub engine: String,
+    pub api_endpoint: String,
+    pub api_key: String,
+    pub translation_model: String,
+    pub translation_prompt: String,
+    pub word_detail_prompt: String,
+    pub timeout_ms: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct TranslationExample {
+    pub sentence: String,
+    pub translation: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct TranslationResult {
+    pub translation: String,
+    pub detected_source_lang: Option<String>,
+    pub phonetic: Option<String>,
+    pub part_of_speech: Vec<String>,
+    pub definitions: Vec<String>,
+    pub examples: Vec<TranslationExample>,
+}
+
+#[derive(Debug, Error, PartialEq, Eq)]
+pub enum TranslationError {
+    #[error("翻译文本不能为空")]
+    EmptyText,
+    #[error("请先在设置页填写 API 密钥")]
+    MissingApiKey,
+    #[error("请先在设置页填写 API 地址")]
+    MissingEndpoint,
+    #[error("请先填写模型名称")]
+    MissingModel,
+    #[error("当前翻译引擎暂未完整支持：{0}")]
+    UnsupportedEngine(String),
+    #[error("翻译服务请求超时，请稍后重试")]
+    RequestTimeout,
+    #[error("翻译服务请求失败：{0}")]
+    RequestFailed(String),
+    #[error("翻译服务返回格式异常")]
+    InvalidResponse,
+    #[error("单词详情返回格式异常")]
+    InvalidJson,
+    #[error("单词不存在")]
+    WordNotFound,
+}
+
+pub trait TranslationProvider: Send + Sync {
+    fn translate<'a>(&'a self, request: TranslationRequest) -> TranslationFuture<'a>;
+}
+
+pub fn validate_text(text: &str) -> Result<(), TranslationError> {
+    if text.trim().is_empty() {
+        return Err(TranslationError::EmptyText);
+    }
+    Ok(())
+}
+
+pub fn normalize_endpoint(endpoint: &str) -> String {
+    endpoint.trim().trim_end_matches('/').to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn validate_text_rejects_empty_text() {
+        assert_eq!(validate_text("  "), Err(TranslationError::EmptyText));
+    }
+
+    #[test]
+    fn normalize_endpoint_trims_trailing_slashes() {
+        assert_eq!(
+            normalize_endpoint(" https://api.example.com/v1/// "),
+            "https://api.example.com/v1"
+        );
+    }
+}

@@ -1,6 +1,6 @@
 use crate::commands::AppState;
-use crate::domain::models::tag::{Tag, TagCreateInput, TagUpdateInput, TagReorderInput};
 use crate::db::tags as db_tags;
+use crate::domain::models::tag::{Tag, TagCreateInput, TagReorderInput, TagUpdateInput};
 
 /// 获取所有标签
 #[tauri::command]
@@ -11,14 +11,13 @@ pub fn get_tags(state: tauri::State<AppState>) -> Result<Vec<Tag>, String> {
 
 /// 创建新标签
 #[tauri::command]
-pub fn create_tag(
-    state: tauri::State<AppState>,
-    input: TagCreateInput,
-) -> Result<Tag, String> {
+pub fn create_tag(state: tauri::State<AppState>, input: TagCreateInput) -> Result<Tag, String> {
     let conn = state.db.connection();
 
     // 检查名称唯一性
-    if let Some(existing) = db_tags::find_tag_by_name(&conn, &input.name).map_err(|e| e.to_string())? {
+    if let Some(existing) =
+        db_tags::find_tag_by_name(&conn, &input.name).map_err(|e| e.to_string())?
+    {
         return Err(format!("Tag '{}' already exists", existing.name));
     }
 
@@ -36,7 +35,9 @@ pub fn update_tag(
 
     // 如果更新名称，检查唯一性
     if let Some(new_name) = &input.name {
-        if let Some(existing) = db_tags::find_tag_by_name(&conn, new_name).map_err(|e| e.to_string())? {
+        if let Some(existing) =
+            db_tags::find_tag_by_name(&conn, new_name).map_err(|e| e.to_string())?
+        {
             if existing.id != id {
                 return Err(format!("Tag '{}' already exists", existing.name));
             }
@@ -48,10 +49,7 @@ pub fn update_tag(
 
 /// 删除标签
 #[tauri::command]
-pub fn delete_tag(
-    state: tauri::State<AppState>,
-    id: String,
-) -> Result<(), String> {
+pub fn delete_tag(state: tauri::State<AppState>, id: String) -> Result<(), String> {
     let conn = state.db.connection();
     db_tags::delete_tag(&conn, &id).map_err(|e| e.to_string())?;
     Ok(())

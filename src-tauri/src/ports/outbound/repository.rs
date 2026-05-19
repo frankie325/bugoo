@@ -1,5 +1,5 @@
-use crate::domain::models::Word;
 use crate::db::DbError;
+use crate::domain::models::Word;
 
 pub trait WordRepository: Send + Sync {
     fn create(&self, word: Word) -> Result<Word, DbError>;

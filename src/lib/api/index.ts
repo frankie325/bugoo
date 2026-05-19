@@ -1,4 +1,13 @@
-export { translate, type TranslationResult } from "./translate";
+export {
+  translate,
+  type TranslationResult,
+  type TranslationExample,
+} from "./translate";
+export {
+  getWordDetail,
+  generateWordDetail,
+  type WordDetail,
+} from "./wordDetails";
 export {
   addWord,
   getWords,
