@@ -42,7 +42,6 @@ export function HomePage() {
   const setSelectedWord = useWordStore((state) => state.setSelectedWord);
 
   const { data: words = [], isLoading } = useWords(searchQuery || undefined);
-
   // 加载标签
   useEffect(() => {
     getTags().then(setTags);

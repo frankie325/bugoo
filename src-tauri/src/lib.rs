@@ -4,10 +4,8 @@ mod db;
 mod domain;
 mod ports;
 mod scheduler;
-mod tts;
 
 use crate::db::Database;
-use crate::domain::services::word_service::WordService;
 use crate::scheduler::notification::start_notification_scheduler;
 use commands::AppState;
 use log::info;
@@ -86,6 +84,9 @@ pub fn run() {
             commands::review::get_due_reviews,
             commands::review::submit_review,
             commands::tts::speak_text,
+            commands::tts::stop_speech,
+            commands::tts::list_voices,
+            commands::tts::set_voice,
             commands::window::open_float_window,
             commands::settings::get_settings,
             commands::settings::set_setting,

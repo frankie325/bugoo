@@ -24,3 +24,10 @@ export {
   deleteTag,
   reorderTags,
 } from "./tags";
+export {
+  speakText,
+  stopSpeech,
+  listVoices,
+  setVoice,
+  type VoiceInfo,
+} from "./tts";
