@@ -24,3 +24,4 @@ export {
   deleteTag,
   reorderTags,
 } from "./tags";
+export { speakText } from "./tts";
