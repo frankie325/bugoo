@@ -111,8 +111,7 @@
       "engineLabel": "翻译引擎",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "自定义",
+      "engineCustom": "自定义 (LLM)",
       "endpoint": {
         "title": "API地址",
         "desc": "翻译服务的接口地址"

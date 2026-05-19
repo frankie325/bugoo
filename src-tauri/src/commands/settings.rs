@@ -57,10 +57,10 @@ pub fn seed_settings(state: tauri::State<AppState>) -> Result<(), String> {
         ("autoSpeak", "false"),
         ("autoClose", "true"),
         // 翻译设置
-        ("translationEngine", "openai"),
-        ("apiEndpoint", "https://api.openai.com/v1"),
+        ("translationEngine", "custom"),
+        ("apiEndpoint", ""),
         ("apiKey", ""),
-        ("translationModel", "gpt-4o-mini"),
+        ("translationModel", ""),
         ("translationPrompt", ""),
         ("wordDetailPrompt", ""),
         ("translationTimeoutMs", "15000"),

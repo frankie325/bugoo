@@ -111,8 +111,7 @@
       "engineLabel": "Translation Engine",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "Custom",
+      "engineCustom": "Custom (LLM)",
       "endpoint": {
         "title": "API Endpoint",
         "desc": "API endpoint URL for the translation service"

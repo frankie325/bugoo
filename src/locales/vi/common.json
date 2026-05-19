@@ -112,8 +112,7 @@
       "engineLabel": "Công cụ dịch",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "Tùy chỉnh",
+      "engineCustom": "Tùy chỉnh (LLM)",
       "endpoint": {
         "title": "Địa chỉ API",
         "desc": "Địa chỉ giao diện của dịch vụ dịch thuật"

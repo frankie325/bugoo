@@ -112,8 +112,7 @@
       "engineLabel": "Движок перевода",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "Пользовательский",
+      "engineCustom": "Пользовательский (LLM)",
       "endpoint": {
         "title": "API-адрес",
         "desc": "Адрес интерфейса сервиса перевода"

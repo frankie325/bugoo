@@ -112,8 +112,7 @@
       "engineLabel": "अनुवाद इंजन",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "कस्टम",
+      "engineCustom": "कस्टम (LLM)",
       "endpoint": {
         "title": "API पता",
         "desc": "अनुवाद सेवा का इंटरफ़ेस पता"

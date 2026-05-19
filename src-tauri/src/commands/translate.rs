@@ -1,6 +1,6 @@
 use crate::adapters::outbound::translation::{
-    deepl::DeepLTranslationProvider, google::GoogleTranslationProvider,
-    openai::OpenAiTranslationProvider,
+    custom::CustomTranslationProvider, deepl::DeepLTranslationProvider,
+    google::GoogleTranslationProvider,
 };
 use crate::commands::AppState;
 use crate::ports::outbound::translation::{
@@ -33,10 +33,10 @@ pub async fn translate_text(
 pub(crate) fn load_translation_config(state: &AppState) -> Result<TranslationConfig, String> {
     let settings = read_settings_map(state)?;
     Ok(TranslationConfig {
-        engine: setting_or_default(&settings, "translationEngine", "openai"),
-        api_endpoint: setting_or_default(&settings, "apiEndpoint", "https://api.openai.com/v1"),
+        engine: setting_or_default(&settings, "translationEngine", "custom"),
+        api_endpoint: setting_or_default(&settings, "apiEndpoint", ""),
         api_key: setting_or_default(&settings, "apiKey", ""),
-        translation_model: setting_or_default(&settings, "translationModel", "gpt-4o-mini"),
+        translation_model: setting_or_default(&settings, "translationModel", ""),
         translation_prompt: setting_or_default(&settings, "translationPrompt", ""),
         word_detail_prompt: setting_or_default(&settings, "wordDetailPrompt", ""),
         timeout_ms: setting_or_default(&settings, "translationTimeoutMs", "15000")
@@ -49,7 +49,7 @@ pub(crate) fn create_translation_provider(
     config: TranslationConfig,
 ) -> Result<Box<dyn TranslationProvider>, String> {
     match config.engine.trim().to_lowercase().as_str() {
-        "openai" | "custom" => OpenAiTranslationProvider::new(config)
+        "openai" | "custom" => CustomTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
             .map_err(|error| error.to_string()),
         "deepl" => Ok(Box::new(DeepLTranslationProvider)),
@@ -62,7 +62,7 @@ pub(crate) fn create_word_insight_provider(
     config: TranslationConfig,
 ) -> Result<Box<dyn WordInsightProvider>, String> {
     match config.engine.trim().to_lowercase().as_str() {
-        "openai" | "custom" => OpenAiTranslationProvider::new(config)
+        "openai" | "custom" => CustomTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn WordInsightProvider>)
             .map_err(|error| error.to_string()),
         "deepl" | "google" => Err(TranslationError::UnsupportedEngine(config.engine).to_string()),

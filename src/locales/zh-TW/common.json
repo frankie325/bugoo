@@ -112,8 +112,7 @@
       "engineLabel": "翻譯引擎",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "自訂",
+      "engineCustom": "自訂 (LLM)",
       "endpoint": {
         "title": "API 位址",
         "desc": "翻譯服務的介面位址"

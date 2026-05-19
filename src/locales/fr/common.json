@@ -112,8 +112,7 @@
       "engineLabel": "Moteur de traduction",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "Personnalisé",
+      "engineCustom": "Personnalisé (LLM)",
       "endpoint": {
         "title": "Adresse API",
         "desc": "Adresse du point d'accès du service de traduction"
