@@ -1,4 +1,4 @@
 #[tauri::command]
-pub fn speak_text(_text: String, _lang: String) -> Result<(), String> {
-    Ok(())
+pub fn speak_text(text: String, lang: Option<String>) -> Result<(), String> {
+    crate::tts::speak_text(&text, lang.as_deref())
 }
