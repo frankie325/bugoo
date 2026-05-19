@@ -1,7 +1,7 @@
+use crate::adapters::outbound::sqlite::SqliteWordRepository;
 use crate::db::Database;
 use crate::domain::models::Word;
 use crate::ports::outbound::repository::WordRepository;
-use crate::adapters::outbound::sqlite::SqliteWordRepository;
 use std::sync::Arc;
 
 pub struct WordService {
@@ -30,7 +30,9 @@ impl WordService {
     }
 
     pub fn get_words(&self, search: Option<String>) -> Result<Vec<Word>, String> {
-        self.repository.find_all(search.as_deref()).map_err(|e| e.to_string())
+        self.repository
+            .find_all(search.as_deref())
+            .map_err(|e| e.to_string())
     }
 
     pub fn delete_word(&self, word_id: &str) -> Result<(), String> {
@@ -38,7 +40,9 @@ impl WordService {
     }
 
     pub fn update_word(&self, word_id: &str, updates: WordUpdate) -> Result<Word, String> {
-        let mut word = self.repository.find_by_id(word_id)
+        let mut word = self
+            .repository
+            .find_by_id(word_id)
             .map_err(|e| e.to_string())?
             .ok_or_else(|| "Word not found".to_string())?;
 

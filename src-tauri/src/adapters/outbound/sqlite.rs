@@ -71,23 +71,18 @@ impl WordRepository for SqliteWordRepository {
                 conn.prepare(
                     "SELECT * FROM words WHERE word LIKE ?1 OR translation LIKE ?1 ORDER BY created_at DESC"
                 ).map_err(DbError::Sqlite)?
-            },
-            _ => {
-                conn.prepare("SELECT * FROM words ORDER BY created_at DESC")
-                    .map_err(DbError::Sqlite)?
             }
+            _ => conn
+                .prepare("SELECT * FROM words ORDER BY created_at DESC")
+                .map_err(DbError::Sqlite)?,
         };
 
         let word_iter = match search {
             Some(s) if !s.is_empty() => {
                 let pattern = format!("%{}%", s);
-                stmt.query(params![pattern])
-                    .map_err(DbError::Sqlite)?
-            },
-            _ => {
-                stmt.query([])
-                    .map_err(DbError::Sqlite)?
+                stmt.query(params![pattern]).map_err(DbError::Sqlite)?
             }
+            _ => stmt.query([]).map_err(DbError::Sqlite)?,
         };
 
         let words = word_iter
@@ -139,6 +134,10 @@ impl WordRepository for SqliteWordRepository {
 
     fn delete(&self, id: &str) -> Result<(), DbError> {
         let conn = self.db.connection();
+        conn.execute("DELETE FROM word_details WHERE word_id = ?1", params![id])
+            .map_err(DbError::Sqlite)?;
+        conn.execute("DELETE FROM review_records WHERE word_id = ?1", params![id])
+            .map_err(DbError::Sqlite)?;
         conn.execute("DELETE FROM words WHERE id = ?1", params![id])
             .map_err(DbError::Sqlite)?;
         Ok(())

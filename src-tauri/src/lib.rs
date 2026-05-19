@@ -1,8 +1,8 @@
+mod adapters;
 mod commands;
 mod db;
 mod domain;
 mod ports;
-mod adapters;
 mod scheduler;
 mod tts;
 
@@ -13,7 +13,7 @@ use commands::AppState;
 use log::info;
 use std::path::PathBuf;
 use std::sync::Arc;
-use tauri::{Emitter, Manager, async_runtime};
+use tauri::{async_runtime, Emitter, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
 
@@ -34,8 +34,7 @@ pub fn run() {
             let db_path: PathBuf = app_data_dir.join("bugoo.db");
             info!("Database path: {:?}", db_path);
 
-            let database =
-                Database::new(db_path).expect("Failed to initialize database");
+            let database = Database::new(db_path).expect("Failed to initialize database");
             let db = Arc::new(database);
             let db_clone = db.clone();
             let app_handle = app.handle().clone();
@@ -81,6 +80,9 @@ pub fn run() {
             commands::words::delete_word,
             commands::words::update_word,
             commands::translate::translate_text,
+            commands::word_details::get_word_detail,
+            commands::word_details::generate_word_detail,
+            commands::word_details::save_word_detail,
             commands::review::get_due_reviews,
             commands::review::submit_review,
             commands::tts::speak_text,

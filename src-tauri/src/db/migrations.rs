@@ -30,7 +30,7 @@ pub fn run(conn: &Connection) -> Result<(), rusqlite::Error> {
             rating INTEGER NOT NULL,
             reviewed_at INTEGER NOT NULL,
             next_review_at INTEGER NOT NULL,
-            FOREIGN KEY (word_id) REFERENCES words(id)
+            FOREIGN KEY (word_id) REFERENCES words(id) ON DELETE CASCADE
         )",
         [],
     )?;
@@ -51,6 +51,23 @@ pub fn run(conn: &Connection) -> Result<(), rusqlite::Error> {
             sort_order INTEGER NOT NULL DEFAULT 0,
             created_at INTEGER NOT NULL,
             updated_at INTEGER NOT NULL
+        )",
+        [],
+    )?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS word_details (
+            word_id TEXT PRIMARY KEY,
+            part_of_speech_json TEXT NOT NULL DEFAULT '[]',
+            definitions_json TEXT NOT NULL DEFAULT '[]',
+            examples_json TEXT NOT NULL DEFAULT '[]',
+            memory_tip TEXT NOT NULL DEFAULT '',
+            detail TEXT NOT NULL DEFAULT '',
+            provider TEXT NOT NULL DEFAULT '',
+            raw_json TEXT NOT NULL DEFAULT '{}',
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL,
+            FOREIGN KEY (word_id) REFERENCES words(id) ON DELETE CASCADE
         )",
         [],
     )?;

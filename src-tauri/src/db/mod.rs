@@ -1,9 +1,9 @@
 mod migrations;
 pub mod tags;
 
+use rusqlite::Connection;
 use std::path::Path;
 use std::sync::Mutex;
-use rusqlite::Connection;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -23,7 +23,10 @@ pub struct Database {
 impl Database {
     pub fn new(path: impl AsRef<Path>) -> Result<Self, DbError> {
         let conn = Connection::open(path)?;
-        let db = Database { conn: Mutex::new(conn) };
+        conn.execute_batch("PRAGMA foreign_keys = ON;")?;
+        let db = Database {
+            conn: Mutex::new(conn),
+        };
         db.run_migrations()?;
         Ok(db)
     }

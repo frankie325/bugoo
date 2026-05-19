@@ -49,7 +49,16 @@
       "remember": "😄 أتذكر",
       "fuzzy": "🤔 غير واضح",
       "forgot": "😵 نسيت",
-      "days": "{{days}} يوم"
+      "days": "{{days}} يوم",
+      "definitions": "التعريفات",
+      "examples": "أمثلة",
+      "memoryTip": "نصيحة للحفظ",
+      "wordDetail": "التفاصيل",
+      "generateDetail": "إنشاء التفاصيل",
+      "generatingDetail": "جار الإنشاء...",
+      "detailLoadFailed": "فشل تحميل التفاصيل",
+      "retryLoadDetail": "إعادة التحميل",
+      "noDetail": "لا توجد تفاصيل بعد"
     }
   },
   "settings": {
@@ -114,7 +123,27 @@
         "title": "مفتاح API",
         "desc": "مفتاح المصادقة لخدمة الترجمة"
       },
-      "apiKeyPlaceholder": "sk-xxx"
+      "apiKeyPlaceholder": "sk-xxx",
+      "model": {
+        "title": "Translation Model",
+        "desc": "Large model ID used for quick translation and word detail generation"
+      },
+      "modelPlaceholder": "gpt-4o-mini",
+      "prompt": {
+        "title": "Translation Prompt",
+        "desc": "Add terminology, tone, or output style constraints for quick translation"
+      },
+      "promptPlaceholder": "Example: keep software product terms consistent and only return natural Chinese",
+      "wordDetailPrompt": {
+        "title": "Word Detail Prompt",
+        "desc": "Add extra constraints for generating examples, definitions, and memory tips"
+      },
+      "wordDetailPromptPlaceholder": "Example: make examples close to daily usage and keep memory tips short and clear",
+      "timeout": {
+        "title": "Request Timeout",
+        "desc": "Translation and detail generation requests fail automatically after this time"
+      },
+      "timeoutLabel": "ms"
     },
     "review": {
       "title": "إعدادات المراجعة",

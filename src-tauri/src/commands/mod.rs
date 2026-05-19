@@ -4,6 +4,7 @@ pub mod tags;
 pub mod translate;
 pub mod tts;
 pub mod window;
+pub mod word_details;
 pub mod words;
 
 use crate::db::Database;

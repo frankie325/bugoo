@@ -12,22 +12,18 @@ pub fn add_word(
     target_lang: String,
     tags: String,
 ) -> Result<Word, String> {
-    state.word_service.add_word(word, translation, source_lang, target_lang, tags)
+    state
+        .word_service
+        .add_word(word, translation, source_lang, target_lang, tags)
 }
 
 #[tauri::command]
-pub fn get_words(
-    state: State<'_, AppState>,
-    search: Option<String>,
-) -> Result<Vec<Word>, String> {
+pub fn get_words(state: State<'_, AppState>, search: Option<String>) -> Result<Vec<Word>, String> {
     state.word_service.get_words(search)
 }
 
 #[tauri::command]
-pub fn delete_word(
-    state: State<'_, AppState>,
-    word_id: String,
-) -> Result<(), String> {
+pub fn delete_word(state: State<'_, AppState>, word_id: String) -> Result<(), String> {
     state.word_service.delete_word(&word_id)
 }
 

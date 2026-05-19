@@ -34,7 +34,16 @@
       "remember": "😄 我记住了",
       "fuzzy": "🤔 有点模糊",
       "forgot": "😵 完全不会",
-      "days": "{{days}}天"
+      "days": "{{days}}天",
+      "definitions": "释义",
+      "examples": "例句",
+      "memoryTip": "记忆技巧",
+      "wordDetail": "详情说明",
+      "generateDetail": "生成详情",
+      "generatingDetail": "正在生成...",
+      "detailLoadFailed": "详情加载失败",
+      "retryLoadDetail": "重试加载",
+      "noDetail": "暂无详情"
     },
     "addTag": "添加标签",
     "tagNameLabel": "标签名称",
@@ -113,7 +122,27 @@
         "title": "API秘钥",
         "desc": "翻译服务的认证密钥"
       },
-      "apiKeyPlaceholder": "sk-xxx"
+      "apiKeyPlaceholder": "sk-xxx",
+      "model": {
+        "title": "翻译模型",
+        "desc": "用于快速翻译和单词详情生成的大模型 ID"
+      },
+      "modelPlaceholder": "gpt-4o-mini",
+      "prompt": {
+        "title": "翻译提示词",
+        "desc": "为快速翻译增加术语、语气或输出风格约束"
+      },
+      "promptPlaceholder": "例如：保持软件产品术语一致，只返回自然中文",
+      "wordDetailPrompt": {
+        "title": "单词详情提示词",
+        "desc": "为例句、释义和记忆技巧生成增加额外约束"
+      },
+      "wordDetailPromptPlaceholder": "例如：例句贴近日常使用，记忆技巧简短易懂",
+      "timeout": {
+        "title": "请求超时时间",
+        "desc": "翻译和详情生成请求超过该时间后自动失败"
+      },
+      "timeoutLabel": "毫秒"
     },
     "review": {
       "title": "复习设置",

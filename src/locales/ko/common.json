@@ -49,7 +49,16 @@
       "remember": "😄 기억해요",
       "fuzzy": "🤔 조금 헷갈려요",
       "forgot": "😵 전혀 모르겠어요",
-      "days": "{{days}}일"
+      "days": "{{days}}일",
+      "definitions": "뜻풀이",
+      "examples": "예문",
+      "memoryTip": "암기 팁",
+      "wordDetail": "상세 정보",
+      "generateDetail": "상세 정보 생성",
+      "generatingDetail": "생성 중...",
+      "detailLoadFailed": "상세 정보를 불러오지 못했습니다",
+      "retryLoadDetail": "다시 불러오기",
+      "noDetail": "아직 상세 정보가 없습니다"
     }
   },
   "settings": {
@@ -114,7 +123,27 @@
         "title": "API 키",
         "desc": "번역 서비스의 인증 키"
       },
-      "apiKeyPlaceholder": "sk-xxx"
+      "apiKeyPlaceholder": "sk-xxx",
+      "model": {
+        "title": "Translation Model",
+        "desc": "Large model ID used for quick translation and word detail generation"
+      },
+      "modelPlaceholder": "gpt-4o-mini",
+      "prompt": {
+        "title": "Translation Prompt",
+        "desc": "Add terminology, tone, or output style constraints for quick translation"
+      },
+      "promptPlaceholder": "Example: keep software product terms consistent and only return natural Chinese",
+      "wordDetailPrompt": {
+        "title": "Word Detail Prompt",
+        "desc": "Add extra constraints for generating examples, definitions, and memory tips"
+      },
+      "wordDetailPromptPlaceholder": "Example: make examples close to daily usage and keep memory tips short and clear",
+      "timeout": {
+        "title": "Request Timeout",
+        "desc": "Translation and detail generation requests fail automatically after this time"
+      },
+      "timeoutLabel": "ms"
     },
     "review": {
       "title": "복습 설정",
