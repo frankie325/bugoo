@@ -130,8 +130,12 @@ fn create_translation_provider(
         "openai" | "custom" => CustomTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
             .map_err(|error| error.to_string()),
-        "deepl" => Ok(Box::new(DeepLTranslationProvider)),
-        "google" => Ok(Box::new(GoogleTranslationProvider)),
+        "deepl" => DeepLTranslationProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
+        "google" => GoogleTranslationProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
         engine => Err(TranslationError::UnsupportedEngine(engine.to_string()).to_string()),
     }
 }
