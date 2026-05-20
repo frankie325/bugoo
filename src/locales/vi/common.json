@@ -115,12 +115,21 @@
       "engineCustom": "Tùy chỉnh (LLM)",
       "endpoint": {
         "title": "Địa chỉ API",
-        "desc": "Địa chỉ giao diện của dịch vụ dịch thuật"
+        "desc": "Địa chỉ giao diện của dịch vụ dịch thuật",
+        "optionalDesc": "Leave empty to use the vendor default endpoint"
       },
-      "endpointPlaceholder": "https://api.example.com",
+      "endpointPlaceholder": {
+        "default": "https://api.example.com",
+        "libretranslate": "http://localhost:5000",
+        "google": "https://translation.googleapis.com/language/translate/v2",
+        "deepl": "https://api-free.deepl.com/v2/translate",
+        "microsoft": "https://api.cognitive.microsofttranslator.com/translate",
+        "custom": "https://api.example.com/v1"
+      },
       "apiKey": {
         "title": "Khóa API",
-        "desc": "Khóa xác thực cho dịch vụ dịch thuật"
+        "desc": "Khóa xác thực cho dịch vụ dịch thuật",
+        "optionalDesc": "Optional for LibreTranslate public/local instances"
       },
       "apiKeyPlaceholder": "sk-xxx",
       "model": {
@@ -142,7 +151,25 @@
         "title": "Request Timeout",
         "desc": "Translation and detail generation requests fail automatically after this time"
       },
-      "timeoutLabel": "ms"
+      "timeoutLabel": "ms",
+      "engineGroupSystem": "Built-in",
+      "engineGroupVendor": "Vendor API",
+      "engineGroupCustom": "Custom",
+      "engineLibreTranslate": "LibreTranslate",
+      "engineMicrosoft": "Bing / Microsoft Translator",
+      "engineBaidu": "Baidu",
+      "engineTencent": "Tencent",
+      "engineYoudao": "Youdao",
+      "apiSecret": {
+        "title": "API Secret",
+        "desc": "Secret key required by the selected vendor"
+      },
+      "apiSecretPlaceholder": "secret-xxx",
+      "apiRegion": {
+        "title": "Region",
+        "desc": "Region required by Microsoft or Tencent Cloud"
+      },
+      "apiRegionPlaceholder": "Example: eastasia / ap-guangzhou"
     },
     "review": {
       "title": "Cài đặt ôn tập",

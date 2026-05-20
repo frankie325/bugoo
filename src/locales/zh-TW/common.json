@@ -115,12 +115,21 @@
       "engineCustom": "自訂 (LLM)",
       "endpoint": {
         "title": "API 位址",
-        "desc": "翻譯服務的介面位址"
+        "desc": "翻譯服務的介面位址",
+        "optionalDesc": "不填寫時使用該廠商預設介面位址"
       },
-      "endpointPlaceholder": "https://api.example.com",
+      "endpointPlaceholder": {
+        "default": "https://api.example.com",
+        "libretranslate": "http://localhost:5000",
+        "google": "https://translation.googleapis.com/language/translate/v2",
+        "deepl": "https://api-free.deepl.com/v2/translate",
+        "microsoft": "https://api.cognitive.microsofttranslator.com/translate",
+        "custom": "https://api.example.com/v1"
+      },
       "apiKey": {
         "title": "API 金鑰",
-        "desc": "翻譯服務的驗證金鑰"
+        "desc": "翻譯服務的驗證金鑰",
+        "optionalDesc": "可選，不填寫時使用公開或本地 LibreTranslate 服務"
       },
       "apiKeyPlaceholder": "sk-xxx",
       "model": {
@@ -142,7 +151,25 @@
         "title": "Request Timeout",
         "desc": "Translation and detail generation requests fail automatically after this time"
       },
-      "timeoutLabel": "ms"
+      "timeoutLabel": "ms",
+      "engineGroupSystem": "系統內建",
+      "engineGroupVendor": "廠商 API",
+      "engineGroupCustom": "自訂",
+      "engineLibreTranslate": "LibreTranslate",
+      "engineMicrosoft": "Bing / Microsoft Translator",
+      "engineBaidu": "百度",
+      "engineTencent": "騰訊",
+      "engineYoudao": "有道",
+      "apiSecret": {
+        "title": "API Secret",
+        "desc": "廠商 API 的密鑰或 Secret Key"
+      },
+      "apiSecretPlaceholder": "secret-xxx",
+      "apiRegion": {
+        "title": "服務區域",
+        "desc": "Microsoft 或騰訊雲要求的區域"
+      },
+      "apiRegionPlaceholder": "例如：eastasia / ap-guangzhou"
     },
     "review": {
       "title": "複習設定",
