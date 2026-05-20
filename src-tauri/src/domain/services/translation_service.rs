@@ -2,22 +2,63 @@ use crate::adapters::outbound::translation::{
     custom::CustomTranslationProvider, deepl::DeepLTranslationProvider,
     google::GoogleTranslationProvider,
 };
+use crate::ports::outbound::dictionary::{
+    should_lookup_dictionary, DictionaryLookupRequest, DictionaryProvider,
+};
 use crate::ports::outbound::translation::{
     TranslationConfig, TranslationError, TranslationProvider, TranslationRequest, TranslationResult,
 };
-use crate::ports::outbound::word_insight::{GeneratedWordDetail, WordInsightProvider, WordInsightRequest};
+use crate::ports::outbound::word_insight::{
+    GeneratedWordDetail, WordInsightProvider, WordInsightRequest,
+};
+use log::warn;
 use std::collections::HashMap;
+use std::sync::Arc;
 
-pub struct TranslationService;
+#[derive(Clone)]
+pub struct TranslationService {
+    dictionary_provider: Option<Arc<dyn DictionaryProvider>>,
+}
 
 impl TranslationService {
+    pub fn new(dictionary_provider: Option<Arc<dyn DictionaryProvider>>) -> Self {
+        Self { dictionary_provider }
+    }
+
     pub async fn translate(
+        &self,
         settings: HashMap<String, String>,
         text: String,
         source_lang: String,
         target_lang: String,
     ) -> Result<TranslationResult, String> {
         validate_text(&text).map_err(|e| e.to_string())?;
+
+        if should_lookup_dictionary(&text) {
+            if let Some(provider) = &self.dictionary_provider {
+                match provider.lookup(DictionaryLookupRequest {
+                    text: text.clone(),
+                    source_lang: source_lang.clone(),
+                    target_lang: target_lang.clone(),
+                }) {
+                    Ok(Some(result)) => {
+                        return Ok(TranslationResult {
+                            translation: result.translation,
+                            detected_source_lang: Some(source_lang),
+                            phonetic: result.phonetic,
+                            part_of_speech: result.part_of_speech,
+                            definitions: result.definitions,
+                            examples: result.examples,
+                        });
+                    }
+                    Ok(None) => {}
+                    Err(error) => {
+                        warn!("Dictionary lookup failed, falling back to translation provider: {error}");
+                    }
+                }
+            }
+        }
+
         let config = build_translation_config(&settings);
         let provider = create_translation_provider(config)?;
         let request = TranslationRequest {
@@ -29,6 +70,7 @@ impl TranslationService {
     }
 
     pub async fn generate_word_detail(
+        &self,
         settings: HashMap<String, String>,
         word: String,
         translation: String,

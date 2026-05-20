@@ -1,6 +1,5 @@
 use crate::commands::translate::read_settings_map;
 use crate::commands::AppState;
-use crate::domain::services::translation_service::TranslationService;
 use crate::ports::outbound::translation::{TranslationError, TranslationExample};
 use crate::ports::outbound::word_insight::GeneratedWordDetail;
 use chrono::Utc;
@@ -69,14 +68,16 @@ pub async fn generate_word_detail(
         .map(|s| s.trim().to_lowercase())
         .unwrap_or_else(|| "custom".to_string());
 
-    let generated = TranslationService::generate_word_detail(
-        settings,
-        word.word.clone(),
-        word.translation.clone(),
-        word.source_lang,
-        word.target_lang,
-    )
-    .await?;
+    let generated = app_state
+        .translation_service
+        .generate_word_detail(
+            settings,
+            word.word.clone(),
+            word.translation.clone(),
+            word.source_lang,
+            word.target_lang,
+        )
+        .await?;
 
     let raw_json = serde_json::to_string(&generated).map_err(|error| error.to_string())?;
     let input = generated_word_detail_to_input(word.id, engine, raw_json, generated);

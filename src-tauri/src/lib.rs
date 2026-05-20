@@ -6,7 +6,10 @@ mod ports;
 mod scheduler;
 
 use crate::db::Database;
+use crate::domain::services::translation_service::TranslationService;
+use crate::ports::outbound::dictionary::DictionaryProvider;
 use crate::scheduler::notification::start_notification_scheduler;
+use adapters::outbound::dictionary::stardict_ecdict::StarDictEcdictDictionaryProvider;
 use commands::AppState;
 use log::info;
 use std::path::PathBuf;
@@ -37,8 +40,33 @@ pub fn run() {
             let db_clone = db.clone();
             let app_handle = app.handle().clone();
 
+            let dictionary_dir = app
+                .path()
+                .resolve("resources/stardict-ecdict", tauri::path::BaseDirectory::Resource)
+                .unwrap_or_else(|_| {
+                    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                        .join("resources")
+                        .join("stardict-ecdict")
+                });
+
+            let dictionary_provider = match StarDictEcdictDictionaryProvider::new(
+                dictionary_dir.clone(),
+                "stardict-ecdict-2.4.2",
+            ) {
+                Ok(provider) => Some(Arc::new(provider) as Arc<dyn DictionaryProvider>),
+                Err(error) => {
+                    log::warn!(
+                        "StarDict ECDICT dictionary unavailable at {:?}, dictionary lookup disabled: {}",
+                        dictionary_dir,
+                        error
+                    );
+                    None
+                }
+            };
+            let translation_service = TranslationService::new(dictionary_provider);
+
             // 创建并管理 AppState
-            let app_state = AppState::new(db.clone());
+            let app_state = AppState::new(db.clone(), translation_service);
             app.manage(app_state);
 
             async_runtime::spawn(async move {
