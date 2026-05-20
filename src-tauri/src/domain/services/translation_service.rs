@@ -1,6 +1,8 @@
 use crate::adapters::outbound::translation::{
-    custom::CustomTranslationProvider, deepl::DeepLTranslationProvider,
-    google::GoogleTranslationProvider, libretranslate::LibreTranslateProvider,
+    baidu::BaiduTranslationProvider, custom::CustomTranslationProvider,
+    deepl::DeepLTranslationProvider, google::GoogleTranslationProvider,
+    libretranslate::LibreTranslateProvider, microsoft::MicrosoftTranslationProvider,
+    youdao::YoudaoTranslationProvider,
 };
 use crate::ports::outbound::dictionary::{
     should_lookup_dictionary, DictionaryLookupRequest, DictionaryProvider,
@@ -134,6 +136,15 @@ fn create_translation_provider(
             .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
             .map_err(|error| error.to_string()),
         "google" => GoogleTranslationProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
+        "microsoft" => MicrosoftTranslationProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
+        "baidu" => BaiduTranslationProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
+        "youdao" => YoudaoTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
             .map_err(|error| error.to_string()),
         engine => Err(TranslationError::UnsupportedEngine(engine.to_string()).to_string()),
