@@ -1,6 +1,6 @@
 use crate::adapters::outbound::translation::{
     custom::CustomTranslationProvider, deepl::DeepLTranslationProvider,
-    google::GoogleTranslationProvider,
+    google::GoogleTranslationProvider, libretranslate::LibreTranslateProvider,
 };
 use crate::ports::outbound::dictionary::{
     should_lookup_dictionary, DictionaryLookupRequest, DictionaryProvider,
@@ -124,6 +124,9 @@ fn create_translation_provider(
     config: TranslationConfig,
 ) -> Result<Box<dyn TranslationProvider>, String> {
     match config.engine.trim().to_lowercase().as_str() {
+        "libretranslate" => LibreTranslateProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
         "openai" | "custom" => CustomTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
             .map_err(|error| error.to_string()),
@@ -140,7 +143,8 @@ fn create_word_insight_provider(
         "openai" | "custom" => CustomTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn WordInsightProvider>)
             .map_err(|error| error.to_string()),
-        "deepl" | "google" => Err(TranslationError::UnsupportedEngine(config.engine).to_string()),
+        "libretranslate" | "deepl" | "google" | "microsoft" | "baidu" | "tencent"
+        | "youdao" => Err(TranslationError::UnsupportedEngine(config.engine).to_string()),
         engine => Err(TranslationError::UnsupportedEngine(engine.to_string()).to_string()),
     }
 }
