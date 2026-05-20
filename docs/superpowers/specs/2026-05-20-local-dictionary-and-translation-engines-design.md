@@ -16,7 +16,7 @@ Bugoo 当前已经有 `TranslationProvider`、`WordInsightProvider`、`translate
 ## 目标
 
 - 系统内置 ECDICT 本地词库。
-- ECDICT 以只读 SQLite 词库形式随 App 打包。
+- ECDICT 以只读 StarDict 词库形式接入，读取 `.ifo/.idx/.dict` 三件套。
 - 查询翻译时优先查本地词典。
 - 本地词典查不到时调用翻译接口。
 - 翻译引擎分为三类：
@@ -61,13 +61,15 @@ type TranslationResult = {
 
 ### 词库形态
 
-ECDICT 第一版处理成独立只读 SQLite 文件，随 App 打包。例如：
+ECDICT 第一版处理成独立只读 StarDict 资源，读取已经解压的 `.ifo/.idx/.dict` 三件套。例如：
 
 ```txt
-src-tauri/resources/dictionaries/ecdict.sqlite
+src-tauri/resources/stardict-ecdict/stardict-ecdict-2.4.2.ifo
+src-tauri/resources/stardict-ecdict/stardict-ecdict-2.4.2.idx
+src-tauri/resources/stardict-ecdict/stardict-ecdict-2.4.2.dict
 ```
 
-应用运行时只读打开该词库，不把 ECDICT 导入用户主数据库。
+应用运行时只读打开 StarDict 资源，不把 ECDICT 导入用户主数据库。
 
 ### 设计理由
 
@@ -75,6 +77,7 @@ src-tauri/resources/dictionaries/ecdict.sqlite
 - 词库升级可以通过替换资源文件完成。
 - 查询逻辑独立，减少和用户数据迁移的耦合。
 - 不需要首次启动导入，避免启动耗时。
+- 相比完整 SQLite 包，StarDict 三件套更适合作为只读离线词典接入；第一版不支持 `.mdx`。
 
 ### 词典 Provider
 
@@ -425,7 +428,7 @@ ECDICT 查询失败不应阻断翻译。处理方式：
 
 ## 决策记录
 
-- 第一版 ECDICT 使用只读 SQLite 随 App 打包。
+- 第一版 ECDICT 使用只读 StarDict 三件套接入：`stardict-ecdict-2.4.2.ifo/.idx/.dict`。
 - 第一版不内置厂商 API 密钥。
 - 第一版厂商 API 使用 BYOK。
 - 第一版不做缓存。
