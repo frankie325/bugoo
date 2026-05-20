@@ -68,31 +68,3 @@ pub trait TranslationProvider: Send + Sync {
     fn translate<'a>(&'a self, request: TranslationRequest) -> TranslationFuture<'a>;
 }
 
-pub fn validate_text(text: &str) -> Result<(), TranslationError> {
-    if text.trim().is_empty() {
-        return Err(TranslationError::EmptyText);
-    }
-    Ok(())
-}
-
-pub fn normalize_endpoint(endpoint: &str) -> String {
-    endpoint.trim().trim_end_matches('/').to_string()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn validate_text_rejects_empty_text() {
-        assert_eq!(validate_text("  "), Err(TranslationError::EmptyText));
-    }
-
-    #[test]
-    fn normalize_endpoint_trims_trailing_slashes() {
-        assert_eq!(
-            normalize_endpoint(" https://api.example.com/v1/// "),
-            "https://api.example.com/v1"
-        );
-    }
-}

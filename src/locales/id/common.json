@@ -112,8 +112,7 @@
       "engineLabel": "Mesin penerjemah",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "Kustom",
+      "engineCustom": "Kustom (LLM)",
       "endpoint": {
         "title": "Alamat API",
         "desc": "Alamat antarmuka layanan terjemahan"

@@ -112,8 +112,7 @@
       "engineLabel": "Mecanismo de tradução",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "Personalizado",
+      "engineCustom": "Personalizado (LLM)",
       "endpoint": {
         "title": "Endereço da API",
         "desc": "Endereço do endpoint do serviço de tradução"

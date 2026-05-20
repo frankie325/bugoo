@@ -112,8 +112,7 @@
       "engineLabel": "翻訳エンジン",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "カスタム",
+      "engineCustom": "カスタム (LLM)",
       "endpoint": {
         "title": "API エンドポイント",
         "desc": "翻訳サービスの API エンドポイント"

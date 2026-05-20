@@ -112,8 +112,7 @@
       "engineLabel": "محرك الترجمة",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "مخصص",
+      "engineCustom": "مخصص (LLM)",
       "endpoint": {
         "title": "عنوان API",
         "desc": "عنوان واجهة خدمة الترجمة"

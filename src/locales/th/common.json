@@ -112,8 +112,7 @@
       "engineLabel": "เครื่องมือแปลภาษา",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "กำหนดเอง",
+      "engineCustom": "กำหนดเอง (LLM)",
       "endpoint": {
         "title": "ที่อยู่ API",
         "desc": "ที่อยู่ของอินเทอร์เฟซบริการแปลภาษา"

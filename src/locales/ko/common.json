@@ -112,8 +112,7 @@
       "engineLabel": "번역 엔진",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "사용자 정의",
+      "engineCustom": "사용자 정의 (LLM)",
       "endpoint": {
         "title": "API 주소",
         "desc": "번역 서비스의 API 엔드포인트"

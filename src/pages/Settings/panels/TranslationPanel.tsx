@@ -16,7 +16,6 @@ import { setSetting } from "../../../lib/api";
 const engineOptionKeys = [
   { i18nKey: "engineDeepL", value: "deepl" },
   { i18nKey: "engineGoogle", value: "google" },
-  { i18nKey: "engineOpenAI", value: "openai" },
   { i18nKey: "engineCustom", value: "custom" },
 ];
 
@@ -34,10 +33,11 @@ export function TranslationPanel() {
     });
   };
 
-  const translationEngine = settings.translationEngine || "openai";
-  const apiEndpoint = settings.apiEndpoint || "https://api.openai.com/v1";
+  const rawEngine = settings.translationEngine || "custom";
+  const translationEngine = rawEngine === "openai" ? "custom" : rawEngine;
+  const apiEndpoint = settings.apiEndpoint || "";
   const apiKey = settings.apiKey || "";
-  const translationModel = settings.translationModel || "gpt-4o-mini";
+  const translationModel = settings.translationModel || "";
   const translationPrompt = settings.translationPrompt || "";
   const wordDetailPrompt = settings.wordDetailPrompt || "";
   const parsedTranslationTimeoutMs = Number(
@@ -46,6 +46,11 @@ export function TranslationPanel() {
   const translationTimeoutMs = Number.isFinite(parsedTranslationTimeoutMs)
     ? parsedTranslationTimeoutMs
     : DEFAULT_TRANSLATION_TIMEOUT_MS;
+
+  // Migrate "openai" → "custom" for existing users
+  if (rawEngine === "openai") {
+    saveSetting("translationEngine", "custom");
+  }
 
   return (
     <Card>

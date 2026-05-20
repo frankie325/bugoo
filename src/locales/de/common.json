@@ -112,8 +112,7 @@
       "engineLabel": "Übersetzungsdienst",
       "engineDeepL": "DeepL",
       "engineGoogle": "Google",
-      "engineOpenAI": "OpenAI",
-      "engineCustom": "Benutzerdefiniert",
+      "engineCustom": "Benutzerdefiniert (LLM)",
       "endpoint": {
         "title": "API-Adresse",
         "desc": "Endpunktadresse des Übersetzungsdienstes"
