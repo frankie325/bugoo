@@ -64,9 +64,11 @@ pub fn normalize_endpoint(endpoint: &str) -> String {
 
 fn build_translation_config(settings: &HashMap<String, String>) -> TranslationConfig {
     TranslationConfig {
-        engine: setting_or_default(settings, "translationEngine", "custom"),
+        engine: setting_or_default(settings, "translationEngine", "libretranslate"),
         api_endpoint: setting_or_default(settings, "apiEndpoint", ""),
         api_key: setting_or_default(settings, "apiKey", ""),
+        api_secret: setting_or_default(settings, "apiSecret", ""),
+        api_region: setting_or_default(settings, "apiRegion", ""),
         translation_model: setting_or_default(settings, "translationModel", ""),
         translation_prompt: setting_or_default(settings, "translationPrompt", ""),
         word_detail_prompt: setting_or_default(settings, "wordDetailPrompt", ""),
@@ -156,5 +158,19 @@ mod tests {
             setting_or_default(&settings, "translationEngine", "custom"),
             "custom"
         );
+    }
+
+    #[test]
+    fn build_translation_config_reads_secret_region_and_defaults_to_libretranslate() {
+        let settings = HashMap::from([
+            ("apiSecret".to_string(), "secret-value".to_string()),
+            ("apiRegion".to_string(), "eastasia".to_string()),
+        ]);
+
+        let config = build_translation_config(&settings);
+
+        assert_eq!(config.engine, "libretranslate");
+        assert_eq!(config.api_secret, "secret-value");
+        assert_eq!(config.api_region, "eastasia");
     }
 }

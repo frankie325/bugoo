@@ -447,6 +447,8 @@ mod tests {
             engine: "custom".to_string(),
             api_endpoint: "https://api.example.com/v1".to_string(),
             api_key: "test-key".to_string(),
+            api_secret: String::new(),
+            api_region: String::new(),
             translation_model: "test-model".to_string(),
             translation_prompt: String::new(),
             word_detail_prompt: String::new(),
