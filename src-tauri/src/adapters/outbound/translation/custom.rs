@@ -1,5 +1,6 @@
+use crate::domain::services::translation_service::{normalize_endpoint, validate_text};
 use crate::ports::outbound::translation::{
-    normalize_endpoint, validate_text, TranslationConfig, TranslationError, TranslationExample,
+    TranslationConfig, TranslationError, TranslationExample,
     TranslationFuture, TranslationProvider, TranslationRequest, TranslationResult,
 };
 use crate::ports::outbound::word_insight::{

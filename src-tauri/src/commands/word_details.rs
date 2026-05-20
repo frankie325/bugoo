@@ -1,7 +1,8 @@
-use crate::commands::translate::{create_word_insight_provider, load_translation_config};
+use crate::commands::translate::read_settings_map;
 use crate::commands::AppState;
+use crate::domain::services::translation_service::TranslationService;
 use crate::ports::outbound::translation::{TranslationError, TranslationExample};
-use crate::ports::outbound::word_insight::{GeneratedWordDetail, WordInsightRequest};
+use crate::ports::outbound::word_insight::GeneratedWordDetail;
 use chrono::Utc;
 use rusqlite::{params, OptionalExtension};
 use serde::{Deserialize, Serialize};
@@ -62,20 +63,21 @@ pub async fn generate_word_detail(
     let app_state = state.inner();
     let word = read_word_summary(app_state, &word_id)?
         .ok_or_else(|| TranslationError::WordNotFound.to_string())?;
-    let config = load_translation_config(app_state)?;
-    let engine = config.engine.trim().to_lowercase();
-    let provider = create_word_insight_provider(config)?;
-    let request = WordInsightRequest {
-        word: word.word.clone(),
-        translation: word.translation.clone(),
-        source_lang: word.source_lang,
-        target_lang: word.target_lang,
-    };
+    let settings = read_settings_map(app_state)?;
+    let engine = settings
+        .get("translationEngine")
+        .map(|s| s.trim().to_lowercase())
+        .unwrap_or_else(|| "custom".to_string());
 
-    let generated = provider
-        .generate_word_detail(request)
-        .await
-        .map_err(|error| error.to_string())?;
+    let generated = TranslationService::generate_word_detail(
+        settings,
+        word.word.clone(),
+        word.translation.clone(),
+        word.source_lang,
+        word.target_lang,
+    )
+    .await?;
+
     let raw_json = serde_json::to_string(&generated).map_err(|error| error.to_string())?;
     let input = generated_word_detail_to_input(word.id, engine, raw_json, generated);
 
