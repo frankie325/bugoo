@@ -5,6 +5,7 @@ use crate::ports::outbound::translation::{
 use crate::ports::outbound::word_insight::{
     GeneratedWordDetail, WordInsightFuture, WordInsightProvider, WordInsightRequest,
 };
+use log::debug;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -218,7 +219,10 @@ impl CustomTranslationProvider {
         body.choices
             .into_iter()
             .next()
-            .map(|choice| choice.message.content)
+            .map(|choice| {
+                debug!("LLM raw response content: {}", choice.message.content);
+                choice.message.content
+            })
             .ok_or(TranslationError::InvalidResponse)
     }
 
@@ -266,7 +270,8 @@ fn append_custom_prompt(base: &str, custom: &str) -> String {
 }
 
 fn parse_translation_result(content: &str) -> Result<TranslationResult, TranslationError> {
-    let parsed = serde_json::from_str::<TranslationResponse>(content)
+    let json_str = extract_json(content);
+    let parsed = serde_json::from_str::<TranslationResponse>(json_str)
         .map_err(|_| TranslationError::InvalidJson)?;
     Ok(TranslationResult {
         translation: parsed.translation,
@@ -279,7 +284,8 @@ fn parse_translation_result(content: &str) -> Result<TranslationResult, Translat
 }
 
 fn parse_word_detail(content: &str) -> Result<GeneratedWordDetail, TranslationError> {
-    let parsed = serde_json::from_str::<WordDetailResponse>(content)
+    let json_str = extract_json(content);
+    let parsed = serde_json::from_str::<WordDetailResponse>(json_str)
         .map_err(|_| TranslationError::InvalidJson)?;
     if parsed.translation.trim().is_empty()
         || parsed.memory_tip.trim().is_empty()
@@ -299,6 +305,57 @@ fn parse_word_detail(content: &str) -> Result<GeneratedWordDetail, TranslationEr
         memory_tip: parsed.memory_tip,
         detail: parsed.detail,
     })
+}
+
+/// Extract JSON from LLM response content.
+/// Handles: bare JSON, markdown-wrapped JSON (```json...```), and JSON embedded in reasoning text.
+fn extract_json(content: &str) -> &str {
+    let trimmed = content.trim();
+
+    // Case 1: already valid JSON (starts with '{' or '[')
+    if trimmed.starts_with('{') || trimmed.starts_with('[') {
+        return trimmed;
+    }
+
+    // Case 2: JSON wrapped in markdown code blocks — ```json ... ``` or ``` ... ```
+    if let Some(json) = extract_from_markdown_code_block(trimmed) {
+        return json;
+    }
+
+    // Case 3: JSON embedded in thinking/reasoning text — find first '{' to last '}'
+    if let Some(start) = trimmed.find('{') {
+        if let Some(end) = trimmed.rfind('}') {
+            if start < end {
+                return &trimmed[start..=end];
+            }
+        }
+    }
+
+    // Fallback: return original content (serde_json::from_str will fail)
+    content
+}
+
+fn extract_from_markdown_code_block(content: &str) -> Option<&str> {
+    // Match ```json ... ``` or ``` ... ``` patterns
+    let start_marker = content.find("```");
+    let end_marker = content.rfind("```");
+
+    if start_marker.is_none() || end_marker.is_none() || start_marker == end_marker {
+        return None;
+    }
+
+    let start = start_marker.unwrap();
+    let end = end_marker.unwrap();
+
+    // Skip the ``` and optional language tag (e.g., "json", "JSON")
+    let block_start = content[start + 3..].find('\n').map_or(start + 3, |nl| start + 3 + nl + 1);
+    let block_end = end;
+
+    if block_start >= block_end {
+        return None;
+    }
+
+    Some(content[block_start..block_end].trim())
 }
 
 fn format_http_error(status: reqwest::StatusCode, body: &str, api_key: &str) -> String {
