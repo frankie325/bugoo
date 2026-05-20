@@ -1,7 +1,10 @@
+use crate::adapters::outbound::translation::http_utils::{
+    format_http_error, map_reqwest_error, timeout_duration,
+};
 use crate::domain::services::translation_service::{normalize_endpoint, validate_text};
 use crate::ports::outbound::translation::{
-    TranslationConfig, TranslationError, TranslationExample,
-    TranslationFuture, TranslationProvider, TranslationRequest, TranslationResult,
+    TranslationConfig, TranslationError, TranslationExample, TranslationFuture, TranslationProvider,
+    TranslationRequest, TranslationResult,
 };
 use crate::ports::outbound::word_insight::{
     GeneratedWordDetail, WordInsightFuture, WordInsightProvider, WordInsightRequest,
@@ -9,8 +12,6 @@ use crate::ports::outbound::word_insight::{
 use log::debug;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::time::Duration;
 
 const SYSTEM_TRANSLATION_PROMPT: &str = include_str!("prompts/system_translation_prompt.txt");
 const WORD_DETAIL_PROMPT: &str = include_str!("prompts/word_detail_prompt.txt");
@@ -83,19 +84,6 @@ struct WordDetailResponse {
     detail: String,
 }
 
-#[derive(Debug, Deserialize)]
-struct ErrorResponse {
-    error: Option<CustomError>,
-}
-
-#[derive(Debug, Deserialize)]
-struct CustomError {
-    message: Option<String>,
-    #[serde(rename = "type")]
-    kind: Option<String>,
-    code: Option<Value>,
-}
-
 impl CustomTranslationProvider {
     pub fn new(config: TranslationConfig) -> Result<Self, TranslationError> {
         if config.api_endpoint.trim().is_empty() {
@@ -108,13 +96,8 @@ impl CustomTranslationProvider {
             return Err(TranslationError::MissingModel);
         }
 
-        let timeout = if config.timeout_ms == 0 {
-            Duration::from_secs(30)
-        } else {
-            Duration::from_millis(config.timeout_ms)
-        };
         let client = Client::builder()
-            .timeout(timeout)
+            .timeout(timeout_duration(config.timeout_ms))
             .build()
             .map_err(|error| TranslationError::RequestFailed(error.to_string()))?;
 
@@ -208,7 +191,7 @@ impl CustomTranslationProvider {
             return Err(TranslationError::RequestFailed(format_http_error(
                 status,
                 &body,
-                &self.config.api_key,
+                &[&self.config.api_key],
             )));
         }
 
@@ -357,85 +340,6 @@ fn extract_from_markdown_code_block(content: &str) -> Option<&str> {
     }
 
     Some(content[block_start..block_end].trim())
-}
-
-fn format_http_error(status: reqwest::StatusCode, body: &str, api_key: &str) -> String {
-    let status_text = format!("HTTP {status}");
-    let redacted_body = redact_api_key(body, api_key);
-    let trimmed = redacted_body.trim();
-    if trimmed.is_empty() {
-        return status_text;
-    }
-
-    if let Ok(parsed) = serde_json::from_str::<ErrorResponse>(trimmed) {
-        if let Some(error) = parsed.error {
-            if let Some(message) = non_empty_string(error.message) {
-                let mut details = Vec::new();
-                if let Some(kind) = non_empty_string(error.kind) {
-                    details.push(format!("type: {}", truncate_for_error(&kind)));
-                }
-                if let Some(code) = error.code.and_then(error_code_to_string) {
-                    details.push(format!("code: {}", truncate_for_error(&code)));
-                }
-
-                let message = truncate_for_error(&message);
-                if details.is_empty() {
-                    return format!("{status_text}: {message}");
-                }
-                return format!("{status_text}: {message} ({})", details.join(", "));
-            }
-        }
-    }
-
-    format!("{status_text}: {}", truncate_for_error(trimmed))
-}
-
-fn redact_api_key(value: &str, api_key: &str) -> String {
-    let api_key = api_key.trim();
-    if api_key.is_empty() || !value.contains(api_key) {
-        return value.to_string();
-    }
-
-    value.replace(api_key, "[redacted]")
-}
-
-fn non_empty_string(value: Option<String>) -> Option<String> {
-    value.and_then(|value| {
-        let trimmed = value.trim();
-        if trimmed.is_empty() {
-            None
-        } else {
-            Some(trimmed.to_string())
-        }
-    })
-}
-
-fn error_code_to_string(value: Value) -> Option<String> {
-    match value {
-        Value::String(value) => non_empty_string(Some(value)),
-        Value::Number(value) => Some(value.to_string()),
-        Value::Bool(value) => Some(value.to_string()),
-        _ => None,
-    }
-}
-
-fn truncate_for_error(value: &str) -> String {
-    const MAX_ERROR_BODY_CHARS: usize = 500;
-    if value.chars().count() <= MAX_ERROR_BODY_CHARS {
-        return value.to_string();
-    }
-
-    let mut truncated = value.chars().take(MAX_ERROR_BODY_CHARS).collect::<String>();
-    truncated.push_str("...");
-    truncated
-}
-
-fn map_reqwest_error(error: reqwest::Error) -> TranslationError {
-    if error.is_timeout() {
-        TranslationError::RequestTimeout
-    } else {
-        TranslationError::RequestFailed(error.to_string())
-    }
 }
 
 #[cfg(test)]
@@ -631,7 +535,7 @@ mod tests {
         let body = r#"{"error":{"message":"model not found","type":"invalid_request_error","code":"model_not_found"}}"#;
 
         assert_eq!(
-            format_http_error(reqwest::StatusCode::BAD_REQUEST, body, "test-key"),
+            format_http_error(reqwest::StatusCode::BAD_REQUEST, body, &["test-key"]),
             "HTTP 400 Bad Request: model not found (type: invalid_request_error, code: model_not_found)"
         );
     }
@@ -641,7 +545,7 @@ mod tests {
         let body = r#"{"error":{"message":"invalid key sk-test-secret","type":"auth","code":"sk-test-secret"}}"#;
 
         assert_eq!(
-            format_http_error(reqwest::StatusCode::UNAUTHORIZED, body, "sk-test-secret"),
+            format_http_error(reqwest::StatusCode::UNAUTHORIZED, body, &["sk-test-secret"]),
             "HTTP 401 Unauthorized: invalid key [redacted] (type: auth, code: [redacted])"
         );
     }
