@@ -2,7 +2,7 @@ use crate::adapters::outbound::translation::{
     baidu::BaiduTranslationProvider, custom::CustomTranslationProvider,
     deepl::DeepLTranslationProvider, google::GoogleTranslationProvider,
     libretranslate::LibreTranslateProvider, microsoft::MicrosoftTranslationProvider,
-    youdao::YoudaoTranslationProvider,
+    tencent::TencentTranslationProvider, youdao::YoudaoTranslationProvider,
 };
 use crate::ports::outbound::dictionary::{
     should_lookup_dictionary, DictionaryLookupRequest, DictionaryProvider,
@@ -142,6 +142,9 @@ fn create_translation_provider(
             .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
             .map_err(|error| error.to_string()),
         "baidu" => BaiduTranslationProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
+        "tencent" => TencentTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
             .map_err(|error| error.to_string()),
         "youdao" => YoudaoTranslationProvider::new(config)
