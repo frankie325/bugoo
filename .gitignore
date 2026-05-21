@@ -28,3 +28,8 @@ dist-ssr
 materials/**
 **/__tests__/**
 .worktrees/
+
+# Local dictionary resources
+src-tauri/resources/stardict-ecdict/*.dict
+src-tauri/resources/stardict-ecdict/*.idx
+src-tauri/resources/stardict-ecdict/*.ifo
