@@ -1,7 +1,7 @@
 use crate::adapters::outbound::translation::http_utils::{
     empty_translation_result, format_http_error, map_reqwest_error, timeout_duration,
 };
-use crate::domain::services::translation_service::validate_text;
+use crate::domain::services::translation_service::{normalize_endpoint, validate_text};
 use crate::ports::outbound::translation::{
     TranslationConfig, TranslationError, TranslationFuture, TranslationProvider, TranslationRequest,
 };
@@ -9,57 +9,39 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone)]
-pub struct GoogleTranslationProvider {
+pub struct LibreTranslateProvider {
     client: Client,
     config: TranslationConfig,
 }
 
 #[derive(Debug, Serialize)]
-struct GoogleTranslateRequest {
+struct LibreTranslateRequest {
     q: String,
+    source: String,
     target: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    source: Option<String>,
     format: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    api_key: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
-struct GoogleTranslateResponse {
-    data: GoogleTranslateData,
-}
-
-#[derive(Debug, Deserialize)]
-struct GoogleTranslateData {
-    translations: Vec<GoogleTranslation>,
-}
-
-#[derive(Debug, Deserialize)]
-struct GoogleTranslation {
+struct LibreTranslateResponse {
     #[serde(rename = "translatedText")]
     translated_text: String,
-    #[serde(rename = "detectedSourceLanguage")]
-    detected_source_language: Option<String>,
 }
 
-impl GoogleTranslationProvider {
+impl LibreTranslateProvider {
     pub fn new(config: TranslationConfig) -> Result<Self, TranslationError> {
-        if config.api_key.trim().is_empty() {
-            return Err(TranslationError::MissingApiKey);
+        if config.api_endpoint.trim().is_empty() {
+            return Err(TranslationError::MissingEndpoint);
         }
 
         let client = Client::builder()
             .timeout(timeout_duration(config.timeout_ms))
             .build()
             .map_err(|error| TranslationError::RequestFailed(error.to_string()))?;
-        Ok(Self { client, config })
-    }
 
-    fn endpoint(&self) -> String {
-        if self.config.api_endpoint.trim().is_empty() {
-            "https://translation.googleapis.com/language/translate/v2".to_string()
-        } else {
-            self.config.api_endpoint.clone()
-        }
+        Ok(Self { client, config })
     }
 
     async fn translate_inner(
@@ -68,18 +50,22 @@ impl GoogleTranslationProvider {
     ) -> Result<crate::ports::outbound::translation::TranslationResult, TranslationError> {
         validate_text(&request.text)?;
 
-        let source = optional_lang(&request.source_lang);
-        let payload = GoogleTranslateRequest {
+        let source = normalize_source_lang(&request.source_lang);
+        let target = normalize_target_lang(&request.target_lang);
+        let payload = LibreTranslateRequest {
             q: request.text,
-            target: request.target_lang.trim().to_lowercase(),
             source: source.clone(),
+            target,
             format: "text".to_string(),
+            api_key: non_empty_api_key(&self.config.api_key),
         };
 
         let response = self
             .client
-            .post(self.endpoint())
-            .query(&[("key", self.config.api_key.trim())])
+            .post(format!(
+                "{}/translate",
+                normalize_endpoint(&self.config.api_endpoint)
+            ))
             .json(&payload)
             .send()
             .await
@@ -96,36 +82,46 @@ impl GoogleTranslationProvider {
         }
 
         let body = response
-            .json::<GoogleTranslateResponse>()
+            .json::<LibreTranslateResponse>()
             .await
             .map_err(map_reqwest_error)?;
 
-        let translated = body
-            .data
-            .translations
-            .into_iter()
-            .next()
-            .ok_or(TranslationError::InvalidResponse)?;
+        if body.translated_text.trim().is_empty() {
+            return Err(TranslationError::InvalidResponse);
+        }
 
         Ok(empty_translation_result(
-            translated.translated_text,
-            translated.detected_source_language.or(source),
+            body.translated_text,
+            if source == "auto" { None } else { Some(source) },
         ))
     }
 }
 
-impl TranslationProvider for GoogleTranslationProvider {
+impl TranslationProvider for LibreTranslateProvider {
     fn translate<'a>(&'a self, request: TranslationRequest) -> TranslationFuture<'a> {
         Box::pin(async move { self.translate_inner(request).await })
     }
 }
 
-fn optional_lang(lang: &str) -> Option<String> {
-    let value = lang.trim().to_lowercase();
-    if value.is_empty() || value == "auto" {
+fn normalize_source_lang(lang: &str) -> String {
+    let normalized = lang.trim().to_lowercase();
+    if normalized.is_empty() || normalized == "auto" {
+        "auto".to_string()
+    } else {
+        normalized
+    }
+}
+
+fn normalize_target_lang(lang: &str) -> String {
+    lang.trim().to_lowercase()
+}
+
+fn non_empty_api_key(api_key: &str) -> Option<String> {
+    let trimmed = api_key.trim();
+    if trimmed.is_empty() {
         None
     } else {
-        Some(value)
+        Some(trimmed.to_string())
     }
 }
 
@@ -135,9 +131,9 @@ mod tests {
 
     fn config() -> TranslationConfig {
         TranslationConfig {
-            engine: "google".to_string(),
-            api_endpoint: String::new(),
-            api_key: "key".to_string(),
+            engine: "libretranslate".to_string(),
+            api_endpoint: "http://localhost:5000".to_string(),
+            api_key: String::new(),
             api_secret: String::new(),
             api_region: String::new(),
             translation_model: String::new(),
@@ -148,18 +144,18 @@ mod tests {
     }
 
     #[test]
-    fn new_rejects_missing_api_key() {
+    fn new_rejects_missing_endpoint() {
         let mut config = config();
-        config.api_key = " ".to_string();
+        config.api_endpoint = " ".to_string();
 
-        let result = GoogleTranslationProvider::new(config);
+        let result = LibreTranslateProvider::new(config);
 
-        assert!(matches!(result, Err(TranslationError::MissingApiKey)));
+        assert!(matches!(result, Err(TranslationError::MissingEndpoint)));
     }
 
     #[test]
-    fn optional_lang_omits_auto() {
-        assert_eq!(optional_lang("auto"), None);
-        assert_eq!(optional_lang("EN"), Some("en".to_string()));
+    fn normalize_source_lang_uses_auto_for_empty() {
+        assert_eq!(normalize_source_lang(""), "auto");
+        assert_eq!(normalize_source_lang("EN"), "en");
     }
 }

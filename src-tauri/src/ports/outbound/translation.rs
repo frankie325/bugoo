@@ -18,6 +18,8 @@ pub struct TranslationConfig {
     pub engine: String,
     pub api_endpoint: String,
     pub api_key: String,
+    pub api_secret: String,
+    pub api_region: String,
     pub translation_model: String,
     pub translation_prompt: String,
     pub word_detail_prompt: String,
@@ -46,6 +48,10 @@ pub enum TranslationError {
     EmptyText,
     #[error("请先在设置页填写 API 密钥")]
     MissingApiKey,
+    #[error("请先在设置页填写 API Secret")]
+    MissingApiSecret,
+    #[error("请先在设置页填写服务区域")]
+    MissingRegion,
     #[error("请先在设置页填写 API 地址")]
     MissingEndpoint,
     #[error("请先填写模型名称")]
@@ -67,4 +73,3 @@ pub enum TranslationError {
 pub trait TranslationProvider: Send + Sync {
     fn translate<'a>(&'a self, request: TranslationRequest) -> TranslationFuture<'a>;
 }
-

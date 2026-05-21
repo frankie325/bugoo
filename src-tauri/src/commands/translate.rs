@@ -1,5 +1,4 @@
 use crate::commands::AppState;
-use crate::domain::services::translation_service::TranslationService;
 use crate::ports::outbound::translation::TranslationResult;
 use std::collections::HashMap;
 
@@ -11,7 +10,10 @@ pub async fn translate_text(
     target_lang: String,
 ) -> Result<TranslationResult, String> {
     let settings = read_settings_map(state.inner())?;
-    TranslationService::translate(settings, text, source_lang, target_lang).await
+    state
+        .translation_service
+        .translate(settings, text, source_lang, target_lang)
+        .await
 }
 
 pub(crate) fn read_settings_map(state: &AppState) -> Result<HashMap<String, String>, String> {

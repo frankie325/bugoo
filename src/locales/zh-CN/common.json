@@ -114,12 +114,21 @@
       "engineCustom": "自定义 (LLM)",
       "endpoint": {
         "title": "API地址",
-        "desc": "翻译服务的接口地址"
+        "desc": "翻译服务的接口地址",
+        "optionalDesc": "不填写时使用该厂商默认接口地址"
       },
-      "endpointPlaceholder": "https://api.example.com",
+      "endpointPlaceholder": {
+        "default": "https://api.example.com",
+        "libretranslate": "http://localhost:5000",
+        "google": "https://translation.googleapis.com/language/translate/v2",
+        "deepl": "https://api-free.deepl.com/v2/translate",
+        "microsoft": "https://api.cognitive.microsofttranslator.com/translate",
+        "custom": "https://api.example.com/v1"
+      },
       "apiKey": {
         "title": "API秘钥",
-        "desc": "翻译服务的认证密钥"
+        "desc": "翻译服务的认证密钥",
+        "optionalDesc": "可选，不填时使用公开或本地 LibreTranslate 服务"
       },
       "apiKeyPlaceholder": "sk-xxx",
       "model": {
@@ -141,7 +150,25 @@
         "title": "请求超时时间",
         "desc": "翻译和详情生成请求超过该时间后自动失败"
       },
-      "timeoutLabel": "毫秒"
+      "timeoutLabel": "毫秒",
+      "engineGroupSystem": "系统内置",
+      "engineGroupVendor": "厂商 API",
+      "engineGroupCustom": "自定义",
+      "engineLibreTranslate": "LibreTranslate",
+      "engineMicrosoft": "Bing / Microsoft Translator",
+      "engineBaidu": "百度",
+      "engineTencent": "腾讯",
+      "engineYoudao": "有道",
+      "apiSecret": {
+        "title": "API Secret",
+        "desc": "厂商 API 的密钥或 Secret Key"
+      },
+      "apiSecretPlaceholder": "secret-xxx",
+      "apiRegion": {
+        "title": "服务区域",
+        "desc": "Microsoft 或腾讯云要求的区域"
+      },
+      "apiRegionPlaceholder": "例如：eastasia / ap-guangzhou"
     },
     "review": {
       "title": "复习设置",

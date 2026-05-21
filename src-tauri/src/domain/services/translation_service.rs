@@ -1,23 +1,66 @@
 use crate::adapters::outbound::translation::{
-    custom::CustomTranslationProvider, deepl::DeepLTranslationProvider,
-    google::GoogleTranslationProvider,
+    baidu::BaiduTranslationProvider, custom::CustomTranslationProvider,
+    deepl::DeepLTranslationProvider, google::GoogleTranslationProvider,
+    libretranslate::LibreTranslateProvider, microsoft::MicrosoftTranslationProvider,
+    tencent::TencentTranslationProvider, youdao::YoudaoTranslationProvider,
+};
+use crate::ports::outbound::dictionary::{
+    should_lookup_dictionary, DictionaryLookupRequest, DictionaryProvider,
 };
 use crate::ports::outbound::translation::{
     TranslationConfig, TranslationError, TranslationProvider, TranslationRequest, TranslationResult,
 };
-use crate::ports::outbound::word_insight::{GeneratedWordDetail, WordInsightProvider, WordInsightRequest};
+use crate::ports::outbound::word_insight::{
+    GeneratedWordDetail, WordInsightProvider, WordInsightRequest,
+};
+use log::warn;
 use std::collections::HashMap;
+use std::sync::Arc;
 
-pub struct TranslationService;
+#[derive(Clone)]
+pub struct TranslationService {
+    dictionary_provider: Option<Arc<dyn DictionaryProvider>>,
+}
 
 impl TranslationService {
+    pub fn new(dictionary_provider: Option<Arc<dyn DictionaryProvider>>) -> Self {
+        Self { dictionary_provider }
+    }
+
     pub async fn translate(
+        &self,
         settings: HashMap<String, String>,
         text: String,
         source_lang: String,
         target_lang: String,
     ) -> Result<TranslationResult, String> {
         validate_text(&text).map_err(|e| e.to_string())?;
+
+        if should_lookup_dictionary(&text) {
+            if let Some(provider) = &self.dictionary_provider {
+                match provider.lookup(DictionaryLookupRequest {
+                    text: text.clone(),
+                    source_lang: source_lang.clone(),
+                    target_lang: target_lang.clone(),
+                }) {
+                    Ok(Some(result)) => {
+                        return Ok(TranslationResult {
+                            translation: result.translation,
+                            detected_source_lang: Some(source_lang),
+                            phonetic: result.phonetic,
+                            part_of_speech: result.part_of_speech,
+                            definitions: result.definitions,
+                            examples: result.examples,
+                        });
+                    }
+                    Ok(None) => {}
+                    Err(error) => {
+                        warn!("Dictionary lookup failed, falling back to translation provider: {error}");
+                    }
+                }
+            }
+        }
+
         let config = build_translation_config(&settings);
         let provider = create_translation_provider(config)?;
         let request = TranslationRequest {
@@ -29,6 +72,7 @@ impl TranslationService {
     }
 
     pub async fn generate_word_detail(
+        &self,
         settings: HashMap<String, String>,
         word: String,
         translation: String,
@@ -64,9 +108,11 @@ pub fn normalize_endpoint(endpoint: &str) -> String {
 
 fn build_translation_config(settings: &HashMap<String, String>) -> TranslationConfig {
     TranslationConfig {
-        engine: setting_or_default(settings, "translationEngine", "custom"),
+        engine: setting_or_default(settings, "translationEngine", "libretranslate"),
         api_endpoint: setting_or_default(settings, "apiEndpoint", ""),
         api_key: setting_or_default(settings, "apiKey", ""),
+        api_secret: setting_or_default(settings, "apiSecret", ""),
+        api_region: setting_or_default(settings, "apiRegion", ""),
         translation_model: setting_or_default(settings, "translationModel", ""),
         translation_prompt: setting_or_default(settings, "translationPrompt", ""),
         word_detail_prompt: setting_or_default(settings, "wordDetailPrompt", ""),
@@ -80,11 +126,30 @@ fn create_translation_provider(
     config: TranslationConfig,
 ) -> Result<Box<dyn TranslationProvider>, String> {
     match config.engine.trim().to_lowercase().as_str() {
+        "libretranslate" => LibreTranslateProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
         "openai" | "custom" => CustomTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
             .map_err(|error| error.to_string()),
-        "deepl" => Ok(Box::new(DeepLTranslationProvider)),
-        "google" => Ok(Box::new(GoogleTranslationProvider)),
+        "deepl" => DeepLTranslationProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
+        "google" => GoogleTranslationProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
+        "microsoft" => MicrosoftTranslationProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
+        "baidu" => BaiduTranslationProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
+        "tencent" => TencentTranslationProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
+        "youdao" => YoudaoTranslationProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
         engine => Err(TranslationError::UnsupportedEngine(engine.to_string()).to_string()),
     }
 }
@@ -96,7 +161,8 @@ fn create_word_insight_provider(
         "openai" | "custom" => CustomTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn WordInsightProvider>)
             .map_err(|error| error.to_string()),
-        "deepl" | "google" => Err(TranslationError::UnsupportedEngine(config.engine).to_string()),
+        "libretranslate" | "deepl" | "google" | "microsoft" | "baidu" | "tencent"
+        | "youdao" => Err(TranslationError::UnsupportedEngine(config.engine).to_string()),
         engine => Err(TranslationError::UnsupportedEngine(engine.to_string()).to_string()),
     }
 }
@@ -156,5 +222,19 @@ mod tests {
             setting_or_default(&settings, "translationEngine", "custom"),
             "custom"
         );
+    }
+
+    #[test]
+    fn build_translation_config_reads_secret_region_and_defaults_to_libretranslate() {
+        let settings = HashMap::from([
+            ("apiSecret".to_string(), "secret-value".to_string()),
+            ("apiRegion".to_string(), "eastasia".to_string()),
+        ]);
+
+        let config = build_translation_config(&settings);
+
+        assert_eq!(config.engine, "libretranslate");
+        assert_eq!(config.api_secret, "secret-value");
+        assert_eq!(config.api_region, "eastasia");
     }
 }
