@@ -9,23 +9,13 @@ pub struct SelectionCandidate {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SelectionReadError {
-    PermissionDenied(String),
-    PlatformUnavailable(String),
-    PlatformReadFailed(String),
-    ClipboardReadFailed(String),
-    ClipboardWriteFailed(String),
-    SimulateCopyFailed(String),
+    ReadFailed(String),
 }
 
 impl fmt::Display for SelectionReadError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            SelectionReadError::PermissionDenied(message)
-            | SelectionReadError::PlatformUnavailable(message)
-            | SelectionReadError::PlatformReadFailed(message)
-            | SelectionReadError::ClipboardReadFailed(message)
-            | SelectionReadError::ClipboardWriteFailed(message)
-            | SelectionReadError::SimulateCopyFailed(message) => formatter.write_str(message),
+            SelectionReadError::ReadFailed(message) => formatter.write_str(message),
         }
     }
 }
