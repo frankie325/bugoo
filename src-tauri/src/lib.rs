@@ -4,11 +4,13 @@ mod db;
 mod domain;
 mod ports;
 mod scheduler;
+mod selection;
 
 use crate::db::Database;
 use crate::domain::services::translation_service::TranslationService;
 use crate::ports::outbound::dictionary::DictionaryProvider;
 use crate::scheduler::notification::start_notification_scheduler;
+use crate::selection::permission_prompt::initialize_selection;
 use adapters::outbound::dictionary::stardict_ecdict::StarDictEcdictDictionaryProvider;
 use commands::AppState;
 use log::info;
@@ -74,6 +76,9 @@ pub fn run() {
             });
             info!("Database initialized successfully");
 
+            initialize_selection(app.handle().clone());
+            info!("Selection service initialized");
+
             // 注册全局快捷键: CmdOrCtrl+Shift+T
             let app_handle = app.handle().clone();
             app.global_shortcut()
@@ -116,6 +121,9 @@ pub fn run() {
             commands::tts::list_voices,
             commands::tts::set_voice,
             commands::window::open_float_window,
+            commands::window::open_selection_popup,
+            commands::window::open_accessibility_settings,
+            commands::window::dismiss_accessibility_permission_prompt,
             commands::settings::get_settings,
             commands::settings::set_setting,
             commands::settings::seed_settings,
