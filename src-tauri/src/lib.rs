@@ -12,6 +12,7 @@ use crate::ports::outbound::dictionary::DictionaryProvider;
 use crate::scheduler::notification::start_notification_scheduler;
 use crate::selection::permission_prompt::initialize_selection;
 use adapters::outbound::dictionary::stardict_ecdict::StarDictEcdictDictionaryProvider;
+use adapters::outbound::selection_ui::manage_selection_ui;
 use commands::AppState;
 use log::info;
 use std::path::PathBuf;
@@ -24,10 +25,15 @@ pub fn run() {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
     info!("Starting Bugoo application");
 
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_notification::init());
+
+    #[cfg(target_os = "macos")]
+    let builder = builder.plugin(tauri_nspanel::init());
+
+    builder
         .setup(|app| {
             let app_data_dir = app
                 .path()
@@ -70,11 +76,17 @@ pub fn run() {
             // 创建并管理 AppState
             let app_state = AppState::new(db.clone(), translation_service);
             app.manage(app_state);
+            let selection_ui = manage_selection_ui(app.handle());
 
             async_runtime::spawn(async move {
                 start_notification_scheduler(db_clone, app_handle).await;
             });
             info!("Database initialized successfully");
+
+            #[cfg(target_os = "macos")]
+            if let Err(error) = selection_ui.initialize_selection_popup() {
+                log::warn!("Failed to initialize selection popup NSPanel: {}", error);
+            }
 
             initialize_selection(app.handle().clone());
             info!("Selection service initialized");
@@ -122,6 +134,9 @@ pub fn run() {
             commands::tts::set_voice,
             commands::window::open_float_window,
             commands::window::open_selection_popup,
+            commands::window::close_selection_popup,
+            commands::window::get_selection_popup_text,
+            commands::window::is_cursor_inside_selection_popup,
             commands::window::open_accessibility_settings,
             commands::window::dismiss_accessibility_permission_prompt,
             commands::settings::get_settings,

@@ -82,7 +82,10 @@ impl MicrosoftTranslationProvider {
             .post(self.endpoint())
             .query(&query)
             .header("Ocp-Apim-Subscription-Key", self.config.api_key.trim())
-            .header("Ocp-Apim-Subscription-Region", self.config.api_region.trim())
+            .header(
+                "Ocp-Apim-Subscription-Region",
+                self.config.api_region.trim(),
+            )
             .header("Content-Type", "application/json")
             .json(&body)
             .send()
@@ -103,7 +106,10 @@ impl MicrosoftTranslationProvider {
             .json::<Vec<MicrosoftTranslateResponseItem>>()
             .await
             .map_err(map_reqwest_error)?;
-        let first = body.into_iter().next().ok_or(TranslationError::InvalidResponse)?;
+        let first = body
+            .into_iter()
+            .next()
+            .ok_or(TranslationError::InvalidResponse)?;
         let translation = first
             .translations
             .into_iter()
@@ -115,7 +121,13 @@ impl MicrosoftTranslationProvider {
             first
                 .detected_language
                 .map(|value| value.language)
-                .or_else(|| if source == "auto" || source.is_empty() { None } else { Some(source) }),
+                .or_else(|| {
+                    if source == "auto" || source.is_empty() {
+                        None
+                    } else {
+                        Some(source)
+                    }
+                }),
         ))
     }
 }

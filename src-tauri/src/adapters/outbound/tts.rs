@@ -30,7 +30,10 @@ impl SpeechService for SystemSpeechAdapter {
             self.stop()?;
         }
 
-        let engine = self.engine.lock().map_err(|e| format!("TTS lock failed: {e}"))?;
+        let engine = self
+            .engine
+            .lock()
+            .map_err(|e| format!("TTS lock failed: {e}"))?;
         let mut command = build_system_tts_command(trimmed, lang, &engine.voice_id);
         command
             .spawn()
@@ -92,7 +95,10 @@ impl SpeechService for SystemSpeechAdapter {
     }
 
     fn set_voice(&self, voice_id: &str) -> Result<(), String> {
-        let mut engine = self.engine.lock().map_err(|e| format!("TTS lock failed: {e}"))?;
+        let mut engine = self
+            .engine
+            .lock()
+            .map_err(|e| format!("TTS lock failed: {e}"))?;
         engine.voice_id = Some(voice_id.to_string());
         Ok(())
     }

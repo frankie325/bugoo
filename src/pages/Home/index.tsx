@@ -153,8 +153,15 @@ export function HomePage() {
     setTags(reorderedTags);
   }, []);
 
+  const handleMouseEnter = () => {
+    console.log("enter");
+  };
+
   return (
-    <div className="flex h-screen">
+    <div
+      className="flex h-screen"
+      onMouseEnter={handleMouseEnter}
+    >
       {/* Sidebar */}
       <aside className="w-60 p-4 flex flex-col gap-4">
         <div className="flex items-center">

@@ -10,10 +10,6 @@ use thiserror::Error;
 pub enum DbError {
     #[error("SQLite error: {0}")]
     Sqlite(#[from] rusqlite::Error),
-    #[error("Database not initialized")]
-    NotInitialized,
-    #[error("Word not found")]
-    WordNotFound,
 }
 
 pub struct Database {
@@ -38,10 +34,6 @@ impl Database {
     }
 
     pub fn connection(&self) -> std::sync::MutexGuard<'_, Connection> {
-        self.conn.lock().unwrap()
-    }
-
-    pub fn connection_ref(&self) -> std::sync::MutexGuard<'_, Connection> {
         self.conn.lock().unwrap()
     }
 }

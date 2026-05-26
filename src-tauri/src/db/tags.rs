@@ -1,22 +1,6 @@
 use crate::domain::models::tag::{Tag, TagCreateInput, TagUpdateInput};
 use rusqlite::{params, Connection, OptionalExtension, Result};
 
-/// 初始化标签表
-pub fn create_table(conn: &Connection) -> Result<()> {
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS tags (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL UNIQUE,
-            color TEXT NOT NULL,
-            sort_order INTEGER NOT NULL DEFAULT 0,
-            created_at INTEGER NOT NULL,
-            updated_at INTEGER NOT NULL
-        )",
-        [],
-    )?;
-    Ok(())
-}
-
 /// 获取所有标签（按 sort_order 升序）
 pub fn get_all_tags(conn: &Connection) -> Result<Vec<Tag>> {
     let mut stmt = conn.prepare(

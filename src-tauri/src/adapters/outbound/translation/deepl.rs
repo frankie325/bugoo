@@ -51,7 +51,10 @@ impl DeepLTranslationProvider {
 
         let mut form = vec![
             ("text".to_string(), request.text),
-            ("target_lang".to_string(), request.target_lang.trim().to_uppercase()),
+            (
+                "target_lang".to_string(),
+                request.target_lang.trim().to_uppercase(),
+            ),
         ];
         if let Some(source) = optional_deepl_lang(&request.source_lang) {
             form.push(("source_lang".to_string(), source));

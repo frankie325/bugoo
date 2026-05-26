@@ -24,7 +24,9 @@ pub struct TranslationService {
 
 impl TranslationService {
     pub fn new(dictionary_provider: Option<Arc<dyn DictionaryProvider>>) -> Self {
-        Self { dictionary_provider }
+        Self {
+            dictionary_provider,
+        }
     }
 
     pub async fn translate(
@@ -161,8 +163,9 @@ fn create_word_insight_provider(
         "openai" | "custom" => CustomTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn WordInsightProvider>)
             .map_err(|error| error.to_string()),
-        "libretranslate" | "deepl" | "google" | "microsoft" | "baidu" | "tencent"
-        | "youdao" => Err(TranslationError::UnsupportedEngine(config.engine).to_string()),
+        "libretranslate" | "deepl" | "google" | "microsoft" | "baidu" | "tencent" | "youdao" => {
+            Err(TranslationError::UnsupportedEngine(config.engine).to_string())
+        }
         engine => Err(TranslationError::UnsupportedEngine(engine.to_string()).to_string()),
     }
 }

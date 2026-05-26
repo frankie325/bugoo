@@ -6,9 +6,7 @@ use std::time::Duration;
 
 use tauri::{async_runtime, AppHandle, Emitter, Manager};
 
-use crate::commands::window::{
-    close_accessibility_permission_window, open_accessibility_permission_window,
-};
+use crate::ports::outbound::selection_ui::{SelectionUiHandle, SelectionUiPort};
 use crate::selection::listener::start_selection_listener;
 use crate::selection::permission::{accessibility_permission, AccessibilityPermission};
 
@@ -21,7 +19,9 @@ pub enum SelectionStartupAction {
     OpenPermissionPrompt,
 }
 
-pub fn startup_action_for_permission(permission: AccessibilityPermission) -> SelectionStartupAction {
+pub fn startup_action_for_permission(
+    permission: AccessibilityPermission,
+) -> SelectionStartupAction {
     match permission {
         AccessibilityPermission::Granted => SelectionStartupAction::StartListener,
         AccessibilityPermission::Missing => SelectionStartupAction::OpenPermissionPrompt,
@@ -45,7 +45,8 @@ impl Default for SelectionRuntimeState {
 
 impl SelectionRuntimeState {
     pub fn cancel_permission_polling(&self) {
-        self.permission_polling_cancelled.store(true, Ordering::SeqCst);
+        self.permission_polling_cancelled
+            .store(true, Ordering::SeqCst);
     }
 }
 
@@ -54,9 +55,17 @@ pub fn initialize_selection(app: AppHandle) {
     app.manage(state.clone());
 
     match startup_action_for_permission(accessibility_permission()) {
-        SelectionStartupAction::StartListener => start_listener_once(&app, &state),
+        SelectionStartupAction::StartListener => {
+            if let Err(error) = selection_ui(&app).map(|selection_ui| {
+                start_listener_once(selection_ui, &state);
+            }) {
+                log::warn!("Failed to start selection listener: {error}");
+            }
+        }
         SelectionStartupAction::OpenPermissionPrompt => {
-            if let Err(error) = open_accessibility_permission_window(&app) {
+            if let Err(error) = selection_ui(&app)
+                .and_then(|selection_ui| selection_ui.open_accessibility_permission_prompt())
+            {
                 log::warn!("Failed to open Accessibility permission window: {error}");
             }
             start_accessibility_permission_polling(app, state);
@@ -70,13 +79,13 @@ pub fn stop_accessibility_permission_polling(app: &AppHandle) {
     }
 }
 
-fn start_listener_once(app: &AppHandle, state: &SelectionRuntimeState) {
+fn start_listener_once(selection_ui: Arc<dyn SelectionUiPort>, state: &SelectionRuntimeState) {
     if state
         .listener_started
         .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
         .is_ok()
     {
-        start_selection_listener(app.clone());
+        start_selection_listener(selection_ui);
     }
 }
 
@@ -91,10 +100,18 @@ fn start_accessibility_permission_polling(app: AppHandle, state: SelectionRuntim
 
             if accessibility_permission() == AccessibilityPermission::Granted {
                 state.cancel_permission_polling();
-                if let Err(error) = close_accessibility_permission_window(&app) {
+                if let Err(error) = selection_ui(&app)
+                    .and_then(|selection_ui| selection_ui.close_accessibility_permission_prompt())
+                {
                     log::warn!("Failed to close Accessibility permission window: {error}");
                 }
-                start_listener_once(&app, &state);
+                if let Err(error) = selection_ui(&app).map(|selection_ui| {
+                    start_listener_once(selection_ui, &state);
+                }) {
+                    log::warn!(
+                        "Failed to start selection listener after permission grant: {error}"
+                    );
+                }
                 if let Err(error) = app.emit(ACCESSIBILITY_PERMISSION_GRANTED_EVENT, ()) {
                     log::warn!("Failed to emit Accessibility permission granted event: {error}");
                 }
@@ -102,6 +119,12 @@ fn start_accessibility_permission_polling(app: AppHandle, state: SelectionRuntim
             }
         }
     });
+}
+
+fn selection_ui(app: &AppHandle) -> Result<Arc<dyn SelectionUiPort>, String> {
+    app.try_state::<SelectionUiHandle>()
+        .map(|handle| handle.port())
+        .ok_or_else(|| "Selection UI port is not managed".to_string())
 }
 
 #[cfg(test)]

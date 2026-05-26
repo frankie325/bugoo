@@ -15,10 +15,8 @@ pub fn get_settings(state: tauri::State<AppState>) -> Result<HashMap<String, Str
         .map_err(|e| e.to_string())?;
 
     let mut settings = HashMap::new();
-    for row in rows {
-        if let Ok((key, value)) = row {
-            settings.insert(key, value);
-        }
+    for (key, value) in rows.flatten() {
+        settings.insert(key, value);
     }
     Ok(settings)
 }

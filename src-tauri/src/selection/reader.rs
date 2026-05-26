@@ -1,21 +1,13 @@
-use super::types::SelectionReadError;
-
-pub fn read_selected_text() -> Result<Option<String>, SelectionReadError> {
-    read_selected_text_with(get_selected_text::get_selected_text)
+pub fn read_selected_text() -> Option<String> {
+    normalize_selected_text(selection::get_text())
 }
 
-pub fn read_selected_text_with<F>(read: F) -> Result<Option<String>, SelectionReadError>
-where
-    F: FnOnce() -> Result<String, Box<dyn std::error::Error>>,
-{
-    let text = read().map_err(|error| {
-        SelectionReadError::ReadFailed(format!("failed to read selected text: {error}"))
-    })?;
-    let text = text.trim().to_string();
-    if text.is_empty() {
-        Ok(None)
+fn normalize_selected_text(text: String) -> Option<String> {
+    let trimmed = text.trim();
+    if trimmed.is_empty() {
+        None
     } else {
-        Ok(Some(text))
+        Some(trimmed.to_owned())
     }
 }
 
@@ -25,24 +17,13 @@ mod tests {
 
     #[test]
     fn trims_non_empty_selected_text() {
-        let result = read_selected_text_with(|| Ok("  hello  ".to_string()));
-        assert_eq!(result, Ok(Some("hello".to_string())));
+        let result = normalize_selected_text("  hello  ".to_string());
+        assert_eq!(result, Some("hello".to_string()));
     }
 
     #[test]
     fn returns_none_for_empty_selected_text() {
-        let result = read_selected_text_with(|| Ok("   \n\t  ".to_string()));
-        assert_eq!(result, Ok(None));
-    }
-
-    #[test]
-    fn maps_reader_errors() {
-        let result = read_selected_text_with(|| Err("boom".into()));
-        assert_eq!(
-            result,
-            Err(SelectionReadError::ReadFailed(
-                "failed to read selected text: boom".to_string(),
-            )),
-        );
+        let result = normalize_selected_text("   \n\t  ".to_string());
+        assert_eq!(result, None);
     }
 }

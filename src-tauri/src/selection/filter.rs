@@ -5,7 +5,7 @@ use super::types::SelectionCandidate;
 const MAX_SELECTION_CHARS: usize = 50;
 pub fn filter_selection_text(raw_text: &str, captured_at: Instant) -> Option<SelectionCandidate> {
     let text = raw_text.trim();
-    if text.is_empty() || text.chars().count() > MAX_SELECTION_CHARS {
+    if text.is_empty() || text.chars().nth(MAX_SELECTION_CHARS).is_some() {
         return None;
     }
 
