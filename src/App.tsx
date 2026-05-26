@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HomePage } from "./pages/Home";
 import { SettingsPage } from "./pages/Settings";
+import { SelectionPopupPage } from "./pages/SelectionPopup";
+import { AccessibilityPermissionPage } from "./pages/AccessibilityPermission";
 import { seedSettings, getSettings } from "./lib/api";
 import { useSettingsStore } from "./stores/settingsStore";
 import "./lib/i18n"; // i18next 初始化
@@ -24,6 +26,8 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/selection-popup" element={<SelectionPopupPage />} />
+        <Route path="/accessibility-permission" element={<AccessibilityPermissionPage />} />
       </Routes>
     </BrowserRouter>
   );

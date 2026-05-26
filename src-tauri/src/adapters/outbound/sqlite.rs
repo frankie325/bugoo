@@ -66,12 +66,9 @@ impl WordRepository for SqliteWordRepository {
     fn find_all(&self, search: Option<&str>) -> Result<Vec<Word>, DbError> {
         let conn = self.db.connection();
         let mut stmt = match search {
-            Some(s) if !s.is_empty() => {
-                let pattern = format!("%{}%", s);
-                conn.prepare(
-                    "SELECT * FROM words WHERE word LIKE ?1 OR translation LIKE ?1 ORDER BY created_at DESC"
-                ).map_err(DbError::Sqlite)?
-            }
+            Some(s) if !s.is_empty() => conn.prepare(
+                "SELECT * FROM words WHERE word LIKE ?1 OR translation LIKE ?1 ORDER BY created_at DESC"
+            ).map_err(DbError::Sqlite)?,
             _ => conn
                 .prepare("SELECT * FROM words ORDER BY created_at DESC")
                 .map_err(DbError::Sqlite)?,

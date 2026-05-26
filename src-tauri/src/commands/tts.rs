@@ -17,7 +17,9 @@ pub fn stop_speech(state: State<'_, AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn list_voices(state: State<'_, AppState>) -> Result<Vec<crate::ports::outbound::speech::VoiceInfo>, String> {
+pub fn list_voices(
+    state: State<'_, AppState>,
+) -> Result<Vec<crate::ports::outbound::speech::VoiceInfo>, String> {
     state.speech_service.list_voices()
 }
 

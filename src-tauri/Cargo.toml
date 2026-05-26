@@ -36,3 +36,10 @@ md5 = "0.7"
 sha2 = "0.10"
 hmac = "0.12"
 hex = "0.4"
+rdev = "0.5.3"
+selection = "1.2.0"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+accessibility-sys = "0.2.0"
+core-graphics = "0.25"
+tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2.1" }

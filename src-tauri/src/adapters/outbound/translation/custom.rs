@@ -3,8 +3,8 @@ use crate::adapters::outbound::translation::http_utils::{
 };
 use crate::domain::services::translation_service::{normalize_endpoint, validate_text};
 use crate::ports::outbound::translation::{
-    TranslationConfig, TranslationError, TranslationExample, TranslationFuture, TranslationProvider,
-    TranslationRequest, TranslationResult,
+    TranslationConfig, TranslationError, TranslationExample, TranslationFuture,
+    TranslationProvider, TranslationRequest, TranslationResult,
 };
 use crate::ports::outbound::word_insight::{
     GeneratedWordDetail, WordInsightFuture, WordInsightProvider, WordInsightRequest,
@@ -332,7 +332,9 @@ fn extract_from_markdown_code_block(content: &str) -> Option<&str> {
     let end = end_marker.unwrap();
 
     // Skip the ``` and optional language tag (e.g., "json", "JSON")
-    let block_start = content[start + 3..].find('\n').map_or(start + 3, |nl| start + 3 + nl + 1);
+    let block_start = content[start + 3..]
+        .find('\n')
+        .map_or(start + 3, |nl| start + 3 + nl + 1);
     let block_end = end;
 
     if block_start >= block_end {

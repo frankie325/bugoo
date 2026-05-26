@@ -40,8 +40,8 @@ impl StarDictEcdictDictionaryProvider {
     }
 
     fn lookup_entry(&self, word: &str) -> Result<Option<StarDictIndexEntry>, DictionaryError> {
-        let file =
-            File::open(&self.idx_path).map_err(|error| DictionaryError::QueryFailed(error.to_string()))?;
+        let file = File::open(&self.idx_path)
+            .map_err(|error| DictionaryError::QueryFailed(error.to_string()))?;
         let mut reader = BufReader::new(file);
 
         loop {
@@ -56,8 +56,8 @@ impl StarDictEcdictDictionaryProvider {
     }
 
     fn read_definition(&self, entry: &StarDictIndexEntry) -> Result<String, DictionaryError> {
-        let mut file =
-            File::open(&self.dict_path).map_err(|error| DictionaryError::QueryFailed(error.to_string()))?;
+        let mut file = File::open(&self.dict_path)
+            .map_err(|error| DictionaryError::QueryFailed(error.to_string()))?;
         file.seek(SeekFrom::Start(entry.offset as u64))
             .map_err(|error| DictionaryError::QueryFailed(error.to_string()))?;
 
@@ -69,8 +69,8 @@ impl StarDictEcdictDictionaryProvider {
     }
 
     fn validate_ifo(&self) -> Result<(), DictionaryError> {
-        let file =
-            File::open(&self.ifo_path).map_err(|error| DictionaryError::QueryFailed(error.to_string()))?;
+        let file = File::open(&self.ifo_path)
+            .map_err(|error| DictionaryError::QueryFailed(error.to_string()))?;
         let mut reader = BufReader::new(file);
         let mut first_line = String::new();
         reader
@@ -117,7 +117,9 @@ impl DictionaryProvider for StarDictEcdictDictionaryProvider {
     }
 }
 
-fn read_index_entry<R: Read>(reader: &mut R) -> Result<Option<StarDictIndexEntry>, DictionaryError> {
+fn read_index_entry<R: Read>(
+    reader: &mut R,
+) -> Result<Option<StarDictIndexEntry>, DictionaryError> {
     let mut word_bytes = Vec::new();
     let mut byte = [0_u8; 1];
 
@@ -148,8 +150,8 @@ fn read_index_entry<R: Read>(reader: &mut R) -> Result<Option<StarDictIndexEntry
         .read_exact(&mut size_bytes)
         .map_err(|error| DictionaryError::QueryFailed(error.to_string()))?;
 
-    let word =
-        String::from_utf8(word_bytes).map_err(|error| DictionaryError::QueryFailed(error.to_string()))?;
+    let word = String::from_utf8(word_bytes)
+        .map_err(|error| DictionaryError::QueryFailed(error.to_string()))?;
 
     Ok(Some(StarDictIndexEntry {
         word: normalize_dictionary_text(&word),

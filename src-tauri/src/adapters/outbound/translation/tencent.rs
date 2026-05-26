@@ -158,7 +158,7 @@ fn hmac_sha256(key: &[u8], message: &str) -> Vec<u8> {
 
 fn build_authorization(secret_id: &str, secret_key: &str, timestamp: i64, payload: &str) -> String {
     let date = chrono::DateTime::from_timestamp(timestamp, 0)
-        .unwrap_or_else(|| chrono::Utc::now())
+        .unwrap_or_else(chrono::Utc::now)
         .format("%Y-%m-%d")
         .to_string();
     let service = "tmt";
