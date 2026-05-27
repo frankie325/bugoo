@@ -85,6 +85,12 @@ cd src-tauri && cargo test
 - 实现计划时，使用到的技术优先先从网上查找工具库，而不是自己从零实现
 - 疑难bug优先去github issue查找是否有人遇到过同样的问题
 
+#### 前端
+- 代码生成时，按照vercel-react-best-practices技能的指导生成代码
+
+#### 后端
+- 代码生成时，按照rust-best-practices技能的指导生成代码
+
 ### 命名规则
 
 前端命名规则
