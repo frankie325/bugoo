@@ -1,3 +1,4 @@
+use crate::adapters::outbound::config::local_engine::LocalEngineConfig;
 use crate::adapters::outbound::translation::{
     baidu::BaiduTranslationProvider, custom::CustomTranslationProvider,
     deepl::DeepLTranslationProvider, google::GoogleTranslationProvider,
@@ -20,12 +21,17 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct TranslationService {
     dictionary_provider: Option<Arc<dyn DictionaryProvider>>,
+    local_engine_config: LocalEngineConfig,
 }
 
 impl TranslationService {
-    pub fn new(dictionary_provider: Option<Arc<dyn DictionaryProvider>>) -> Self {
+    pub fn new(
+        dictionary_provider: Option<Arc<dyn DictionaryProvider>>,
+        local_engine_config: LocalEngineConfig,
+    ) -> Self {
         Self {
             dictionary_provider,
+            local_engine_config,
         }
     }
 
@@ -181,6 +187,10 @@ fn setting_or_default(settings: &HashMap<String, String>, key: &str, default: &s
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn test_service() -> TranslationService {
+        TranslationService::new(None, LocalEngineConfig::default_local())
+    }
 
     #[test]
     fn validate_text_rejects_empty_text() {

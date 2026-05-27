@@ -11,6 +11,9 @@ use crate::domain::services::translation_service::TranslationService;
 use crate::ports::outbound::dictionary::DictionaryProvider;
 use crate::scheduler::notification::start_notification_scheduler;
 use crate::selection::permission_prompt::initialize_selection;
+use adapters::outbound::config::local_engine::{
+    read_local_engine_config, LocalEngineConfig,
+};
 use adapters::outbound::dictionary::stardict_ecdict::StarDictEcdictDictionaryProvider;
 use adapters::outbound::selection_ui::manage_selection_ui;
 use commands::AppState;
@@ -71,7 +74,33 @@ pub fn run() {
                     None
                 }
             };
-            let translation_service = TranslationService::new(dictionary_provider);
+
+            let local_engine_config_path = app
+                .path()
+                .resolve(
+                    "resources/translation/local-engine.json",
+                    tauri::path::BaseDirectory::Resource,
+                )
+                .unwrap_or_else(|_| {
+                    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                        .join("resources")
+                        .join("translation")
+                        .join("local-engine.json")
+                });
+
+            let local_engine_config = match read_local_engine_config(&local_engine_config_path) {
+                Ok(config) => config,
+                Err(error) => {
+                    log::warn!(
+                        "Local translation config unavailable at {:?}, using default endpoint: {}",
+                        local_engine_config_path,
+                        error
+                    );
+                    LocalEngineConfig::default_local()
+                }
+            };
+
+            let translation_service = TranslationService::new(dictionary_provider, local_engine_config);
 
             // 创建并管理 AppState
             let app_state = AppState::new(db.clone(), translation_service);
