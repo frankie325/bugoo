@@ -19,7 +19,7 @@ import type { Word } from "../../lib/api";
 import type { TagItem } from "../../types/tag";
 import { getTags, createTag, deleteTag, updateTag } from "../../lib/api";
 import { getNextSortOrder, type TagCreatePlacement } from "../../lib/tagSort";
-
+import { translate } from "@src/lib/api/translate";
 type ViewMode = "grid" | "list";
 
 function getWordTagIds(tags: string): string[] {
@@ -30,6 +30,11 @@ function getWordTagIds(tags: string): string[] {
 }
 
 export function HomePage() {
+  translate("Hello world").then((result) => {
+    console.log("Translation result:", result);
+  }).catch((error) => {
+    console.error("Translation error:", error);
+  });
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -158,10 +163,7 @@ export function HomePage() {
   };
 
   return (
-    <div
-      className="flex h-screen"
-      onMouseEnter={handleMouseEnter}
-    >
+    <div className="flex h-screen" onMouseEnter={handleMouseEnter}>
       {/* Sidebar */}
       <aside className="w-60 p-4 flex flex-col gap-4">
         <div className="flex items-center">

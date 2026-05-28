@@ -6,14 +6,9 @@ use std::collections::HashMap;
 pub async fn translate_text(
     state: tauri::State<'_, AppState>,
     text: String,
-    source_lang: String,
-    target_lang: String,
 ) -> Result<TranslationResult, String> {
     let settings = read_settings_map(state.inner())?;
-    state
-        .translation_service
-        .translate(settings, text, source_lang, target_lang)
-        .await
+    state.translation_service.translate(settings, text).await
 }
 
 pub(crate) fn read_settings_map(state: &AppState) -> Result<HashMap<String, String>, String> {

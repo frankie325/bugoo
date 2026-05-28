@@ -23,15 +23,9 @@ interface RustTranslationResult {
   examples: TranslationExample[];
 }
 
-export async function translate(
-  text: string,
-  sourceLang: string,
-  targetLang: string,
-): Promise<TranslationResult> {
+export async function translate(text: string): Promise<TranslationResult> {
   const result = await invoke<RustTranslationResult>("translate_text", {
     text,
-    sourceLang,
-    targetLang,
   });
 
   return {

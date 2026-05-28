@@ -38,11 +38,9 @@ fn resolve_languages(
     settings: &HashMap<String, String>,
     language_detector: &dyn LanguageDetector,
     text: &str,
-    request_source_lang: &str,
-    request_target_lang: &str,
 ) -> ResolvedLanguages {
-    let configured_source = setting_or_default(settings, "sourceLanguage", request_source_lang);
-    let configured_target = setting_or_default(settings, "targetLanguage", request_target_lang);
+    let configured_source = setting_or_default(settings, "sourceLanguage", "auto");
+    let configured_target = setting_or_default(settings, "targetLanguage", "zh");
     let source_lang = if configured_source.trim().is_empty()
         || configured_source.trim().eq_ignore_ascii_case("auto")
     {
@@ -107,20 +105,13 @@ impl TranslationService {
         &self,
         settings: HashMap<String, String>,
         text: String,
-        source_lang: String,
-        target_lang: String,
     ) -> Result<TranslationResult, String> {
         validate_text(&text).map_err(|e| e.to_string())?;
 
         let config = build_translation_config(&settings);
         let engine = config.engine.trim().to_lowercase();
-        let resolved_languages = resolve_languages(
-            &settings,
-            self.language_detector.as_ref(),
-            &text,
-            &source_lang,
-            &target_lang,
-        );
+        let resolved_languages =
+            resolve_languages(&settings, self.language_detector.as_ref(), &text);
 
         if engine == "local" {
             if should_lookup_dictionary(&text) {
@@ -444,13 +435,31 @@ mod tests {
             result: DetectedLanguage::Known("en".to_string()),
         };
 
-        let result = resolve_languages(&settings, &detector, "hello", "auto", "ja");
+        let result = resolve_languages(&settings, &detector, "hello");
 
         assert_eq!(
             result,
             ResolvedLanguages {
                 source_lang: "en".to_string(),
                 target_lang: "zh-CN".to_string(),
+            }
+        );
+    }
+
+    #[test]
+    fn resolve_languages_defaults_to_auto_source_and_zh_target() {
+        let settings = HashMap::new();
+        let detector = MockLanguageDetector {
+            result: DetectedLanguage::Unknown,
+        };
+
+        let result = resolve_languages(&settings, &detector, "hello");
+
+        assert_eq!(
+            result,
+            ResolvedLanguages {
+                source_lang: "auto".to_string(),
+                target_lang: "zh".to_string(),
             }
         );
     }
@@ -485,13 +494,9 @@ mod tests {
             ("targetLanguage".to_string(), "zh-CN".to_string()),
         ]);
 
-        let result = tauri::async_runtime::block_on(service.translate(
-            settings,
-            "hello".to_string(),
-            "auto".to_string(),
-            "ja".to_string(),
-        ))
-        .unwrap();
+        let result =
+            tauri::async_runtime::block_on(service.translate(settings, "hello".to_string()))
+                .unwrap();
 
         assert_eq!(result.translation, "int. 你好");
     }
@@ -515,13 +520,9 @@ mod tests {
             ("targetLanguage".to_string(), "zh-CN".to_string()),
         ]);
 
-        let error = tauri::async_runtime::block_on(service.translate(
-            settings,
-            "hello".to_string(),
-            "en".to_string(),
-            "zh-CN".to_string(),
-        ))
-        .unwrap_err();
+        let error =
+            tauri::async_runtime::block_on(service.translate(settings, "hello".to_string()))
+                .unwrap_err();
 
         assert_ne!(error, "int. 你好");
     }
