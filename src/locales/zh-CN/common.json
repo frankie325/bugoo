@@ -151,10 +151,10 @@
         "desc": "翻译和详情生成请求超过该时间后自动失败"
       },
       "timeoutLabel": "毫秒",
-      "engineGroupSystem": "系统内置",
+      "engineGroupLocal": "本地",
       "engineGroupVendor": "厂商 API",
       "engineGroupCustom": "自定义",
-      "engineLibreTranslate": "LibreTranslate",
+      "engineLocal": "本地",
       "engineMicrosoft": "Bing / Microsoft Translator",
       "engineBaidu": "百度",
       "engineTencent": "腾讯",
@@ -168,7 +168,17 @@
         "title": "服务区域",
         "desc": "Microsoft 或腾讯云要求的区域"
       },
-      "apiRegionPlaceholder": "例如：eastasia / ap-guangzhou"
+      "apiRegionPlaceholder": "例如：eastasia / ap-guangzhou",
+      "sourceLanguage": {
+        "title": "源语言",
+        "desc": "仅显示本地 LibreTranslate 支持的源语言",
+        "label": "源语言"
+      },
+      "targetLanguage": {
+        "title": "目标语言",
+        "desc": "仅显示本地 LibreTranslate 支持的目标语言",
+        "label": "目标语言"
+      }
     },
     "review": {
       "title": "复习设置",

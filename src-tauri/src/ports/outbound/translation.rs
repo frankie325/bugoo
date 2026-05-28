@@ -26,6 +26,63 @@ pub struct TranslationConfig {
     pub timeout_ms: u64,
 }
 
+pub const DEFAULT_LOCAL_LIBRETRANSLATE_ENDPOINT: &str = "http://localhost:5005";
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LocalEngineConfig {
+    pub libretranslate_endpoint: String,
+}
+
+impl LocalEngineConfig {
+    pub fn default_local() -> Self {
+        Self {
+            libretranslate_endpoint: DEFAULT_LOCAL_LIBRETRANSLATE_ENDPOINT.to_string(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct LibreTranslateLanguage {
+    pub code: String,
+    pub name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct LibreTranslateLanguages {
+    #[serde(rename = "sourceLanguages")]
+    pub source_languages: Vec<LibreTranslateLanguage>,
+    #[serde(rename = "targetLanguages")]
+    pub target_languages: Vec<LibreTranslateLanguage>,
+}
+
+pub fn normalize_language_code(lang: &str) -> String {
+    match lang.trim().to_lowercase().as_str() {
+        "zh-cn" | "zh-hans" => "zh".to_string(),
+        "zh-tw" | "zh-hant" => "zt".to_string(),
+        value => value.to_string(),
+    }
+}
+
+pub fn is_supported_source_language(languages: &LibreTranslateLanguages, lang: &str) -> bool {
+    if lang.trim().eq_ignore_ascii_case("auto") {
+        return true;
+    }
+
+    let normalized = normalize_language_code(lang);
+    languages
+        .source_languages
+        .iter()
+        .any(|language| language.code == normalized)
+}
+
+pub fn is_supported_target_language(languages: &LibreTranslateLanguages, lang: &str) -> bool {
+    let normalized = normalize_language_code(lang);
+    languages
+        .target_languages
+        .iter()
+        .any(|language| language.code == normalized)
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TranslationExample {
     pub sentence: String,
@@ -68,6 +125,8 @@ pub enum TranslationError {
     InvalidJson,
     #[error("单词不存在")]
     WordNotFound,
+    #[error("当前翻译引擎不支持该语言：{0}")]
+    UnsupportedLanguage(String),
 }
 
 pub trait TranslationProvider: Send + Sync {

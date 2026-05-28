@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useSettingsStore } from "../../../stores/settingsStore";
 import {
   Card,
@@ -11,12 +12,19 @@ import {
 } from "@heroui/react";
 import { SettingItem } from "../components/SettingItem";
 import { useTranslation } from "react-i18next";
-import { setSetting } from "../../../lib/api";
+import { setSetting, getTranslationLanguages } from "../../../lib/api";
+import {
+  getTranslationFieldVisibility,
+  emptyTranslationLanguages,
+  hasLanguage,
+  type TranslationEngine,
+  type TranslationLanguages,
+} from "./translationSettingsModel";
 
 const engineOptionGroups = [
   {
-    i18nKey: "engineGroupSystem",
-    options: [{ i18nKey: "engineLibreTranslate", value: "libretranslate" }],
+    i18nKey: "engineGroupLocal",
+    options: [{ i18nKey: "engineLocal", value: "local" }],
   },
   {
     i18nKey: "engineGroupVendor",
@@ -41,6 +49,26 @@ export function TranslationPanel() {
   const { t } = useTranslation();
   const settings = useSettingsStore((state) => state.settings);
   const updateSetting = useSettingsStore((state) => state.updateSetting);
+  const [translationLanguages, setTranslationLanguages] =
+    useState<TranslationLanguages>(emptyTranslationLanguages);
+
+  useEffect(() => {
+    let disposed = false;
+
+    getTranslationLanguages()
+      .then((languages) => {
+        if (!disposed) {
+          setTranslationLanguages(languages);
+        }
+      })
+      .catch((error) => {
+        console.error("加载翻译语言失败", error);
+      });
+
+    return () => {
+      disposed = true;
+    };
+  }, []);
 
   const saveSetting = (key: string, value: string) => {
     updateSetting(key, value);
@@ -49,8 +77,19 @@ export function TranslationPanel() {
     });
   };
 
-  const rawEngine = settings.translationEngine || "libretranslate";
-  const translationEngine = rawEngine === "openai" ? "custom" : rawEngine;
+  const translationEngine = (settings.translationEngine || "local") as TranslationEngine;
+  const sourceLanguage = hasLanguage(
+    translationLanguages.sourceLanguages,
+    settings.sourceLanguage || "auto",
+  )
+    ? settings.sourceLanguage || "auto"
+    : "auto";
+  const targetLanguage = hasLanguage(
+    translationLanguages.targetLanguages,
+    settings.targetLanguage || "zh",
+  )
+    ? settings.targetLanguage || "zh"
+    : "zh";
   const apiEndpoint = settings.apiEndpoint || "";
   const apiKey = settings.apiKey || "";
   const apiSecret = settings.apiSecret || "";
@@ -64,37 +103,7 @@ export function TranslationPanel() {
   const translationTimeoutMs = Number.isFinite(parsedTranslationTimeoutMs)
     ? parsedTranslationTimeoutMs
     : DEFAULT_TRANSLATION_TIMEOUT_MS;
-  const needsEndpoint = [
-    "libretranslate",
-    "google",
-    "deepl",
-    "microsoft",
-    "custom",
-  ].includes(translationEngine);
-  const endpointOptional = ["google", "deepl", "microsoft"].includes(
-    translationEngine,
-  );
-  const needsApiKey = [
-    "libretranslate",
-    "google",
-    "deepl",
-    "microsoft",
-    "baidu",
-    "tencent",
-    "youdao",
-    "custom",
-  ].includes(translationEngine);
-  const apiKeyOptional = translationEngine === "libretranslate";
-  const needsApiSecret = ["baidu", "tencent", "youdao"].includes(
-    translationEngine,
-  );
-  const needsApiRegion = ["microsoft", "tencent"].includes(translationEngine);
-  const isCustomEngine = translationEngine === "custom";
-
-  // Migrate "openai" → "custom" for existing users
-  if (rawEngine === "openai") {
-    saveSetting("translationEngine", "custom");
-  }
+  const fieldVisibility = getTranslationFieldVisibility(translationEngine);
 
   return (
     <Card>
@@ -144,13 +153,82 @@ export function TranslationPanel() {
             </Select.Popover>
           </Select>
         </SettingItem>
-        {needsEndpoint && (
+
+        <Separator />
+        <SettingItem
+          title={t("settings.translation.sourceLanguage.title")}
+          description={t("settings.translation.sourceLanguage.desc")}
+        >
+          <Select
+            className="w-48"
+            value={sourceLanguage}
+            onChange={(value) =>
+              value && saveSetting("sourceLanguage", String(value))
+            }
+          >
+            <Label>{t("settings.translation.sourceLanguage.label")}</Label>
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {translationLanguages.sourceLanguages.map((option) => (
+                  <ListBox.Item
+                    key={option.code}
+                    id={option.code}
+                    textValue={option.name}
+                  >
+                    {option.name}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
+        </SettingItem>
+
+        <Separator />
+        <SettingItem
+          title={t("settings.translation.targetLanguage.title")}
+          description={t("settings.translation.targetLanguage.desc")}
+        >
+          <Select
+            className="w-48"
+            value={targetLanguage}
+            onChange={(value) =>
+              value && saveSetting("targetLanguage", String(value))
+            }
+          >
+            <Label>{t("settings.translation.targetLanguage.label")}</Label>
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {translationLanguages.targetLanguages.map((option) => (
+                  <ListBox.Item
+                    key={option.code}
+                    id={option.code}
+                    textValue={option.name}
+                  >
+                    {option.name}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
+        </SettingItem>
+
+        {fieldVisibility.needsEndpoint && (
           <>
             <Separator />
             <SettingItem
               title={t("settings.translation.endpoint.title")}
               description={
-                endpointOptional
+                fieldVisibility.endpointOptional
                   ? t("settings.translation.endpoint.optionalDesc")
                   : t("settings.translation.endpoint.desc")
               }
@@ -172,13 +250,13 @@ export function TranslationPanel() {
           </>
         )}
 
-        {needsApiKey && (
+        {fieldVisibility.needsApiKey && (
           <>
             <Separator />
             <SettingItem
               title={t("settings.translation.apiKey.title")}
               description={
-                apiKeyOptional
+                fieldVisibility.endpointOptional
                   ? t("settings.translation.apiKey.optionalDesc")
                   : t("settings.translation.apiKey.desc")
               }
@@ -194,7 +272,7 @@ export function TranslationPanel() {
           </>
         )}
 
-        {needsApiSecret && (
+        {fieldVisibility.needsApiSecret && (
           <>
             <Separator />
             <SettingItem
@@ -212,7 +290,7 @@ export function TranslationPanel() {
           </>
         )}
 
-        {needsApiRegion && (
+        {fieldVisibility.needsApiRegion && (
           <>
             <Separator />
             <SettingItem
@@ -229,7 +307,7 @@ export function TranslationPanel() {
           </>
         )}
 
-        {isCustomEngine && (
+        {fieldVisibility.isCustomEngine && (
           <>
             <Separator />
             <SettingItem

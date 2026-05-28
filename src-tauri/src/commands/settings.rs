@@ -55,7 +55,9 @@ pub fn seed_settings(state: tauri::State<AppState>) -> Result<(), String> {
         ("autoSpeak", "false"),
         ("autoClose", "true"),
         // 翻译设置
-        ("translationEngine", "libretranslate"),
+        ("translationEngine", "local"),
+        ("sourceLanguage", "auto"),
+        ("targetLanguage", "zh"),
         ("apiEndpoint", ""),
         ("apiKey", ""),
         ("apiSecret", ""),

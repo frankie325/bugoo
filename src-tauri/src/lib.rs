@@ -11,13 +11,14 @@ use crate::domain::services::translation_service::TranslationService;
 use crate::ports::outbound::dictionary::DictionaryProvider;
 use crate::scheduler::notification::start_notification_scheduler;
 use crate::selection::permission_prompt::initialize_selection;
-use adapters::outbound::config::local_engine::{
-    read_local_engine_config, LocalEngineConfig,
-};
+use adapters::outbound::config::local_engine::read_local_engine_config;
 use adapters::outbound::dictionary::stardict_ecdict::StarDictEcdictDictionaryProvider;
+use adapters::outbound::language_detection::whichlang_detector::WhichlangLanguageDetector;
 use adapters::outbound::selection_ui::manage_selection_ui;
+use adapters::outbound::translation::libretranslate_languages::read_libretranslate_languages;
 use commands::AppState;
 use log::info;
+use ports::outbound::translation::{LibreTranslateLanguages, LocalEngineConfig};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{async_runtime, Emitter, Manager};
@@ -100,7 +101,41 @@ pub fn run() {
                 }
             };
 
-            let translation_service = TranslationService::new(dictionary_provider, local_engine_config);
+            let libretranslate_languages_path = app
+                .path()
+                .resolve(
+                    "resources/translation/libretranslate-languages.json",
+                    tauri::path::BaseDirectory::Resource,
+                )
+                .unwrap_or_else(|_| {
+                    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                        .join("resources")
+                        .join("translation")
+                        .join("libretranslate-languages.json")
+                });
+
+            let libretranslate_languages =
+                match read_libretranslate_languages(&libretranslate_languages_path) {
+                    Ok(languages) => languages,
+                    Err(error) => {
+                        log::warn!(
+                            "LibreTranslate languages unavailable at {:?}, using empty languages: {}",
+                            libretranslate_languages_path,
+                            error
+                        );
+                        LibreTranslateLanguages {
+                            source_languages: vec![],
+                            target_languages: vec![],
+                        }
+                    }
+                };
+
+            let translation_service = TranslationService::new(
+                dictionary_provider,
+                local_engine_config,
+                libretranslate_languages,
+                Arc::new(WhichlangLanguageDetector::new()),
+            );
 
             // 创建并管理 AppState
             let app_state = AppState::new(db.clone(), translation_service);
@@ -176,6 +211,7 @@ pub fn run() {
             commands::tags::update_tag,
             commands::tags::delete_tag,
             commands::tags::reorder_tags,
+            commands::translation_languages::get_translation_languages,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

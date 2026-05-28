@@ -1,4 +1,3 @@
-use crate::adapters::outbound::config::local_engine::LocalEngineConfig;
 use crate::adapters::outbound::translation::{
     baidu::BaiduTranslationProvider, custom::CustomTranslationProvider,
     deepl::DeepLTranslationProvider, google::GoogleTranslationProvider,
@@ -8,8 +7,11 @@ use crate::adapters::outbound::translation::{
 use crate::ports::outbound::dictionary::{
     should_lookup_dictionary, DictionaryLookupRequest, DictionaryProvider,
 };
+use crate::ports::outbound::language_detection::{DetectedLanguage, LanguageDetector};
 use crate::ports::outbound::translation::{
-    TranslationConfig, TranslationError, TranslationProvider, TranslationRequest, TranslationResult,
+    is_supported_source_language, is_supported_target_language, normalize_language_code,
+    LibreTranslateLanguages, LocalEngineConfig, TranslationConfig, TranslationError,
+    TranslationProvider, TranslationRequest, TranslationResult,
 };
 use crate::ports::outbound::word_insight::{
     GeneratedWordDetail, WordInsightProvider, WordInsightRequest,
@@ -22,17 +24,83 @@ use std::sync::Arc;
 pub struct TranslationService {
     dictionary_provider: Option<Arc<dyn DictionaryProvider>>,
     local_engine_config: LocalEngineConfig,
+    libretranslate_languages: LibreTranslateLanguages,
+    language_detector: Arc<dyn LanguageDetector>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ResolvedLanguages {
+    source_lang: String,
+    target_lang: String,
+}
+
+fn resolve_languages(
+    settings: &HashMap<String, String>,
+    language_detector: &dyn LanguageDetector,
+    text: &str,
+    request_source_lang: &str,
+    request_target_lang: &str,
+) -> ResolvedLanguages {
+    let configured_source = setting_or_default(settings, "sourceLanguage", request_source_lang);
+    let configured_target = setting_or_default(settings, "targetLanguage", request_target_lang);
+    let source_lang = if configured_source.trim().is_empty()
+        || configured_source.trim().eq_ignore_ascii_case("auto")
+    {
+        match language_detector.detect(text) {
+            DetectedLanguage::Known(lang) => lang,
+            DetectedLanguage::Unknown => "auto".to_string(),
+        }
+    } else {
+        configured_source
+    };
+
+    ResolvedLanguages {
+        source_lang,
+        target_lang: if configured_target.trim().is_empty() {
+            "zh".to_string()
+        } else {
+            configured_target
+        },
+    }
+}
+
+fn validate_local_language_support(
+    languages: &LibreTranslateLanguages,
+    source_lang: &str,
+    target_lang: &str,
+) -> Result<(), TranslationError> {
+    if !is_supported_source_language(languages, source_lang) {
+        return Err(TranslationError::UnsupportedLanguage(
+            source_lang.to_string(),
+        ));
+    }
+
+    if !is_supported_target_language(languages, target_lang) {
+        return Err(TranslationError::UnsupportedLanguage(
+            target_lang.to_string(),
+        ));
+    }
+
+    Ok(())
 }
 
 impl TranslationService {
     pub fn new(
         dictionary_provider: Option<Arc<dyn DictionaryProvider>>,
         local_engine_config: LocalEngineConfig,
+        libretranslate_languages: LibreTranslateLanguages,
+        language_detector: Arc<dyn LanguageDetector>,
     ) -> Self {
         Self {
             dictionary_provider,
             local_engine_config,
+            libretranslate_languages,
+            language_detector,
         }
+    }
+
+    pub fn libretranslate_languages(&self) -> &LibreTranslateLanguages {
+        &self.libretranslate_languages
     }
 
     pub async fn translate(
@@ -44,37 +112,80 @@ impl TranslationService {
     ) -> Result<TranslationResult, String> {
         validate_text(&text).map_err(|e| e.to_string())?;
 
-        if should_lookup_dictionary(&text) {
-            if let Some(provider) = &self.dictionary_provider {
-                match provider.lookup(DictionaryLookupRequest {
-                    text: text.clone(),
-                    source_lang: source_lang.clone(),
-                    target_lang: target_lang.clone(),
-                }) {
-                    Ok(Some(result)) => {
-                        return Ok(TranslationResult {
-                            translation: result.translation,
-                            detected_source_lang: Some(source_lang),
-                            phonetic: result.phonetic,
-                            part_of_speech: result.part_of_speech,
-                            definitions: result.definitions,
-                            examples: result.examples,
-                        });
-                    }
-                    Ok(None) => {}
-                    Err(error) => {
-                        warn!("Dictionary lookup failed, falling back to translation provider: {error}");
+        let config = build_translation_config(&settings);
+        let engine = config.engine.trim().to_lowercase();
+        let resolved_languages = resolve_languages(
+            &settings,
+            self.language_detector.as_ref(),
+            &text,
+            &source_lang,
+            &target_lang,
+        );
+
+        if engine == "local" {
+            if should_lookup_dictionary(&text) {
+                if let Some(provider) = &self.dictionary_provider {
+                    if provider.supports_language_pair(
+                        &resolved_languages.source_lang,
+                        &resolved_languages.target_lang,
+                    ) {
+                        match provider.lookup(DictionaryLookupRequest {
+                            text: text.clone(),
+                            source_lang: resolved_languages.source_lang.clone(),
+                            target_lang: resolved_languages.target_lang.clone(),
+                        }) {
+                            Ok(Some(result)) => {
+                                return Ok(TranslationResult {
+                                    translation: result.translation,
+                                    detected_source_lang: Some(resolved_languages.source_lang),
+                                    phonetic: result.phonetic,
+                                    part_of_speech: result.part_of_speech,
+                                    definitions: result.definitions,
+                                    examples: result.examples,
+                                });
+                            }
+                            Ok(None) => {}
+                            Err(error) => {
+                                warn!("Dictionary lookup failed, falling back to local LibreTranslate: {error}");
+                            }
+                        }
                     }
                 }
             }
+
+            validate_local_language_support(
+                &self.libretranslate_languages,
+                &resolved_languages.source_lang,
+                &resolved_languages.target_lang,
+            )
+            .map_err(|error| error.to_string())?;
+
+            let provider = LibreTranslateProvider::new(TranslationConfig {
+                engine: "libretranslate".to_string(),
+                api_endpoint: self.local_engine_config.libretranslate_endpoint.clone(),
+                api_key: String::new(),
+                api_secret: String::new(),
+                api_region: String::new(),
+                translation_model: String::new(),
+                translation_prompt: String::new(),
+                word_detail_prompt: String::new(),
+                timeout_ms: config.timeout_ms,
+            })
+            .map_err(|error| error.to_string())?;
+
+            let request = TranslationRequest {
+                text,
+                source_lang: normalize_language_code(&resolved_languages.source_lang),
+                target_lang: normalize_language_code(&resolved_languages.target_lang),
+            };
+            return provider.translate(request).await.map_err(|e| e.to_string());
         }
 
-        let config = build_translation_config(&settings);
-        let provider = create_translation_provider(config)?;
+        let provider = create_translation_provider(TranslationConfig { engine, ..config })?;
         let request = TranslationRequest {
             text,
-            source_lang,
-            target_lang,
+            source_lang: resolved_languages.source_lang,
+            target_lang: resolved_languages.target_lang,
         };
         provider.translate(request).await.map_err(|e| e.to_string())
     }
@@ -116,7 +227,7 @@ pub fn normalize_endpoint(endpoint: &str) -> String {
 
 fn build_translation_config(settings: &HashMap<String, String>) -> TranslationConfig {
     TranslationConfig {
-        engine: setting_or_default(settings, "translationEngine", "libretranslate"),
+        engine: setting_or_default(settings, "translationEngine", "local"),
         api_endpoint: setting_or_default(settings, "apiEndpoint", ""),
         api_key: setting_or_default(settings, "apiKey", ""),
         api_secret: setting_or_default(settings, "apiSecret", ""),
@@ -134,10 +245,10 @@ fn create_translation_provider(
     config: TranslationConfig,
 ) -> Result<Box<dyn TranslationProvider>, String> {
     match config.engine.trim().to_lowercase().as_str() {
-        "libretranslate" => LibreTranslateProvider::new(config)
-            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
-            .map_err(|error| error.to_string()),
-        "openai" | "custom" => CustomTranslationProvider::new(config)
+        "local" | "libretranslate" => {
+            Err(TranslationError::UnsupportedEngine(config.engine).to_string())
+        }
+        "custom" => CustomTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
             .map_err(|error| error.to_string()),
         "deepl" => DeepLTranslationProvider::new(config)
@@ -166,12 +277,11 @@ fn create_word_insight_provider(
     config: TranslationConfig,
 ) -> Result<Box<dyn WordInsightProvider>, String> {
     match config.engine.trim().to_lowercase().as_str() {
-        "openai" | "custom" => CustomTranslationProvider::new(config)
+        "custom" => CustomTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn WordInsightProvider>)
             .map_err(|error| error.to_string()),
-        "libretranslate" | "deepl" | "google" | "microsoft" | "baidu" | "tencent" | "youdao" => {
-            Err(TranslationError::UnsupportedEngine(config.engine).to_string())
-        }
+        "local" | "libretranslate" | "deepl" | "google" | "microsoft" | "baidu" | "tencent"
+        | "youdao" => Err(TranslationError::UnsupportedEngine(config.engine).to_string()),
         engine => Err(TranslationError::UnsupportedEngine(engine.to_string()).to_string()),
     }
 }
@@ -187,9 +297,82 @@ fn setting_or_default(settings: &HashMap<String, String>, key: &str, default: &s
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ports::outbound::dictionary::{DictionaryError, DictionaryLookupResult};
+    use crate::ports::outbound::translation::LibreTranslateLanguage;
 
-    fn test_service() -> TranslationService {
-        TranslationService::new(None, LocalEngineConfig::default_local())
+    struct MockLanguageDetector {
+        result: DetectedLanguage,
+    }
+
+    impl LanguageDetector for MockLanguageDetector {
+        fn detect(&self, _text: &str) -> DetectedLanguage {
+            self.result.clone()
+        }
+    }
+
+    struct MockDictionaryProvider {
+        supports: bool,
+        result: Option<DictionaryLookupResult>,
+    }
+
+    impl DictionaryProvider for MockDictionaryProvider {
+        fn lookup(
+            &self,
+            _request: DictionaryLookupRequest,
+        ) -> Result<Option<DictionaryLookupResult>, DictionaryError> {
+            Ok(self.result.clone())
+        }
+
+        fn supports_language_pair(&self, _source_lang: &str, _target_lang: &str) -> bool {
+            self.supports
+        }
+    }
+
+    fn test_libretranslate_languages() -> LibreTranslateLanguages {
+        LibreTranslateLanguages {
+            source_languages: vec![
+                LibreTranslateLanguage {
+                    code: "auto".to_string(),
+                    name: "Auto Detect".to_string(),
+                },
+                LibreTranslateLanguage {
+                    code: "en".to_string(),
+                    name: "English".to_string(),
+                },
+                LibreTranslateLanguage {
+                    code: "ja".to_string(),
+                    name: "Japanese".to_string(),
+                },
+            ],
+            target_languages: vec![
+                LibreTranslateLanguage {
+                    code: "zh".to_string(),
+                    name: "Chinese".to_string(),
+                },
+                LibreTranslateLanguage {
+                    code: "en".to_string(),
+                    name: "English".to_string(),
+                },
+            ],
+        }
+    }
+
+    fn test_language_detector() -> Arc<dyn LanguageDetector> {
+        Arc::new(MockLanguageDetector {
+            result: DetectedLanguage::Known("en".to_string()),
+        })
+    }
+
+    fn service_with_dictionary(
+        supports: bool,
+        result: Option<DictionaryLookupResult>,
+    ) -> TranslationService {
+        TranslationService::new(
+            Some(Arc::new(MockDictionaryProvider { supports, result })),
+            LocalEngineConfig::default_local(),
+            test_libretranslate_languages(),
+            test_language_detector(),
+        )
     }
 
     #[test]
@@ -238,7 +421,7 @@ mod tests {
     }
 
     #[test]
-    fn build_translation_config_reads_secret_region_and_defaults_to_libretranslate() {
+    fn build_translation_config_reads_secret_region_and_defaults_to_local() {
         let settings = HashMap::from([
             ("apiSecret".to_string(), "secret-value".to_string()),
             ("apiRegion".to_string(), "eastasia".to_string()),
@@ -246,8 +429,100 @@ mod tests {
 
         let config = build_translation_config(&settings);
 
-        assert_eq!(config.engine, "libretranslate");
+        assert_eq!(config.engine, "local");
         assert_eq!(config.api_secret, "secret-value");
         assert_eq!(config.api_region, "eastasia");
+    }
+
+    #[test]
+    fn resolve_languages_uses_detected_source_when_configured_auto() {
+        let settings = HashMap::from([
+            ("sourceLanguage".to_string(), "auto".to_string()),
+            ("targetLanguage".to_string(), "zh-CN".to_string()),
+        ]);
+        let detector = MockLanguageDetector {
+            result: DetectedLanguage::Known("en".to_string()),
+        };
+
+        let result = resolve_languages(&settings, &detector, "hello", "auto", "ja");
+
+        assert_eq!(
+            result,
+            ResolvedLanguages {
+                source_lang: "en".to_string(),
+                target_lang: "zh-CN".to_string(),
+            }
+        );
+    }
+
+    #[test]
+    fn validate_local_language_support_rejects_unknown_target() {
+        let languages = test_libretranslate_languages();
+        let result = validate_local_language_support(&languages, "en", "xx");
+
+        assert_eq!(
+            result,
+            Err(TranslationError::UnsupportedLanguage("xx".to_string()))
+        );
+    }
+
+    #[test]
+    fn translate_returns_dictionary_result_for_local_supported_pair_from_settings() {
+        let service = service_with_dictionary(
+            true,
+            Some(DictionaryLookupResult {
+                word: "hello".to_string(),
+                translation: "int. 你好".to_string(),
+                phonetic: Some("həˈləʊ".to_string()),
+                part_of_speech: vec!["int".to_string()],
+                definitions: vec!["int. 你好".to_string()],
+                examples: Vec::new(),
+            }),
+        );
+        let settings = HashMap::from([
+            ("translationEngine".to_string(), "local".to_string()),
+            ("sourceLanguage".to_string(), "en".to_string()),
+            ("targetLanguage".to_string(), "zh-CN".to_string()),
+        ]);
+
+        let result = tauri::async_runtime::block_on(service.translate(
+            settings,
+            "hello".to_string(),
+            "auto".to_string(),
+            "ja".to_string(),
+        ))
+        .unwrap();
+
+        assert_eq!(result.translation, "int. 你好");
+    }
+
+    #[test]
+    fn translate_skips_dictionary_for_custom_engine() {
+        let service = service_with_dictionary(
+            true,
+            Some(DictionaryLookupResult {
+                word: "hello".to_string(),
+                translation: "int. 你好".to_string(),
+                phonetic: None,
+                part_of_speech: Vec::new(),
+                definitions: Vec::new(),
+                examples: Vec::new(),
+            }),
+        );
+        let settings = HashMap::from([
+            ("translationEngine".to_string(), "custom".to_string()),
+            ("sourceLanguage".to_string(), "en".to_string()),
+            ("targetLanguage".to_string(), "zh-CN".to_string()),
+        ]);
+
+        let error = tauri::async_runtime::block_on(service.translate(
+            settings,
+            "hello".to_string(),
+            "en".to_string(),
+            "zh-CN".to_string(),
+        ))
+        .unwrap_err();
+
+        assert_ne!(error, "int. 你好");
     }
 }

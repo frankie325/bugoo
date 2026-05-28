@@ -2,6 +2,7 @@ pub mod review;
 pub mod settings;
 pub mod tags;
 pub mod translate;
+pub mod translation_languages;
 pub mod tts;
 pub mod window;
 pub mod word_details;

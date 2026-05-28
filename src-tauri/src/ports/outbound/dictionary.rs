@@ -33,6 +33,8 @@ pub trait DictionaryProvider: Send + Sync {
         &self,
         request: DictionaryLookupRequest,
     ) -> Result<Option<DictionaryLookupResult>, DictionaryError>;
+
+    fn supports_language_pair(&self, source_lang: &str, target_lang: &str) -> bool;
 }
 
 pub fn normalize_dictionary_text(text: &str) -> String {

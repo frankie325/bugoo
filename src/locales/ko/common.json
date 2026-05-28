@@ -152,10 +152,10 @@
         "desc": "Translation and detail generation requests fail automatically after this time"
       },
       "timeoutLabel": "ms",
-      "engineGroupSystem": "Built-in",
+      "engineGroupLocal": "로컬",
       "engineGroupVendor": "Vendor API",
       "engineGroupCustom": "Custom",
-      "engineLibreTranslate": "LibreTranslate",
+      "engineLocal": "로컬",
       "engineMicrosoft": "Bing / Microsoft Translator",
       "engineBaidu": "Baidu",
       "engineTencent": "Tencent",
@@ -169,7 +169,17 @@
         "title": "Region",
         "desc": "Region required by Microsoft or Tencent Cloud"
       },
-      "apiRegionPlaceholder": "Example: eastasia / ap-guangzhou"
+      "apiRegionPlaceholder": "Example: eastasia / ap-guangzhou",
+      "sourceLanguage": {
+        "title": "Source Language",
+        "desc": "Only languages supported by the local LibreTranslate configuration are shown",
+        "label": "Source Language"
+      },
+      "targetLanguage": {
+        "title": "Target Language",
+        "desc": "Only languages supported by the local LibreTranslate configuration are shown",
+        "label": "Target Language"
+      }
     },
     "review": {
       "title": "복습 설정",

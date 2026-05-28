@@ -1,14 +1,10 @@
+use crate::ports::outbound::translation::{
+    LocalEngineConfig, DEFAULT_LOCAL_LIBRETRANSLATE_ENDPOINT,
+};
 use serde::Deserialize;
 use std::fs;
 use std::path::Path;
 use thiserror::Error;
-
-pub const DEFAULT_LOCAL_LIBRETRANSLATE_ENDPOINT: &str = "http://localhost:5005";
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LocalEngineConfig {
-    pub libretranslate_endpoint: String,
-}
 
 #[derive(Debug, Deserialize)]
 struct LocalEngineConfigFile {
@@ -22,14 +18,6 @@ pub enum LocalEngineConfigError {
     ReadFailed(String),
     #[error("本地翻译配置格式异常：{0}")]
     InvalidJson(String),
-}
-
-impl LocalEngineConfig {
-    pub fn default_local() -> Self {
-        Self {
-            libretranslate_endpoint: DEFAULT_LOCAL_LIBRETRANSLATE_ENDPOINT.to_string(),
-        }
-    }
 }
 
 pub fn read_local_engine_config(path: &Path) -> Result<LocalEngineConfig, LocalEngineConfigError> {
