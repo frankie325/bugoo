@@ -55,32 +55,21 @@ pub struct LibreTranslateLanguages {
     pub target_languages: Vec<LibreTranslateLanguage>,
 }
 
-pub fn normalize_language_code(lang: &str) -> String {
-    match lang.trim().to_lowercase().as_str() {
-        "zh-cn" | "zh-hans" => "zh".to_string(),
-        "zh-tw" | "zh-hant" => "zt".to_string(),
-        value => value.to_string(),
-    }
-}
-
 pub fn is_supported_source_language(languages: &LibreTranslateLanguages, lang: &str) -> bool {
     if lang.trim().eq_ignore_ascii_case("auto") {
         return true;
     }
-
-    let normalized = normalize_language_code(lang);
     languages
         .source_languages
         .iter()
-        .any(|language| language.code == normalized)
+        .any(|language| language.code == lang)
 }
 
 pub fn is_supported_target_language(languages: &LibreTranslateLanguages, lang: &str) -> bool {
-    let normalized = normalize_language_code(lang);
     languages
         .target_languages
         .iter()
-        .any(|language| language.code == normalized)
+        .any(|language| language.code == lang)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

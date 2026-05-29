@@ -6,22 +6,12 @@ use crate::ports::outbound::translation::{
     TranslationConfig, TranslationError, TranslationFuture, TranslationProvider, TranslationRequest,
 };
 use reqwest::Client;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 #[derive(Clone)]
 pub struct LibreTranslateProvider {
     client: Client,
     config: TranslationConfig,
-}
-
-#[derive(Debug, Serialize)]
-struct LibreTranslateRequest {
-    q: String,
-    source: String,
-    target: String,
-    format: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    api_key: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -38,6 +28,7 @@ impl LibreTranslateProvider {
 
         let client = Client::builder()
             .timeout(timeout_duration(config.timeout_ms))
+            .no_proxy()
             .build()
             .map_err(|error| TranslationError::RequestFailed(error.to_string()))?;
 
@@ -49,16 +40,19 @@ impl LibreTranslateProvider {
         request: TranslationRequest,
     ) -> Result<crate::ports::outbound::translation::TranslationResult, TranslationError> {
         validate_text(&request.text)?;
-
-        let source = normalize_source_lang(&request.source_lang);
-        let target = normalize_target_lang(&request.target_lang);
-        let payload = LibreTranslateRequest {
-            q: request.text,
-            source: source.clone(),
-            target,
-            format: "text".to_string(),
-            api_key: non_empty_api_key(&self.config.api_key),
-        };
+        
+        let source = request.source_lang.clone();
+        let target = request.target_lang.clone();
+        
+        let mut form_data: Vec<(String, String)> = vec![
+            ("q".to_string(), request.text.clone()),
+            ("source".to_string(), source.clone()),
+            ("target".to_string(), target.clone()),
+            ("format".to_string(), "text".to_string()),
+        ];
+        if let Some(key) = non_empty_api_key(&self.config.api_key) {
+            form_data.push(("api_key".to_string(), key));
+        }
 
         let response = self
             .client
@@ -66,7 +60,7 @@ impl LibreTranslateProvider {
                 "{}/translate",
                 normalize_endpoint(&self.config.api_endpoint)
             ))
-            .json(&payload)
+            .form(&form_data)
             .send()
             .await
             .map_err(map_reqwest_error)?;
@@ -101,19 +95,6 @@ impl TranslationProvider for LibreTranslateProvider {
     fn translate<'a>(&'a self, request: TranslationRequest) -> TranslationFuture<'a> {
         Box::pin(async move { self.translate_inner(request).await })
     }
-}
-
-fn normalize_source_lang(lang: &str) -> String {
-    let normalized = lang.trim().to_lowercase();
-    if normalized.is_empty() || normalized == "auto" {
-        "auto".to_string()
-    } else {
-        normalized
-    }
-}
-
-fn normalize_target_lang(lang: &str) -> String {
-    lang.trim().to_lowercase()
 }
 
 fn non_empty_api_key(api_key: &str) -> Option<String> {
@@ -151,11 +132,5 @@ mod tests {
         let result = LibreTranslateProvider::new(config);
 
         assert!(matches!(result, Err(TranslationError::MissingEndpoint)));
-    }
-
-    #[test]
-    fn normalize_source_lang_uses_auto_for_empty() {
-        assert_eq!(normalize_source_lang(""), "auto");
-        assert_eq!(normalize_source_lang("EN"), "en");
     }
 }

@@ -32,19 +32,8 @@ pub fn read_libretranslate_languages(
 mod tests {
     use super::*;
     use crate::ports::outbound::translation::{
-        is_supported_source_language, is_supported_target_language, normalize_language_code,
-        LibreTranslateLanguage,
+        is_supported_source_language, is_supported_target_language, LibreTranslateLanguage,
     };
-
-    #[test]
-    fn normalize_language_code_maps_simplified_chinese() {
-        assert_eq!(normalize_language_code("zh-CN"), "zh");
-    }
-
-    #[test]
-    fn normalize_language_code_maps_traditional_chinese() {
-        assert_eq!(normalize_language_code("zh-TW"), "zt");
-    }
 
     #[test]
     fn read_libretranslate_languages_returns_source_and_target_languages() {

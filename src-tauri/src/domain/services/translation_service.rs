@@ -9,7 +9,7 @@ use crate::ports::outbound::dictionary::{
 };
 use crate::ports::outbound::language_detection::{DetectedLanguage, LanguageDetector};
 use crate::ports::outbound::translation::{
-    is_supported_source_language, is_supported_target_language, normalize_language_code,
+    is_supported_source_language, is_supported_target_language,
     LibreTranslateLanguages, LocalEngineConfig, TranslationConfig, TranslationError,
     TranslationProvider, TranslationRequest, TranslationResult,
 };
@@ -34,19 +34,24 @@ struct ResolvedLanguages {
     target_lang: String,
 }
 
-fn resolve_languages(
+async fn resolve_languages(
     settings: &HashMap<String, String>,
     language_detector: &dyn LanguageDetector,
     text: &str,
+    detect_auto_source: bool,
 ) -> ResolvedLanguages {
     let configured_source = setting_or_default(settings, "sourceLanguage", "auto");
     let configured_target = setting_or_default(settings, "targetLanguage", "zh");
     let source_lang = if configured_source.trim().is_empty()
         || configured_source.trim().eq_ignore_ascii_case("auto")
     {
-        match language_detector.detect(text) {
-            DetectedLanguage::Known(lang) => lang,
-            DetectedLanguage::Unknown => "auto".to_string(),
+        if detect_auto_source {
+            match language_detector.detect(text).await {
+                DetectedLanguage::Known(lang) => lang,
+                DetectedLanguage::Unknown => "auto".to_string(),
+            }
+        } else {
+            "auto".to_string()
         }
     } else {
         configured_source
@@ -107,76 +112,76 @@ impl TranslationService {
         text: String,
     ) -> Result<TranslationResult, String> {
         validate_text(&text).map_err(|e| e.to_string())?;
-
         let config = build_translation_config(&settings);
         let engine = config.engine.trim().to_lowercase();
-        let resolved_languages =
-            resolve_languages(&settings, self.language_detector.as_ref(), &text);
+        let resolved_languages = resolve_languages(
+            &settings,
+            self.language_detector.as_ref(),
+            &text,
+            engine == "local",
+        )
+        .await;
 
-        if engine == "local" {
-            if should_lookup_dictionary(&text) {
-                if let Some(provider) = &self.dictionary_provider {
-                    if provider.supports_language_pair(
-                        &resolved_languages.source_lang,
-                        &resolved_languages.target_lang,
-                    ) {
-                        match provider.lookup(DictionaryLookupRequest {
-                            text: text.clone(),
-                            source_lang: resolved_languages.source_lang.clone(),
-                            target_lang: resolved_languages.target_lang.clone(),
-                        }) {
-                            Ok(Some(result)) => {
-                                return Ok(TranslationResult {
-                                    translation: result.translation,
-                                    detected_source_lang: Some(resolved_languages.source_lang),
-                                    phonetic: result.phonetic,
-                                    part_of_speech: result.part_of_speech,
-                                    definitions: result.definitions,
-                                    examples: result.examples,
-                                });
-                            }
-                            Ok(None) => {}
-                            Err(error) => {
-                                warn!("Dictionary lookup failed, falling back to local LibreTranslate: {error}");
-                            }
+        // === local engine: try dictionary first ===
+        if engine == "local"
+            && should_lookup_dictionary(&text)
+            && !resolved_languages
+                .source_lang
+                .trim()
+                .eq_ignore_ascii_case("auto")
+        {
+            if let Some(provider) = &self.dictionary_provider {
+                if provider.supports_language_pair(
+                    &resolved_languages.source_lang,
+                    &resolved_languages.target_lang,
+                ) {
+                    match provider.lookup(DictionaryLookupRequest {
+                        text: text.clone(),
+                        source_lang: resolved_languages.source_lang.clone(),
+                        target_lang: resolved_languages.target_lang.clone(),
+                    }) {
+                        Ok(Some(result)) => {
+                            return Ok(TranslationResult {
+                                translation: result.translation,
+                                detected_source_lang: Some(resolved_languages.source_lang),
+                                phonetic: result.phonetic,
+                                part_of_speech: result.part_of_speech,
+                                definitions: result.definitions,
+                                examples: result.examples,
+                            });
+                        }
+                        Ok(None) => {}
+                        Err(error) => {
+                            warn!("Dictionary lookup failed, falling back to local LibreTranslate: {error}");
                         }
                     }
                 }
             }
-
-            validate_local_language_support(
-                &self.libretranslate_languages,
-                &resolved_languages.source_lang,
-                &resolved_languages.target_lang,
-            )
-            .map_err(|error| error.to_string())?;
-
-            let provider = LibreTranslateProvider::new(TranslationConfig {
-                engine: "libretranslate".to_string(),
-                api_endpoint: self.local_engine_config.libretranslate_endpoint.clone(),
-                api_key: String::new(),
-                api_secret: String::new(),
-                api_region: String::new(),
-                translation_model: String::new(),
-                translation_prompt: String::new(),
-                word_detail_prompt: String::new(),
-                timeout_ms: config.timeout_ms,
-            })
-            .map_err(|error| error.to_string())?;
-
-            let request = TranslationRequest {
-                text,
-                source_lang: normalize_language_code(&resolved_languages.source_lang),
-                target_lang: normalize_language_code(&resolved_languages.target_lang),
-            };
-            return provider.translate(request).await.map_err(|e| e.to_string());
         }
 
-        let provider = create_translation_provider(TranslationConfig { engine, ..config })?;
+        // === all engines: unified factory path ===
+        // For "local" engine, use the configured LibreTranslate endpoint from local_engine_config
+        let config = if engine == "local" {
+            TranslationConfig {
+                api_endpoint: self.local_engine_config.libretranslate_endpoint.clone(),
+                ..config
+            }
+        } else {
+            config
+        };
+
+        validate_local_language_support(
+            &self.libretranslate_languages,
+            &resolved_languages.source_lang,
+            &resolved_languages.target_lang,
+        )
+        .map_err(|error| error.to_string())?;
+
+        let provider = create_translation_provider(config)?;
         let request = TranslationRequest {
             text,
-            source_lang: resolved_languages.source_lang,
-            target_lang: resolved_languages.target_lang,
+            source_lang: resolved_languages.source_lang.clone(),
+            target_lang: resolved_languages.target_lang.clone(),
         };
         provider.translate(request).await.map_err(|e| e.to_string())
     }
@@ -236,9 +241,9 @@ fn create_translation_provider(
     config: TranslationConfig,
 ) -> Result<Box<dyn TranslationProvider>, String> {
     match config.engine.trim().to_lowercase().as_str() {
-        "local" | "libretranslate" => {
-            Err(TranslationError::UnsupportedEngine(config.engine).to_string())
-        }
+        "local" => LibreTranslateProvider::new(config)
+            .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
+            .map_err(|error| error.to_string()),
         "custom" => CustomTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
             .map_err(|error| error.to_string()),
@@ -293,11 +298,18 @@ mod tests {
 
     struct MockLanguageDetector {
         result: DetectedLanguage,
+        calls: Arc<std::sync::atomic::AtomicUsize>,
     }
 
     impl LanguageDetector for MockLanguageDetector {
-        fn detect(&self, _text: &str) -> DetectedLanguage {
-            self.result.clone()
+        fn detect<'a>(
+            &'a self,
+            _text: &'a str,
+        ) -> crate::ports::outbound::language_detection::LanguageDetectionFuture<'a> {
+            Box::pin(async move {
+                self.calls.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                self.result.clone()
+            })
         }
     }
 
@@ -316,6 +328,32 @@ mod tests {
 
         fn supports_language_pair(&self, _source_lang: &str, _target_lang: &str) -> bool {
             self.supports
+        }
+    }
+
+    struct CountingDictionaryProvider {
+        lookup_calls: Arc<std::sync::atomic::AtomicUsize>,
+    }
+
+    impl DictionaryProvider for CountingDictionaryProvider {
+        fn lookup(
+            &self,
+            _request: DictionaryLookupRequest,
+        ) -> Result<Option<DictionaryLookupResult>, DictionaryError> {
+            self.lookup_calls
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            Ok(Some(DictionaryLookupResult {
+                word: "hello".to_string(),
+                translation: "dictionary result".to_string(),
+                phonetic: None,
+                part_of_speech: Vec::new(),
+                definitions: Vec::new(),
+                examples: Vec::new(),
+            }))
+        }
+
+        fn supports_language_pair(&self, _source_lang: &str, _target_lang: &str) -> bool {
+            true
         }
     }
 
@@ -351,6 +389,7 @@ mod tests {
     fn test_language_detector() -> Arc<dyn LanguageDetector> {
         Arc::new(MockLanguageDetector {
             result: DetectedLanguage::Known("en".to_string()),
+            calls: Arc::new(std::sync::atomic::AtomicUsize::new(0)),
         })
     }
 
@@ -363,6 +402,19 @@ mod tests {
             LocalEngineConfig::default_local(),
             test_libretranslate_languages(),
             test_language_detector(),
+        )
+    }
+
+    fn service_with_detector_and_config(
+        dictionary_provider: Option<Arc<dyn DictionaryProvider>>,
+        detector: Arc<dyn LanguageDetector>,
+        local_engine_config: LocalEngineConfig,
+    ) -> TranslationService {
+        TranslationService::new(
+            dictionary_provider,
+            local_engine_config,
+            test_libretranslate_languages(),
+            detector,
         )
     }
 
@@ -433,9 +485,11 @@ mod tests {
         ]);
         let detector = MockLanguageDetector {
             result: DetectedLanguage::Known("en".to_string()),
+            calls: Arc::new(std::sync::atomic::AtomicUsize::new(0)),
         };
 
-        let result = resolve_languages(&settings, &detector, "hello");
+        let result =
+            tauri::async_runtime::block_on(resolve_languages(&settings, &detector, "hello", true));
 
         assert_eq!(
             result,
@@ -451,9 +505,11 @@ mod tests {
         let settings = HashMap::new();
         let detector = MockLanguageDetector {
             result: DetectedLanguage::Unknown,
+            calls: Arc::new(std::sync::atomic::AtomicUsize::new(0)),
         };
 
-        let result = resolve_languages(&settings, &detector, "hello");
+        let result =
+            tauri::async_runtime::block_on(resolve_languages(&settings, &detector, "hello", true));
 
         assert_eq!(
             result,
@@ -502,28 +558,127 @@ mod tests {
     }
 
     #[test]
-    fn translate_skips_dictionary_for_custom_engine() {
-        let service = service_with_dictionary(
-            true,
-            Some(DictionaryLookupResult {
-                word: "hello".to_string(),
-                translation: "int. 你好".to_string(),
-                phonetic: None,
-                part_of_speech: Vec::new(),
-                definitions: Vec::new(),
-                examples: Vec::new(),
-            }),
-        );
+    fn translate_does_not_detect_language_for_custom_engine_auto_source() {
+        let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let detector = Arc::new(MockLanguageDetector {
+            result: DetectedLanguage::Known("en".to_string()),
+            calls: Arc::clone(&calls),
+        });
+        let service =
+            service_with_detector_and_config(None, detector, LocalEngineConfig::default_local());
         let settings = HashMap::from([
             ("translationEngine".to_string(), "custom".to_string()),
-            ("sourceLanguage".to_string(), "en".to_string()),
-            ("targetLanguage".to_string(), "zh-CN".to_string()),
+            ("sourceLanguage".to_string(), "auto".to_string()),
+            ("targetLanguage".to_string(), "zh".to_string()),
         ]);
 
         let error =
             tauri::async_runtime::block_on(service.translate(settings, "hello".to_string()))
                 .unwrap_err();
 
-        assert_ne!(error, "int. 你好");
+        assert_eq!(calls.load(std::sync::atomic::Ordering::SeqCst), 0);
+        assert!(error.contains("API"));
+    }
+
+    #[test]
+    fn translate_does_not_detect_language_for_local_fixed_source() {
+        let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let detector = Arc::new(MockLanguageDetector {
+            result: DetectedLanguage::Known("ja".to_string()),
+            calls: Arc::clone(&calls),
+        });
+        let service = service_with_detector_and_config(
+            Some(Arc::new(MockDictionaryProvider {
+                supports: true,
+                result: Some(DictionaryLookupResult {
+                    word: "hello".to_string(),
+                    translation: "int. 你好".to_string(),
+                    phonetic: None,
+                    part_of_speech: Vec::new(),
+                    definitions: Vec::new(),
+                    examples: Vec::new(),
+                }),
+            })),
+            detector,
+            LocalEngineConfig::default_local(),
+        );
+        let settings = HashMap::from([
+            ("translationEngine".to_string(), "local".to_string()),
+            ("sourceLanguage".to_string(), "en".to_string()),
+            ("targetLanguage".to_string(), "zh-CN".to_string()),
+        ]);
+
+        let result =
+            tauri::async_runtime::block_on(service.translate(settings, "hello".to_string()))
+                .unwrap();
+
+        assert_eq!(result.translation, "int. 你好");
+        assert_eq!(calls.load(std::sync::atomic::Ordering::SeqCst), 0);
+    }
+
+    #[test]
+    fn translate_skips_dictionary_when_detection_unknown() {
+        let lookup_calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let detector = Arc::new(MockLanguageDetector {
+            result: DetectedLanguage::Unknown,
+            calls: Arc::new(std::sync::atomic::AtomicUsize::new(0)),
+        });
+        let service = service_with_detector_and_config(
+            Some(Arc::new(CountingDictionaryProvider {
+                lookup_calls: Arc::clone(&lookup_calls),
+            })),
+            detector,
+            LocalEngineConfig {
+                libretranslate_endpoint: ":// invalid".to_string(),
+            },
+        );
+        let settings = HashMap::from([
+            ("translationEngine".to_string(), "local".to_string()),
+            ("sourceLanguage".to_string(), "auto".to_string()),
+            ("targetLanguage".to_string(), "zh".to_string()),
+        ]);
+
+        let error =
+            tauri::async_runtime::block_on(service.translate(settings, "hello".to_string()))
+                .unwrap_err();
+
+        assert_eq!(lookup_calls.load(std::sync::atomic::Ordering::SeqCst), 0);
+        assert!(!error.is_empty());
+    }
+
+    #[test]
+    fn translate_detects_language_for_local_auto_source_before_dictionary_lookup() {
+        let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let detector = Arc::new(MockLanguageDetector {
+            result: DetectedLanguage::Known("en".to_string()),
+            calls: Arc::clone(&calls),
+        });
+        let service = service_with_detector_and_config(
+            Some(Arc::new(MockDictionaryProvider {
+                supports: true,
+                result: Some(DictionaryLookupResult {
+                    word: "hello".to_string(),
+                    translation: "dictionary result".to_string(),
+                    phonetic: None,
+                    part_of_speech: Vec::new(),
+                    definitions: Vec::new(),
+                    examples: Vec::new(),
+                }),
+            })),
+            detector,
+            LocalEngineConfig::default_local(),
+        );
+        let settings = HashMap::from([
+            ("translationEngine".to_string(), "local".to_string()),
+            ("sourceLanguage".to_string(), "auto".to_string()),
+            ("targetLanguage".to_string(), "zh-CN".to_string()),
+        ]);
+
+        let result =
+            tauri::async_runtime::block_on(service.translate(settings, "hello".to_string()))
+                .unwrap();
+
+        assert_eq!(result.translation, "dictionary result");
+        assert_eq!(calls.load(std::sync::atomic::Ordering::SeqCst), 1);
     }
 }

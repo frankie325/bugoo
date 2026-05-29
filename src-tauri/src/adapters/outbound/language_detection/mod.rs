@@ -1,1 +1,1 @@
-pub mod whichlang_detector;
+pub mod libretranslate_detector;

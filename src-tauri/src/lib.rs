@@ -13,12 +13,12 @@ use crate::scheduler::notification::start_notification_scheduler;
 use crate::selection::permission_prompt::initialize_selection;
 use adapters::outbound::config::local_engine::read_local_engine_config;
 use adapters::outbound::dictionary::stardict_ecdict::StarDictEcdictDictionaryProvider;
-use adapters::outbound::language_detection::whichlang_detector::WhichlangLanguageDetector;
+use adapters::outbound::language_detection::libretranslate_detector::LibreTranslateLanguageDetector;
 use adapters::outbound::selection_ui::manage_selection_ui;
 use adapters::outbound::translation::libretranslate_languages::read_libretranslate_languages;
 use commands::AppState;
 use log::info;
-use ports::outbound::translation::{LibreTranslateLanguages, LocalEngineConfig};
+use ports::outbound::translation::LocalEngineConfig;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{async_runtime, Emitter, Manager};
@@ -114,27 +114,17 @@ pub fn run() {
                         .join("libretranslate-languages.json")
                 });
 
-            let libretranslate_languages =
-                match read_libretranslate_languages(&libretranslate_languages_path) {
-                    Ok(languages) => languages,
-                    Err(error) => {
-                        log::warn!(
-                            "LibreTranslate languages unavailable at {:?}, using empty languages: {}",
-                            libretranslate_languages_path,
-                            error
-                        );
-                        LibreTranslateLanguages {
-                            source_languages: vec![],
-                            target_languages: vec![],
-                        }
-                    }
-                };
+            let libretranslate_languages = read_libretranslate_languages(&libretranslate_languages_path)
+                .expect("Failed to load libretranslate-languages.json — translation service requires valid language config. Ensure resources/translation/libretranslate-languages.json exists and contains non-empty sourceLanguages/targetLanguages arrays.");
 
             let translation_service = TranslationService::new(
                 dictionary_provider,
-                local_engine_config,
+                local_engine_config.clone(),
                 libretranslate_languages,
-                Arc::new(WhichlangLanguageDetector::new()),
+                Arc::new(LibreTranslateLanguageDetector::new(
+                    local_engine_config.libretranslate_endpoint,
+                    15_000,
+                )),
             );
 
             // 创建并管理 AppState

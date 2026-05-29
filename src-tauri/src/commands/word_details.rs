@@ -1,4 +1,3 @@
-use crate::commands::translate::read_settings_map;
 use crate::commands::AppState;
 use crate::ports::outbound::translation::{TranslationError, TranslationExample};
 use crate::ports::outbound::word_insight::GeneratedWordDetail;
@@ -62,7 +61,7 @@ pub async fn generate_word_detail(
     let app_state = state.inner();
     let word = read_word_summary(app_state, &word_id)?
         .ok_or_else(|| TranslationError::WordNotFound.to_string())?;
-    let settings = read_settings_map(app_state)?;
+    let settings = app_state.settings_cache_read()?;
     let engine = settings
         .get("translationEngine")
         .map(|s| s.trim().to_lowercase())
