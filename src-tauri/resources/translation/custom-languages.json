@@ -1,0 +1,9 @@
+{
+  "sourceLanguages": [
+    { "code": "auto", "name": "Auto Detect" },
+    { "code": "*", "name": "Any Language" }
+  ],
+  "targetLanguages": [
+    { "code": "*", "name": "Any Language" }
+  ]
+}

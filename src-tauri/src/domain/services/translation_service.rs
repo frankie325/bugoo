@@ -1,6 +1,8 @@
 use crate::adapters::outbound::translation::{
     baidu::BaiduTranslationProvider, custom::CustomTranslationProvider,
-    deepl::DeepLTranslationProvider, google::GoogleTranslationProvider,
+    deepl::DeepLTranslationProvider, engine_languages::EngineLanguages,
+    engine_languages::is_engine_source_language_supported,
+    engine_languages::is_engine_target_language_supported, google::GoogleTranslationProvider,
     libretranslate::LibreTranslateProvider, microsoft::MicrosoftTranslationProvider,
     tencent::TencentTranslationProvider, youdao::YoudaoTranslationProvider,
 };
@@ -9,8 +11,7 @@ use crate::ports::outbound::dictionary::{
 };
 use crate::ports::outbound::language_detection::{DetectedLanguage, LanguageDetector};
 use crate::ports::outbound::translation::{
-    is_supported_source_language, is_supported_target_language,
-    LibreTranslateLanguages, LocalEngineConfig, TranslationConfig, TranslationError,
+    LocalEngineConfig, TranslationConfig, TranslationError,
     TranslationProvider, TranslationRequest, TranslationResult,
 };
 use crate::ports::outbound::word_insight::{
@@ -24,8 +25,8 @@ use std::sync::Arc;
 pub struct TranslationService {
     dictionary_provider: Option<Arc<dyn DictionaryProvider>>,
     local_engine_config: LocalEngineConfig,
-    libretranslate_languages: LibreTranslateLanguages,
     language_detector: Arc<dyn LanguageDetector>,
+    engine_languages: HashMap<String, EngineLanguages>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -67,43 +68,50 @@ async fn resolve_languages(
     }
 }
 
-fn validate_local_language_support(
-    languages: &LibreTranslateLanguages,
-    source_lang: &str,
-    target_lang: &str,
-) -> Result<(), TranslationError> {
-    if !is_supported_source_language(languages, source_lang) {
-        return Err(TranslationError::UnsupportedLanguage(
-            source_lang.to_string(),
-        ));
-    }
-
-    if !is_supported_target_language(languages, target_lang) {
-        return Err(TranslationError::UnsupportedLanguage(
-            target_lang.to_string(),
-        ));
-    }
-
-    Ok(())
-}
-
 impl TranslationService {
     pub fn new(
         dictionary_provider: Option<Arc<dyn DictionaryProvider>>,
         local_engine_config: LocalEngineConfig,
-        libretranslate_languages: LibreTranslateLanguages,
         language_detector: Arc<dyn LanguageDetector>,
+        engine_languages: HashMap<String, EngineLanguages>,
     ) -> Self {
         Self {
             dictionary_provider,
             local_engine_config,
-            libretranslate_languages,
             language_detector,
+            engine_languages,
         }
     }
 
-    pub fn libretranslate_languages(&self) -> &LibreTranslateLanguages {
-        &self.libretranslate_languages
+    pub fn engine_languages(&self) -> &HashMap<String, EngineLanguages> {
+        &self.engine_languages
+    }
+
+    fn validate_language_support(
+        &self,
+        engine: &str,
+        source_lang: &str,
+        target_lang: &str,
+    ) -> Result<(), TranslationError> {
+        if engine == "local" {
+            // local engine uses LibreTranslate, stored under "local" key in engine_languages
+            if let Some(local_languages) = self.engine_languages.get("local") {
+                if !is_engine_source_language_supported(local_languages, source_lang) {
+                    return Err(TranslationError::UnsupportedLanguage(source_lang.to_string()));
+                }
+                if !is_engine_target_language_supported(local_languages, target_lang) {
+                    return Err(TranslationError::UnsupportedLanguage(target_lang.to_string()));
+                }
+            }
+        } else if let Some(languages) = self.engine_languages.get(engine) {
+            if !is_engine_source_language_supported(languages, source_lang) {
+                return Err(TranslationError::UnsupportedLanguage(source_lang.to_string()));
+            }
+            if !is_engine_target_language_supported(languages, target_lang) {
+                return Err(TranslationError::UnsupportedLanguage(target_lang.to_string()));
+            }
+        }
+        Ok(())
     }
 
     pub async fn translate(
@@ -170,8 +178,8 @@ impl TranslationService {
             config
         };
 
-        validate_local_language_support(
-            &self.libretranslate_languages,
+        self.validate_language_support(
+            &engine,
             &resolved_languages.source_lang,
             &resolved_languages.target_lang,
         )
@@ -293,8 +301,8 @@ fn setting_or_default(settings: &HashMap<String, String>, key: &str, default: &s
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::adapters::outbound::translation::engine_languages::EngineLanguage;
     use crate::ports::outbound::dictionary::{DictionaryError, DictionaryLookupResult};
-    use crate::ports::outbound::translation::LibreTranslateLanguage;
 
     struct MockLanguageDetector {
         result: DetectedLanguage,
@@ -357,35 +365,6 @@ mod tests {
         }
     }
 
-    fn test_libretranslate_languages() -> LibreTranslateLanguages {
-        LibreTranslateLanguages {
-            source_languages: vec![
-                LibreTranslateLanguage {
-                    code: "auto".to_string(),
-                    name: "Auto Detect".to_string(),
-                },
-                LibreTranslateLanguage {
-                    code: "en".to_string(),
-                    name: "English".to_string(),
-                },
-                LibreTranslateLanguage {
-                    code: "ja".to_string(),
-                    name: "Japanese".to_string(),
-                },
-            ],
-            target_languages: vec![
-                LibreTranslateLanguage {
-                    code: "zh".to_string(),
-                    name: "Chinese".to_string(),
-                },
-                LibreTranslateLanguage {
-                    code: "en".to_string(),
-                    name: "English".to_string(),
-                },
-            ],
-        }
-    }
-
     fn test_language_detector() -> Arc<dyn LanguageDetector> {
         Arc::new(MockLanguageDetector {
             result: DetectedLanguage::Known("en".to_string()),
@@ -400,8 +379,8 @@ mod tests {
         TranslationService::new(
             Some(Arc::new(MockDictionaryProvider { supports, result })),
             LocalEngineConfig::default_local(),
-            test_libretranslate_languages(),
             test_language_detector(),
+            HashMap::new(),
         )
     }
 
@@ -413,8 +392,8 @@ mod tests {
         TranslationService::new(
             dictionary_provider,
             local_engine_config,
-            test_libretranslate_languages(),
             detector,
+            HashMap::new(),
         )
     }
 
@@ -521,9 +500,33 @@ mod tests {
     }
 
     #[test]
-    fn validate_local_language_support_rejects_unknown_target() {
-        let languages = test_libretranslate_languages();
-        let result = validate_local_language_support(&languages, "en", "xx");
+    fn validate_language_support_rejects_unknown_target_for_local_engine() {
+        let local_languages = EngineLanguages {
+            source_languages: vec![
+                EngineLanguage {
+                    code: "auto".to_string(),
+                    name: "Auto Detect".to_string(),
+                },
+                EngineLanguage {
+                    code: "en".to_string(),
+                    name: "English".to_string(),
+                },
+            ],
+            target_languages: vec![EngineLanguage {
+                code: "zh".to_string(),
+                name: "Chinese".to_string(),
+            }],
+        };
+        let mut engine_languages = HashMap::new();
+        engine_languages.insert("local".to_string(), local_languages);
+
+        let service = TranslationService::new(
+            None,
+            LocalEngineConfig::default_local(),
+            test_language_detector(),
+            engine_languages,
+        );
+        let result = service.validate_language_support("local", "en", "xx");
 
         assert_eq!(
             result,

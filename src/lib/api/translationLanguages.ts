@@ -17,8 +17,13 @@ type RustTranslationLanguages = {
   target_languages?: TranslationLanguage[];
 };
 
-export async function getTranslationLanguages(): Promise<TranslationLanguages> {
-  const result = await invoke<RustTranslationLanguages>("get_translation_languages");
+export async function getTranslationLanguages(
+  engine: string,
+): Promise<TranslationLanguages> {
+  const result = await invoke<RustTranslationLanguages>(
+    "get_translation_languages",
+    { engine },
+  );
 
   return {
     sourceLanguages: Array.isArray(result.sourceLanguages)

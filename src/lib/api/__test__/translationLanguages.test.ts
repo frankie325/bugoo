@@ -14,7 +14,7 @@ describe("getTranslationLanguages", () => {
       targetLanguages: [{ code: "zh", name: "Chinese" }],
     });
 
-    await expect(getTranslationLanguages()).resolves.toEqual({
+    await expect(getTranslationLanguages("local")).resolves.toEqual({
       sourceLanguages: [{ code: "auto", name: "Auto Detect" }],
       targetLanguages: [{ code: "zh", name: "Chinese" }],
     });

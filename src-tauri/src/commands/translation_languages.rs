@@ -1,9 +1,15 @@
+use crate::adapters::outbound::translation::engine_languages::EngineLanguages;
 use crate::commands::AppState;
-use crate::ports::outbound::translation::LibreTranslateLanguages;
 
 #[tauri::command]
 pub fn get_translation_languages(
     state: tauri::State<'_, AppState>,
-) -> Result<LibreTranslateLanguages, String> {
-    Ok(state.translation_service.libretranslate_languages().clone())
+    engine: String,
+) -> Result<EngineLanguages, String> {
+    state
+        .translation_service
+        .engine_languages()
+        .get(&engine)
+        .cloned()
+        .ok_or_else(|| format!("No languages configured for engine: {}", engine))
 }

@@ -15,10 +15,11 @@ use adapters::outbound::config::local_engine::read_local_engine_config;
 use adapters::outbound::dictionary::stardict_ecdict::StarDictEcdictDictionaryProvider;
 use adapters::outbound::language_detection::libretranslate_detector::LibreTranslateLanguageDetector;
 use adapters::outbound::selection_ui::manage_selection_ui;
-use adapters::outbound::translation::libretranslate_languages::read_libretranslate_languages;
+use adapters::outbound::translation::engine_languages::read_engine_languages;
 use commands::AppState;
 use log::info;
 use ports::outbound::translation::LocalEngineConfig;
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{async_runtime, Emitter, Manager};
@@ -101,30 +102,58 @@ pub fn run() {
                 }
             };
 
-            let libretranslate_languages_path = app
+            let translation_dir = app
                 .path()
                 .resolve(
-                    "resources/translation/libretranslate-languages.json",
+                    "resources/translation",
                     tauri::path::BaseDirectory::Resource,
                 )
                 .unwrap_or_else(|_| {
                     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                         .join("resources")
                         .join("translation")
-                        .join("libretranslate-languages.json")
                 });
 
-            let libretranslate_languages = read_libretranslate_languages(&libretranslate_languages_path)
-                .expect("Failed to load libretranslate-languages.json — translation service requires valid language config. Ensure resources/translation/libretranslate-languages.json exists and contains non-empty sourceLanguages/targetLanguages arrays.");
+            let mut engine_languages: HashMap<String, _> = HashMap::new();
+
+            // Load all *-languages.json files from translation directory
+            if let Ok(entries) = std::fs::read_dir(&translation_dir) {
+                for entry in entries.flatten() {
+                    let path = entry.path();
+                    if path.extension().and_then(|s| s.to_str()) == Some("json") {
+                        if let Some(filename) = path.file_name().and_then(|s| s.to_str()) {
+                            if filename.ends_with("-languages.json") {
+                                match read_engine_languages(&path) {
+                                    Ok(langs) => {
+                                        let engine_name = filename.trim_end_matches("-languages.json");
+                                        let key = if engine_name == "libretranslate" {
+                                            "local"
+                                        } else {
+                                            engine_name
+                                        };
+                                        engine_languages.insert(key.to_string(), langs);
+                                        info!("Loaded {} languages for engine '{}'", engine_name, filename);
+                                    }
+                                    Err(e) => {
+                                        log::warn!("Failed to load {}: {}", filename, e);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                log::warn!("Translation directory not found: {:?}", translation_dir);
+            }
 
             let translation_service = TranslationService::new(
                 dictionary_provider,
                 local_engine_config.clone(),
-                libretranslate_languages,
                 Arc::new(LibreTranslateLanguageDetector::new(
                     local_engine_config.libretranslate_endpoint,
                     15_000,
                 )),
+                engine_languages,
             );
 
             // 创建并管理 AppState

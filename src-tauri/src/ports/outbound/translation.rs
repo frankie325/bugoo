@@ -42,37 +42,6 @@ impl LocalEngineConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct LibreTranslateLanguage {
-    pub code: String,
-    pub name: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct LibreTranslateLanguages {
-    #[serde(rename = "sourceLanguages")]
-    pub source_languages: Vec<LibreTranslateLanguage>,
-    #[serde(rename = "targetLanguages")]
-    pub target_languages: Vec<LibreTranslateLanguage>,
-}
-
-pub fn is_supported_source_language(languages: &LibreTranslateLanguages, lang: &str) -> bool {
-    if lang.trim().eq_ignore_ascii_case("auto") {
-        return true;
-    }
-    languages
-        .source_languages
-        .iter()
-        .any(|language| language.code == lang)
-}
-
-pub fn is_supported_target_language(languages: &LibreTranslateLanguages, lang: &str) -> bool {
-    languages
-        .target_languages
-        .iter()
-        .any(|language| language.code == lang)
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TranslationExample {
     pub sentence: String,
     pub translation: String,

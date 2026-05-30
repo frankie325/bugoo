@@ -55,7 +55,7 @@ export function TranslationPanel() {
   useEffect(() => {
     let disposed = false;
 
-    getTranslationLanguages()
+    getTranslationLanguages(translationEngine)
       .then((languages) => {
         if (!disposed) {
           setTranslationLanguages(languages);
@@ -68,7 +68,7 @@ export function TranslationPanel() {
     return () => {
       disposed = true;
     };
-  }, []);
+  }, [settings.translationEngine]);
 
   const saveSetting = (key: string, value: string) => {
     updateSetting(key, value);
