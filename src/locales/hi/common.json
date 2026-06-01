@@ -127,7 +127,7 @@
         "custom": "https://api.example.com/v1"
       },
       "apiKey": {
-        "title": "API कुंजी",
+        "title": "Api Key",
         "desc": "अनुवाद सेवा की प्रमाणीकरण कुंजी",
         "optionalDesc": "Optional for LibreTranslate public/local instances"
       },
@@ -152,24 +152,35 @@
         "desc": "Translation and detail generation requests fail automatically after this time"
       },
       "timeoutLabel": "ms",
-      "engineGroupSystem": "Built-in",
-      "engineGroupVendor": "Vendor API",
-      "engineGroupCustom": "Custom",
-      "engineLibreTranslate": "LibreTranslate",
+      "engineGroupLocal": "स्थानीय",
+      "engineGroupVendor": "विक्रेता API",
+      "engineGroupCustom": "कस्टम",
+      "engineLocal": "स्थानीय",
       "engineMicrosoft": "Bing / Microsoft Translator",
       "engineBaidu": "Baidu",
       "engineTencent": "Tencent",
       "engineYoudao": "Youdao",
       "apiSecret": {
-        "title": "API Secret",
+        "title": "App Secret",
         "desc": "Secret key required by the selected vendor"
       },
       "apiSecretPlaceholder": "secret-xxx",
       "apiRegion": {
-        "title": "Region",
+        "title": "Api Region",
         "desc": "Region required by Microsoft or Tencent Cloud"
       },
-      "apiRegionPlaceholder": "Example: eastasia / ap-guangzhou"
+      "apiRegionPlaceholder": "Example: eastasia / ap-guangzhou",
+      "sourceLanguage": {
+        "title": "Source Language",
+        "desc": "Only languages supported by the local LibreTranslate configuration are shown",
+        "label": "Source Language"
+      },
+      "targetLanguage": {
+        "title": "Target Language",
+        "desc": "Only languages supported by the local LibreTranslate configuration are shown",
+        "label": "Target Language"
+      },
+      "autoDetectLanguage": "स्वतः पहचान"
     },
     "review": {
       "title": "समीक्षा सेटिंग",

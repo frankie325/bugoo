@@ -16,9 +16,8 @@
   "bundle": {
     "active": false,
     "resources": [
-      "resources/stardict-ecdict/stardict-ecdict-2.4.2.ifo",
-      "resources/stardict-ecdict/stardict-ecdict-2.4.2.idx",
-      "resources/stardict-ecdict/stardict-ecdict-2.4.2.dict"
+      "resources/stardict-ecdict/",
+      "resources/translation/"
     ]
   }
 }

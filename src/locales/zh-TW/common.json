@@ -127,7 +127,7 @@
         "custom": "https://api.example.com/v1"
       },
       "apiKey": {
-        "title": "API 金鑰",
+        "title": "Api Key",
         "desc": "翻譯服務的驗證金鑰",
         "optionalDesc": "可選，不填寫時使用公開或本地 LibreTranslate 服務"
       },
@@ -152,24 +152,35 @@
         "desc": "Translation and detail generation requests fail automatically after this time"
       },
       "timeoutLabel": "ms",
-      "engineGroupSystem": "系統內建",
+      "engineGroupLocal": "本地",
       "engineGroupVendor": "廠商 API",
       "engineGroupCustom": "自訂",
-      "engineLibreTranslate": "LibreTranslate",
+      "engineLocal": "本地",
       "engineMicrosoft": "Bing / Microsoft Translator",
       "engineBaidu": "百度",
       "engineTencent": "騰訊",
       "engineYoudao": "有道",
       "apiSecret": {
-        "title": "API Secret",
+        "title": "App Secret",
         "desc": "廠商 API 的密鑰或 Secret Key"
       },
       "apiSecretPlaceholder": "secret-xxx",
       "apiRegion": {
-        "title": "服務區域",
+        "title": "Api Region",
         "desc": "Microsoft 或騰訊雲要求的區域"
       },
-      "apiRegionPlaceholder": "例如：eastasia / ap-guangzhou"
+      "apiRegionPlaceholder": "例如：eastasia / ap-guangzhou",
+      "sourceLanguage": {
+        "title": "來源語言",
+        "desc": "僅顯示本地 LibreTranslate 支援的來源語言",
+        "label": "來源語言"
+      },
+      "targetLanguage": {
+        "title": "目標語言",
+        "desc": "僅顯示本地 LibreTranslate 支援的目標語言",
+        "label": "目標語言"
+      },
+      "autoDetectLanguage": "自動偵測"
     },
     "review": {
       "title": "複習設定",

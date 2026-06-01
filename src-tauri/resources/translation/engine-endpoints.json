@@ -1,0 +1,9 @@
+{
+  "local": "http://localhost:5005",
+  "baidu": "https://fanyi-api.baidu.com/api/trans/vip/translate",
+  "deepl": "https://api-free.deepl.com/v2/translate",
+  "google": "https://translation.googleapis.com/language/translate/v2",
+  "microsoft": "https://api.cognitive.microsofttranslator.com/translate",
+  "tencent": "https://tmt.tencentcloudapi.com",
+  "youdao": "https://openapi.youdao.com/api",
+}

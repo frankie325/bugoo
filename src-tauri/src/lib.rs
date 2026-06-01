@@ -11,10 +11,15 @@ use crate::domain::services::translation_service::TranslationService;
 use crate::ports::outbound::dictionary::DictionaryProvider;
 use crate::scheduler::notification::start_notification_scheduler;
 use crate::selection::permission_prompt::initialize_selection;
+use adapters::outbound::config::engine_endpoints::read_engine_endpoints;
 use adapters::outbound::dictionary::stardict_ecdict::StarDictEcdictDictionaryProvider;
+use adapters::outbound::language_detection::libretranslate_detector::LibreTranslateLanguageDetector;
 use adapters::outbound::selection_ui::manage_selection_ui;
+use adapters::outbound::translation::engine_languages::read_engine_languages;
 use commands::AppState;
 use log::info;
+use ports::outbound::translation::EngineEndpoints;
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{async_runtime, Emitter, Manager};
@@ -71,7 +76,85 @@ pub fn run() {
                     None
                 }
             };
-            let translation_service = TranslationService::new(dictionary_provider);
+
+            let engine_endpoints_path = app
+                .path()
+                .resolve(
+                    "resources/translation/engine-endpoints.json",
+                    tauri::path::BaseDirectory::Resource,
+                )
+                .unwrap_or_else(|_| {
+                    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                        .join("resources")
+                        .join("translation")
+                        .join("engine-endpoints.json")
+                });
+
+            let engine_endpoints = match read_engine_endpoints(&engine_endpoints_path) {
+                Ok(endpoints) => endpoints,
+                Err(error) => {
+                    log::warn!(
+                        "Engine endpoints config unavailable at {:?}, using defaults: {}",
+                        engine_endpoints_path,
+                        error
+                    );
+                    EngineEndpoints::default()
+                }
+            };
+
+            let translation_dir = app
+                .path()
+                .resolve(
+                    "resources/translation",
+                    tauri::path::BaseDirectory::Resource,
+                )
+                .unwrap_or_else(|_| {
+                    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                        .join("resources")
+                        .join("translation")
+                });
+
+            let mut engine_languages: HashMap<String, _> = HashMap::new();
+
+            // Load all *-languages.json files from translation directory
+            if let Ok(entries) = std::fs::read_dir(&translation_dir) {
+                for entry in entries.flatten() {
+                    let path = entry.path();
+                    if path.extension().and_then(|s| s.to_str()) == Some("json") {
+                        if let Some(filename) = path.file_name().and_then(|s| s.to_str()) {
+                            if filename.ends_with("-languages.json") {
+                                match read_engine_languages(&path) {
+                                    Ok(langs) => {
+                                        let engine_name = filename.trim_end_matches("-languages.json");
+                                        let key = if engine_name == "libretranslate" {
+                                            "local"
+                                        } else {
+                                            engine_name
+                                        };
+                                        engine_languages.insert(key.to_string(), langs);
+                                        info!("Loaded {} languages for engine '{}'", engine_name, filename);
+                                    }
+                                    Err(e) => {
+                                        log::warn!("Failed to load {}: {}", filename, e);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                log::warn!("Translation directory not found: {:?}", translation_dir);
+            }
+
+            let translation_service = TranslationService::new(
+                dictionary_provider,
+                engine_endpoints.clone(),
+                Arc::new(LibreTranslateLanguageDetector::new(
+                    engine_endpoints.endpoint_or_default("local"),
+                    15_000,
+                )),
+                engine_languages,
+            );
 
             // 创建并管理 AppState
             let app_state = AppState::new(db.clone(), translation_service);
@@ -147,6 +230,7 @@ pub fn run() {
             commands::tags::update_tag,
             commands::tags::delete_tag,
             commands::tags::reorder_tags,
+            commands::translation_languages::get_translation_languages,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

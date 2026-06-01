@@ -31,3 +31,9 @@ export {
   setVoice,
   type VoiceInfo,
 } from "./tts";
+export {
+  getTranslationLanguages,
+  type TranslationLanguage,
+  type TranslationLanguages,
+  type SourceToTargetMapping,
+} from "./translationLanguages";

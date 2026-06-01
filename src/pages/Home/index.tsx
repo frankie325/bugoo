@@ -19,7 +19,6 @@ import type { Word } from "../../lib/api";
 import type { TagItem } from "../../types/tag";
 import { getTags, createTag, deleteTag, updateTag } from "../../lib/api";
 import { getNextSortOrder, type TagCreatePlacement } from "../../lib/tagSort";
-
 type ViewMode = "grid" | "list";
 
 function getWordTagIds(tags: string): string[] {
@@ -158,10 +157,7 @@ export function HomePage() {
   };
 
   return (
-    <div
-      className="flex h-screen"
-      onMouseEnter={handleMouseEnter}
-    >
+    <div className="flex h-screen" onMouseEnter={handleMouseEnter}>
       {/* Sidebar */}
       <aside className="w-60 p-4 flex flex-col gap-4">
         <div className="flex items-center">

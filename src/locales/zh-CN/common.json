@@ -126,7 +126,7 @@
         "custom": "https://api.example.com/v1"
       },
       "apiKey": {
-        "title": "API秘钥",
+        "title": "Api Key",
         "desc": "翻译服务的认证密钥",
         "optionalDesc": "可选，不填时使用公开或本地 LibreTranslate 服务"
       },
@@ -151,24 +151,35 @@
         "desc": "翻译和详情生成请求超过该时间后自动失败"
       },
       "timeoutLabel": "毫秒",
-      "engineGroupSystem": "系统内置",
+      "engineGroupLocal": "本地",
       "engineGroupVendor": "厂商 API",
       "engineGroupCustom": "自定义",
-      "engineLibreTranslate": "LibreTranslate",
+      "engineLocal": "本地",
       "engineMicrosoft": "Bing / Microsoft Translator",
       "engineBaidu": "百度",
       "engineTencent": "腾讯",
       "engineYoudao": "有道",
       "apiSecret": {
-        "title": "API Secret",
+        "title": "App Secret",
         "desc": "厂商 API 的密钥或 Secret Key"
       },
       "apiSecretPlaceholder": "secret-xxx",
       "apiRegion": {
-        "title": "服务区域",
+        "title": "Api Region",
         "desc": "Microsoft 或腾讯云要求的区域"
       },
-      "apiRegionPlaceholder": "例如：eastasia / ap-guangzhou"
+      "apiRegionPlaceholder": "例如：eastasia / ap-guangzhou",
+      "sourceLanguage": {
+        "title": "源语言",
+        "desc": "仅显示本地 LibreTranslate 支持的源语言",
+        "label": "源语言"
+      },
+      "targetLanguage": {
+        "title": "目标语言",
+        "desc": "仅显示本地 LibreTranslate 支持的目标语言",
+        "label": "目标语言"
+      },
+      "autoDetectLanguage": "自动检测"
     },
     "review": {
       "title": "复习设置",

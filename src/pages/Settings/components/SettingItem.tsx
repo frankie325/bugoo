@@ -2,7 +2,7 @@ import { Text, Description } from "@heroui/react";
 import type { ReactNode } from "react";
 
 interface SettingItemProps {
-  title: string;
+  title: ReactNode;
   description: string;
   children: ReactNode;
 }

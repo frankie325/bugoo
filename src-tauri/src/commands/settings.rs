@@ -3,22 +3,7 @@ use std::collections::HashMap;
 
 #[tauri::command]
 pub fn get_settings(state: tauri::State<AppState>) -> Result<HashMap<String, String>, String> {
-    let conn = state.db.connection();
-    let mut stmt = conn
-        .prepare("SELECT key, value FROM settings")
-        .map_err(|e| e.to_string())?;
-
-    let rows = stmt
-        .query_map([], |row| {
-            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
-        })
-        .map_err(|e| e.to_string())?;
-
-    let mut settings = HashMap::new();
-    for (key, value) in rows.flatten() {
-        settings.insert(key, value);
-    }
-    Ok(settings)
+    state.settings_cache_read()
 }
 
 #[tauri::command]
@@ -33,62 +18,16 @@ pub fn set_setting(
         [&key, &value],
     )
     .map_err(|e| e.to_string())?;
+
+    let mut cache = state.settings_cache.write().map_err(|e| e.to_string())?;
+    cache.insert(key, value);
+
     Ok(())
 }
 
 #[tauri::command]
 pub fn seed_settings(state: tauri::State<AppState>) -> Result<(), String> {
-    let conn = state.db.connection();
-
-    let defaults = vec![
-        // 通用设置
-        ("theme", "light"),
-        ("startup", "false"),
-        ("closeBehavior", "minimize"),
-        ("autoUpdate", "true"),
-        ("language", "zh-CN"),
-        // 学习设置
-        ("dailyLimit", "20"),
-        ("reviewPace", "normal"),
-        ("hintStrategy", "progressive"),
-        ("enableSelection", "true"),
-        ("autoSpeak", "false"),
-        ("autoClose", "true"),
-        // 翻译设置
-        ("translationEngine", "libretranslate"),
-        ("apiEndpoint", ""),
-        ("apiKey", ""),
-        ("apiSecret", ""),
-        ("apiRegion", ""),
-        ("translationModel", ""),
-        ("translationPrompt", ""),
-        ("wordDetailPrompt", ""),
-        ("translationTimeoutMs", "15000"),
-        // 外观设置
-        ("themeColor", "#10b981"),
-        ("cardStyle", "rich"),
-        ("fontSize", "medium"),
-        // 通知设置
-        ("reminderStartTime", "09:00"),
-        ("reminderEndTime", "21:00"),
-        ("notifyDailyReview", "true"),
-        ("notifyForgetting", "true"),
-        ("notifyStreak", "true"),
-        ("notifyAchievement", "true"),
-        // 快捷键设置
-        ("shortcutStartReview", "Cmd+Enter"),
-        ("shortcutTranslation", "Cmd+Shift+B"),
-        ("shortcutNewWord", "Cmd+D"),
-        ("shortcutOpenApp", "Cmd+K"),
-    ];
-
-    for (key, value) in defaults {
-        conn.execute(
-            "INSERT OR IGNORE INTO settings (key, value) VALUES (?1, ?2)",
-            [key, value],
-        )
-        .map_err(|e| e.to_string())?;
-    }
-
-    Ok(())
+    // Defaults are loaded from default-settings.json during database initialization.
+    // This command just reloads the cache to pick up any changes.
+    state.settings_cache_reload()
 }

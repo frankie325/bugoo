@@ -115,6 +115,23 @@ impl DictionaryProvider for StarDictEcdictDictionaryProvider {
             examples: parsed.examples,
         }))
     }
+
+    fn supports_language_pair(&self, source_lang: &str, target_lang: &str) -> bool {
+        let src = source_lang.trim().to_lowercase();
+        let tgt = target_lang.trim().to_lowercase();
+        is_ecdict_supported_source(&src) && is_ecdict_supported_target(&tgt)
+    }
+}
+
+fn is_ecdict_supported_source(lang: &str) -> bool {
+    matches!(lang, "en")
+}
+
+fn is_ecdict_supported_target(lang: &str) -> bool {
+    matches!(
+        lang,
+        "zh" | "zh-cn" | "zh-hans" | "zt" | "zh-tw" | "zh-hant"
+    )
 }
 
 fn read_index_entry<R: Read>(
@@ -294,5 +311,24 @@ mod tests {
         assert_eq!(parsed.phonetic, Some("test".to_string()));
         assert_eq!(parsed.part_of_speech, vec!["n", "v"]);
         assert_eq!(parsed.definitions, vec!["n. 测试", "v. 测验"]);
+    }
+
+    #[test]
+    fn supports_language_pair_accepts_english_source() {
+        let dir = create_test_dictionary();
+        let provider = StarDictEcdictDictionaryProvider::new(dir, "stardict-ecdict-2.4.2").unwrap();
+
+        assert!(provider.supports_language_pair("en", "zh"));
+        assert!(provider.supports_language_pair("EN", "ZH-CN"));
+        assert!(provider.supports_language_pair("en", "zh-TW"));
+    }
+
+    #[test]
+    fn supports_language_pair_rejects_unsupported_languages() {
+        let dir = create_test_dictionary();
+        let provider = StarDictEcdictDictionaryProvider::new(dir, "stardict-ecdict-2.4.2").unwrap();
+
+        assert!(!provider.supports_language_pair("ja", "zh"));
+        assert!(!provider.supports_language_pair("en", "ja"));
     }
 }

@@ -1,0 +1,244 @@
+{
+  "sourceLanguages": [
+    {
+      "code": "auto",
+      "name": "Auto Detect"
+    },
+    {
+      "code": "zh",
+      "name": "Chinese"
+    },
+    {
+      "code": "en",
+      "name": "English"
+    },
+    {
+      "code": "yue",
+      "name": "Cantonese"
+    },
+    {
+      "code": "wyw",
+      "name": "Classical Chinese",
+      "names": {
+        "en": "Classical Chinese",
+        "zh-CN": "文言文",
+        "zh-TW": "文言文"
+      }
+    },
+    {
+      "code": "jp",
+      "name": "Japanese"
+    },
+    {
+      "code": "kor",
+      "name": "Korean"
+    },
+    {
+      "code": "fra",
+      "name": "French"
+    },
+    {
+      "code": "spa",
+      "name": "Spanish"
+    },
+    {
+      "code": "th",
+      "name": "Thai"
+    },
+    {
+      "code": "ara",
+      "name": "Arabic"
+    },
+    {
+      "code": "ru",
+      "name": "Russian"
+    },
+    {
+      "code": "pt",
+      "name": "Portuguese"
+    },
+    {
+      "code": "de",
+      "name": "German"
+    },
+    {
+      "code": "it",
+      "name": "Italian"
+    },
+    {
+      "code": "el",
+      "name": "Greek"
+    },
+    {
+      "code": "nl",
+      "name": "Dutch"
+    },
+    {
+      "code": "pl",
+      "name": "Polish"
+    },
+    {
+      "code": "bul",
+      "name": "Bulgarian"
+    },
+    {
+      "code": "est",
+      "name": "Estonian"
+    },
+    {
+      "code": "dan",
+      "name": "Danish"
+    },
+    {
+      "code": "fin",
+      "name": "Finnish"
+    },
+    {
+      "code": "cs",
+      "name": "Czech"
+    },
+    {
+      "code": "rom",
+      "name": "Romanian"
+    },
+    {
+      "code": "slo",
+      "name": "Slovenian"
+    },
+    {
+      "code": "swe",
+      "name": "Swedish"
+    },
+    {
+      "code": "hu",
+      "name": "Hungarian"
+    },
+    {
+      "code": "cht",
+      "name": "Chinese Traditional"
+    },
+    {
+      "code": "vie",
+      "name": "Vietnamese"
+    }
+  ],
+  "targetLanguages": [
+    {
+      "code": "zh",
+      "name": "Chinese"
+    },
+    {
+      "code": "en",
+      "name": "English"
+    },
+    {
+      "code": "yue",
+      "name": "Cantonese"
+    },
+    {
+      "code": "wyw",
+      "name": "Classical Chinese",
+      "names": {
+        "en": "Classical Chinese",
+        "zh-CN": "文言文",
+        "zh-TW": "文言文"
+      }
+    },
+    {
+      "code": "jp",
+      "name": "Japanese"
+    },
+    {
+      "code": "kor",
+      "name": "Korean"
+    },
+    {
+      "code": "fra",
+      "name": "French"
+    },
+    {
+      "code": "spa",
+      "name": "Spanish"
+    },
+    {
+      "code": "th",
+      "name": "Thai"
+    },
+    {
+      "code": "ara",
+      "name": "Arabic"
+    },
+    {
+      "code": "ru",
+      "name": "Russian"
+    },
+    {
+      "code": "pt",
+      "name": "Portuguese"
+    },
+    {
+      "code": "de",
+      "name": "German"
+    },
+    {
+      "code": "it",
+      "name": "Italian"
+    },
+    {
+      "code": "el",
+      "name": "Greek"
+    },
+    {
+      "code": "nl",
+      "name": "Dutch"
+    },
+    {
+      "code": "pl",
+      "name": "Polish"
+    },
+    {
+      "code": "bul",
+      "name": "Bulgarian"
+    },
+    {
+      "code": "est",
+      "name": "Estonian"
+    },
+    {
+      "code": "dan",
+      "name": "Danish"
+    },
+    {
+      "code": "fin",
+      "name": "Finnish"
+    },
+    {
+      "code": "cs",
+      "name": "Czech"
+    },
+    {
+      "code": "rom",
+      "name": "Romanian"
+    },
+    {
+      "code": "slo",
+      "name": "Slovenian"
+    },
+    {
+      "code": "swe",
+      "name": "Swedish"
+    },
+    {
+      "code": "hu",
+      "name": "Hungarian"
+    },
+    {
+      "code": "cht",
+      "name": "Chinese Traditional"
+    },
+    {
+      "code": "vie",
+      "name": "Vietnamese"
+    }
+  ]
+}

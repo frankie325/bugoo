@@ -68,8 +68,8 @@ impl TencentTranslationProvider {
     ) -> Result<crate::ports::outbound::translation::TranslationResult, TranslationError> {
         validate_text(&request.text)?;
 
-        let source = normalize_source_lang(&request.source_lang);
-        let target = normalize_target_lang(&request.target_lang);
+        let source = request.source_lang.clone();
+        let target = request.target_lang.clone();
         let payload = TencentTranslateRequest {
             source_text: request.text,
             source,
@@ -87,9 +87,11 @@ impl TencentTranslationProvider {
             &payload_json,
         );
 
+        let endpoint = self.config.api_endpoint.clone();
+
         let response = self
             .client
-            .post("https://tmt.tencentcloudapi.com")
+            .post(endpoint)
             .header("Content-Type", "application/json; charset=utf-8")
             .header("Host", "tmt.tencentcloudapi.com")
             .header("Authorization", authorization)
@@ -129,19 +131,6 @@ impl TranslationProvider for TencentTranslationProvider {
     fn translate<'a>(&'a self, request: TranslationRequest) -> TranslationFuture<'a> {
         Box::pin(async move { self.translate_inner(request).await })
     }
-}
-
-fn normalize_source_lang(lang: &str) -> String {
-    let normalized = lang.trim().to_lowercase();
-    if normalized.is_empty() || normalized == "auto" {
-        "auto".to_string()
-    } else {
-        normalized
-    }
-}
-
-fn normalize_target_lang(lang: &str) -> String {
-    lang.trim().to_lowercase()
 }
 
 fn sha256_hex(input: &str) -> String {

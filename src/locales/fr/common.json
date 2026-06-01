@@ -127,7 +127,7 @@
         "custom": "https://api.example.com/v1"
       },
       "apiKey": {
-        "title": "Clé API",
+        "title": "Api Key",
         "desc": "Clé d'authentification du service de traduction",
         "optionalDesc": "Optional for LibreTranslate public/local instances"
       },
@@ -152,24 +152,35 @@
         "desc": "Translation and detail generation requests fail automatically after this time"
       },
       "timeoutLabel": "ms",
-      "engineGroupSystem": "Built-in",
+      "engineGroupLocal": "Local",
       "engineGroupVendor": "Vendor API",
       "engineGroupCustom": "Custom",
-      "engineLibreTranslate": "LibreTranslate",
+      "engineLocal": "Local",
       "engineMicrosoft": "Bing / Microsoft Translator",
       "engineBaidu": "Baidu",
       "engineTencent": "Tencent",
       "engineYoudao": "Youdao",
       "apiSecret": {
-        "title": "API Secret",
+        "title": "App Secret",
         "desc": "Secret key required by the selected vendor"
       },
       "apiSecretPlaceholder": "secret-xxx",
       "apiRegion": {
-        "title": "Region",
+        "title": "Api Region",
         "desc": "Region required by Microsoft or Tencent Cloud"
       },
-      "apiRegionPlaceholder": "Example: eastasia / ap-guangzhou"
+      "apiRegionPlaceholder": "Example: eastasia / ap-guangzhou",
+      "sourceLanguage": {
+        "title": "Source Language",
+        "desc": "Only languages supported by the local LibreTranslate configuration are shown",
+        "label": "Source Language"
+      },
+      "targetLanguage": {
+        "title": "Target Language",
+        "desc": "Only languages supported by the local LibreTranslate configuration are shown",
+        "label": "Target Language"
+      },
+      "autoDetectLanguage": "Détection automatique"
     },
     "review": {
       "title": "Paramètres de révision",
