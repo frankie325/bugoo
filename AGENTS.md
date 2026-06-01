@@ -29,6 +29,10 @@ pnpm preview
 pnpm test
 pnpm test:watch
 
+# 按页面定向运行前端测试
+pnpm test -- src/pages/SelectionPopup/__test__/SelectionPopup.test.tsx
+pnpm test -- src/pages/AccessibilityPermission/__test__/AccessibilityPermission.test.tsx
+
 # Tauri 开发（完整应用）
 pnpm tauri dev
 
@@ -48,12 +52,12 @@ cd src-tauri && cargo test
 ### 前端 (`src/`)
 - `App.tsx` — 根组件
 - `main.tsx` — 前端入口
-- `pages/Home/`、`pages/Settings/` — 当前已落地页面
+- `pages/Home/`、`pages/Settings/`、`pages/SelectionPopup/`、`pages/AccessibilityPermission/` — 当前已落地页面
 - `lib/api/` — 按模块拆分的 Tauri invoke 调用封装
 - `hooks/` — React 自定义 hooks
 - `stores/` — 状态管理
 - `types/` — TypeScript 类型定义
-- `lib/__tests__/` — 前端 Vitest 测试目录
+- `**/__test__/` — 前端 Vitest 测试目录，当前已在页面目录下按功能就近放置
 
 ### Tauri 后端 (`src-tauri/src/`)
 - `main.rs` — 应用入口
@@ -63,6 +67,10 @@ cd src-tauri && cargo test
 - `domain/` — 领域模型与服务
 - `ports/`、`adapters/` — 六边形架构端口与适配器实现
 - `scheduler/` — 艾宾浩斯复习与通知调度
+- `selection/` — 划词监听、权限检查、手势过滤与弹窗联动
+
+### Tauri 资源 (`src-tauri/resources/`)
+- `stardict-ecdict/` — 本地只读 StarDict ECDICT 词典资源
 
 **注意：** Rust 后端大部分模块尚为空实现，需要按模块逐步开发。
 
