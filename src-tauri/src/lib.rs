@@ -11,14 +11,14 @@ use crate::domain::services::translation_service::TranslationService;
 use crate::ports::outbound::dictionary::DictionaryProvider;
 use crate::scheduler::notification::start_notification_scheduler;
 use crate::selection::permission_prompt::initialize_selection;
-use adapters::outbound::config::local_engine::read_local_engine_config;
+use adapters::outbound::config::engine_endpoints::read_engine_endpoints;
 use adapters::outbound::dictionary::stardict_ecdict::StarDictEcdictDictionaryProvider;
 use adapters::outbound::language_detection::libretranslate_detector::LibreTranslateLanguageDetector;
 use adapters::outbound::selection_ui::manage_selection_ui;
 use adapters::outbound::translation::engine_languages::read_engine_languages;
 use commands::AppState;
 use log::info;
-use ports::outbound::translation::LocalEngineConfig;
+use ports::outbound::translation::EngineEndpoints;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -77,28 +77,28 @@ pub fn run() {
                 }
             };
 
-            let local_engine_config_path = app
+            let engine_endpoints_path = app
                 .path()
                 .resolve(
-                    "resources/translation/local-engine.json",
+                    "resources/translation/engine-endpoints.json",
                     tauri::path::BaseDirectory::Resource,
                 )
                 .unwrap_or_else(|_| {
                     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                         .join("resources")
                         .join("translation")
-                        .join("local-engine.json")
+                        .join("engine-endpoints.json")
                 });
 
-            let local_engine_config = match read_local_engine_config(&local_engine_config_path) {
-                Ok(config) => config,
+            let engine_endpoints = match read_engine_endpoints(&engine_endpoints_path) {
+                Ok(endpoints) => endpoints,
                 Err(error) => {
                     log::warn!(
-                        "Local translation config unavailable at {:?}, using default endpoint: {}",
-                        local_engine_config_path,
+                        "Engine endpoints config unavailable at {:?}, using defaults: {}",
+                        engine_endpoints_path,
                         error
                     );
-                    LocalEngineConfig::default_local()
+                    EngineEndpoints::default()
                 }
             };
 
@@ -148,9 +148,9 @@ pub fn run() {
 
             let translation_service = TranslationService::new(
                 dictionary_provider,
-                local_engine_config.clone(),
+                engine_endpoints.clone(),
                 Arc::new(LibreTranslateLanguageDetector::new(
-                    local_engine_config.libretranslate_endpoint,
+                    engine_endpoints.endpoint_or_default("local"),
                     15_000,
                 )),
                 engine_languages,

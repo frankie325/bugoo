@@ -35,4 +35,5 @@ export {
   getTranslationLanguages,
   type TranslationLanguage,
   type TranslationLanguages,
+  type SourceToTargetMapping,
 } from "./translationLanguages";

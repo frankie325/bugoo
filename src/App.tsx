@@ -16,7 +16,7 @@ function App() {
     seedSettings().then(async () => {
       const settings = await getSettings();
       setSettings(settings);
-      const lang = settings.language || "en";
+      const lang = settings.language;
       await i18n.changeLanguage(lang);
     });
   }, [setSettings]);

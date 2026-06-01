@@ -2,7 +2,8 @@ use crate::adapters::outbound::translation::{
     baidu::BaiduTranslationProvider, custom::CustomTranslationProvider,
     deepl::DeepLTranslationProvider, engine_languages::EngineLanguages,
     engine_languages::is_engine_source_language_supported,
-    engine_languages::is_engine_target_language_supported, google::GoogleTranslationProvider,
+    engine_languages::is_engine_target_language_supported,
+       google::GoogleTranslationProvider,
     libretranslate::LibreTranslateProvider, microsoft::MicrosoftTranslationProvider,
     tencent::TencentTranslationProvider, youdao::YoudaoTranslationProvider,
 };
@@ -11,7 +12,7 @@ use crate::ports::outbound::dictionary::{
 };
 use crate::ports::outbound::language_detection::{DetectedLanguage, LanguageDetector};
 use crate::ports::outbound::translation::{
-    LocalEngineConfig, TranslationConfig, TranslationError,
+    EngineEndpoints, TranslationConfig, TranslationError,
     TranslationProvider, TranslationRequest, TranslationResult,
 };
 use crate::ports::outbound::word_insight::{
@@ -24,7 +25,7 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct TranslationService {
     dictionary_provider: Option<Arc<dyn DictionaryProvider>>,
-    local_engine_config: LocalEngineConfig,
+    engine_endpoints: EngineEndpoints,
     language_detector: Arc<dyn LanguageDetector>,
     engine_languages: HashMap<String, EngineLanguages>,
 }
@@ -71,13 +72,13 @@ async fn resolve_languages(
 impl TranslationService {
     pub fn new(
         dictionary_provider: Option<Arc<dyn DictionaryProvider>>,
-        local_engine_config: LocalEngineConfig,
+        engine_endpoints: EngineEndpoints,
         language_detector: Arc<dyn LanguageDetector>,
         engine_languages: HashMap<String, EngineLanguages>,
     ) -> Self {
         Self {
             dictionary_provider,
-            local_engine_config,
+            engine_endpoints,
             language_detector,
             engine_languages,
         }
@@ -168,10 +169,15 @@ impl TranslationService {
         }
 
         // === all engines: unified factory path ===
-        // For "local" engine, use the configured LibreTranslate endpoint from local_engine_config
+        // For "local" engine, use the configured LibreTranslate endpoint from engine_endpoints
         let config = if engine == "local" {
             TranslationConfig {
-                api_endpoint: self.local_engine_config.libretranslate_endpoint.clone(),
+                api_endpoint: self.engine_endpoints.endpoint_or_default("local"),
+                ..config
+            }
+        } else if let Some(endpoint) = self.engine_endpoints.endpoint_for(&engine) {
+            TranslationConfig {
+                api_endpoint: endpoint,
                 ..config
             }
         } else {
@@ -188,8 +194,8 @@ impl TranslationService {
         let provider = create_translation_provider(config)?;
         let request = TranslationRequest {
             text,
-            source_lang: resolved_languages.source_lang.clone(),
-            target_lang: resolved_languages.target_lang.clone(),
+            source_lang: resolved_languages.source_lang,
+            target_lang: resolved_languages.target_lang,
         };
         provider.translate(request).await.map_err(|e| e.to_string())
     }
@@ -372,13 +378,17 @@ mod tests {
         })
     }
 
+    fn test_engine_endpoints() -> EngineEndpoints {
+        EngineEndpoints::default()
+    }
+
     fn service_with_dictionary(
         supports: bool,
         result: Option<DictionaryLookupResult>,
     ) -> TranslationService {
         TranslationService::new(
             Some(Arc::new(MockDictionaryProvider { supports, result })),
-            LocalEngineConfig::default_local(),
+            EngineEndpoints::default(),
             test_language_detector(),
             HashMap::new(),
         )
@@ -387,11 +397,11 @@ mod tests {
     fn service_with_detector_and_config(
         dictionary_provider: Option<Arc<dyn DictionaryProvider>>,
         detector: Arc<dyn LanguageDetector>,
-        local_engine_config: LocalEngineConfig,
+        engine_endpoints: EngineEndpoints,
     ) -> TranslationService {
         TranslationService::new(
             dictionary_provider,
-            local_engine_config,
+            engine_endpoints,
             detector,
             HashMap::new(),
         )
@@ -506,23 +516,27 @@ mod tests {
                 EngineLanguage {
                     code: "auto".to_string(),
                     name: "Auto Detect".to_string(),
+                    names: None,
                 },
                 EngineLanguage {
                     code: "en".to_string(),
                     name: "English".to_string(),
+                    names: None,
                 },
             ],
             target_languages: vec![EngineLanguage {
                 code: "zh".to_string(),
                 name: "Chinese".to_string(),
+                names: None,
             }],
+            source_to_target_mapping: None,
         };
         let mut engine_languages = HashMap::new();
         engine_languages.insert("local".to_string(), local_languages);
 
         let service = TranslationService::new(
             None,
-            LocalEngineConfig::default_local(),
+            EngineEndpoints::default(),
             test_language_detector(),
             engine_languages,
         );
@@ -568,7 +582,7 @@ mod tests {
             calls: Arc::clone(&calls),
         });
         let service =
-            service_with_detector_and_config(None, detector, LocalEngineConfig::default_local());
+            service_with_detector_and_config(None, detector, EngineEndpoints::default());
         let settings = HashMap::from([
             ("translationEngine".to_string(), "custom".to_string()),
             ("sourceLanguage".to_string(), "auto".to_string()),
@@ -603,7 +617,7 @@ mod tests {
                 }),
             })),
             detector,
-            LocalEngineConfig::default_local(),
+            EngineEndpoints::default(),
         );
         let settings = HashMap::from([
             ("translationEngine".to_string(), "local".to_string()),
@@ -631,8 +645,9 @@ mod tests {
                 lookup_calls: Arc::clone(&lookup_calls),
             })),
             detector,
-            LocalEngineConfig {
-                libretranslate_endpoint: ":// invalid".to_string(),
+            EngineEndpoints {
+                local: ":// invalid".to_string(),
+                ..EngineEndpoints::default()
             },
         );
         let settings = HashMap::from([
@@ -669,7 +684,7 @@ mod tests {
                 }),
             })),
             detector,
-            LocalEngineConfig::default_local(),
+            EngineEndpoints::default(),
         );
         let settings = HashMap::from([
             ("translationEngine".to_string(), "local".to_string()),

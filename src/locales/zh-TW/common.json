@@ -127,7 +127,7 @@
         "custom": "https://api.example.com/v1"
       },
       "apiKey": {
-        "title": "API 金鑰",
+        "title": "Api Key",
         "desc": "翻譯服務的驗證金鑰",
         "optionalDesc": "可選，不填寫時使用公開或本地 LibreTranslate 服務"
       },
@@ -161,12 +161,12 @@
       "engineTencent": "騰訊",
       "engineYoudao": "有道",
       "apiSecret": {
-        "title": "API Secret",
+        "title": "App Secret",
         "desc": "廠商 API 的密鑰或 Secret Key"
       },
       "apiSecretPlaceholder": "secret-xxx",
       "apiRegion": {
-        "title": "服務區域",
+        "title": "Api Region",
         "desc": "Microsoft 或騰訊雲要求的區域"
       },
       "apiRegionPlaceholder": "例如：eastasia / ap-guangzhou",
@@ -179,7 +179,8 @@
         "title": "目標語言",
         "desc": "僅顯示本地 LibreTranslate 支援的目標語言",
         "label": "目標語言"
-      }
+      },
+      "autoDetectLanguage": "自動偵測"
     },
     "review": {
       "title": "複習設定",

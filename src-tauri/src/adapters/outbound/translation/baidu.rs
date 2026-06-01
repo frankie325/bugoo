@@ -47,15 +47,11 @@ impl BaiduTranslationProvider {
     ) -> Result<crate::ports::outbound::translation::TranslationResult, TranslationError> {
         validate_text(&request.text)?;
 
-        let endpoint = if self.config.api_endpoint.trim().is_empty() {
-            "https://fanyi-api.baidu.com/api/trans/vip/translate".to_string()
-        } else {
-            self.config.api_endpoint.clone()
-        };
+        let endpoint = self.config.api_endpoint.clone();
 
         let salt = format!("{}", chrono::Utc::now().timestamp_millis());
-        let source = normalize_source_lang(&request.source_lang);
-        let target = normalize_target_lang(&request.target_lang);
+        let source = &request.source_lang;
+        let target = &request.target_lang;
         let sign = build_sign(
             self.config.api_key.trim(),
             &request.text,
@@ -67,12 +63,12 @@ impl BaiduTranslationProvider {
             .client
             .post(endpoint)
             .form(&[
-                ("q", request.text),
-                ("from", source),
-                ("to", target),
-                ("appid", self.config.api_key.trim().to_string()),
-                ("salt", salt),
-                ("sign", sign),
+                ("q", request.text.as_str()),
+                ("from", source.as_str()),
+                ("to", target.as_str()),
+                ("appid", self.config.api_key.trim()),
+                ("salt", salt.as_str()),
+                ("sign", sign.as_str()),
             ])
             .send()
             .await
@@ -105,19 +101,6 @@ impl TranslationProvider for BaiduTranslationProvider {
     fn translate<'a>(&'a self, request: TranslationRequest) -> TranslationFuture<'a> {
         Box::pin(async move { self.translate_inner(request).await })
     }
-}
-
-fn normalize_source_lang(lang: &str) -> String {
-    let normalized = lang.trim().to_lowercase();
-    if normalized.is_empty() || normalized == "auto" {
-        "auto".to_string()
-    } else {
-        normalized
-    }
-}
-
-fn normalize_target_lang(lang: &str) -> String {
-    lang.trim().to_lowercase()
 }
 
 fn build_sign(appid: &str, q: &str, salt: &str, secret: &str) -> String {

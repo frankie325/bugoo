@@ -127,7 +127,7 @@
         "custom": "https://api.example.com/v1"
       },
       "apiKey": {
-        "title": "Kunci API",
+        "title": "Api Key",
         "desc": "Kunci autentikasi untuk layanan terjemahan",
         "optionalDesc": "Optional for LibreTranslate public/local instances"
       },
@@ -161,12 +161,12 @@
       "engineTencent": "Tencent",
       "engineYoudao": "Youdao",
       "apiSecret": {
-        "title": "API Secret",
+        "title": "App Secret",
         "desc": "Secret key required by the selected vendor"
       },
       "apiSecretPlaceholder": "secret-xxx",
       "apiRegion": {
-        "title": "Region",
+        "title": "Api Region",
         "desc": "Region required by Microsoft or Tencent Cloud"
       },
       "apiRegionPlaceholder": "Example: eastasia / ap-guangzhou",
@@ -179,7 +179,8 @@
         "title": "Target Language",
         "desc": "Only languages supported by the local LibreTranslate configuration are shown",
         "label": "Target Language"
-      }
+      },
+      "autoDetectLanguage": "Deteksi otomatis"
     },
     "review": {
       "title": "Pengaturan pengulangan",

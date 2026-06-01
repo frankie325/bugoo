@@ -54,11 +54,7 @@ impl MicrosoftTranslationProvider {
     }
 
     fn endpoint(&self) -> String {
-        if self.config.api_endpoint.trim().is_empty() {
-            "https://api.cognitive.microsofttranslator.com/translate".to_string()
-        } else {
-            self.config.api_endpoint.clone()
-        }
+        self.config.api_endpoint.clone()
     }
 
     async fn translate_inner(
@@ -69,9 +65,9 @@ impl MicrosoftTranslationProvider {
 
         let mut query = vec![
             ("api-version", "3.0".to_string()),
-            ("to", request.target_lang.trim().to_lowercase()),
+            ("to", request.target_lang.trim().to_string()),
         ];
-        let source = request.source_lang.trim().to_lowercase();
+        let source = request.source_lang.trim().to_string();
         if !source.is_empty() && source != "auto" {
             query.push(("from", source.clone()));
         }

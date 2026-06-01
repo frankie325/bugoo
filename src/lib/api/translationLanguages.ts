@@ -3,11 +3,15 @@ import { invoke } from "@tauri-apps/api/core";
 export type TranslationLanguage = {
   code: string;
   name: string;
+  names?: Record<string, string>;
 };
+
+export type SourceToTargetMapping = Record<string, string[]>;
 
 export type TranslationLanguages = {
   sourceLanguages: TranslationLanguage[];
   targetLanguages: TranslationLanguage[];
+  sourceToTargetMapping?: SourceToTargetMapping;
 };
 
 type RustTranslationLanguages = {
@@ -15,6 +19,8 @@ type RustTranslationLanguages = {
   targetLanguages?: TranslationLanguage[];
   source_languages?: TranslationLanguage[];
   target_languages?: TranslationLanguage[];
+  sourceToTargetMapping?: SourceToTargetMapping;
+  source_to_target_mapping?: SourceToTargetMapping;
 };
 
 export async function getTranslationLanguages(
@@ -24,7 +30,7 @@ export async function getTranslationLanguages(
     "get_translation_languages",
     { engine },
   );
-
+  
   return {
     sourceLanguages: Array.isArray(result.sourceLanguages)
       ? result.sourceLanguages
@@ -36,5 +42,6 @@ export async function getTranslationLanguages(
       : Array.isArray(result.target_languages)
         ? result.target_languages
       : [],
+    sourceToTargetMapping: result.sourceToTargetMapping ?? result.source_to_target_mapping ?? {},
   };
 }

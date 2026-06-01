@@ -26,18 +26,64 @@ pub struct TranslationConfig {
     pub timeout_ms: u64,
 }
 
-pub const DEFAULT_LOCAL_LIBRETRANSLATE_ENDPOINT: &str = "http://localhost:5005";
+pub const DEFAULT_ENDPOINT_LOCAL: &str = "http://localhost:5005";
+pub const DEFAULT_ENDPOINT_BAIDU: &str = "https://fanyi-api.baidu.com/api/trans/vip/translate";
+pub const DEFAULT_ENDPOINT_DEEPL: &str = "https://api-free.deepl.com/v2/translate";
+pub const DEFAULT_ENDPOINT_GOOGLE: &str = "https://translation.googleapis.com/language/translate/v2";
+pub const DEFAULT_ENDPOINT_MICROSOFT: &str = "https://api.cognitive.microsofttranslator.com/translate";
+pub const DEFAULT_ENDPOINT_TENCENT: &str = "https://tmt.tencentcloud.tencentcloudapi.com/api/trans/v3";
+pub const DEFAULT_ENDPOINT_YOUDAO: &str = "https://openapi.youdao.com/api";
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LocalEngineConfig {
-    pub libretranslate_endpoint: String,
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct EngineEndpoints {
+    pub local: String,
+    pub baidu: String,
+    pub deepl: String,
+    pub google: String,
+    pub microsoft: String,
+    pub tencent: String,
+    pub youdao: String,
+    pub custom: String,
 }
 
-impl LocalEngineConfig {
-    pub fn default_local() -> Self {
+impl Default for EngineEndpoints {
+    fn default() -> Self {
         Self {
-            libretranslate_endpoint: DEFAULT_LOCAL_LIBRETRANSLATE_ENDPOINT.to_string(),
+            local: DEFAULT_ENDPOINT_LOCAL.to_string(),
+            baidu: DEFAULT_ENDPOINT_BAIDU.to_string(),
+            deepl: DEFAULT_ENDPOINT_DEEPL.to_string(),
+            google: DEFAULT_ENDPOINT_GOOGLE.to_string(),
+            microsoft: DEFAULT_ENDPOINT_MICROSOFT.to_string(),
+            tencent: DEFAULT_ENDPOINT_TENCENT.to_string(),
+            youdao: DEFAULT_ENDPOINT_YOUDAO.to_string(),
+            custom: String::new(),
         }
+    }
+}
+
+impl EngineEndpoints {
+    pub fn endpoint_for(&self, engine: &str) -> Option<String> {
+        let endpoint = match engine {
+            "local" => &self.local,
+            "baidu" => &self.baidu,
+            "deepl" => &self.deepl,
+            "google" => &self.google,
+            "microsoft" => &self.microsoft,
+            "tencent" => &self.tencent,
+            "youdao" => &self.youdao,
+            "custom" => &self.custom,
+            _ => return None,
+        };
+        if endpoint.trim().is_empty() {
+            None
+        } else {
+            Some(endpoint.clone())
+        }
+    }
+
+    pub fn endpoint_or_default(&self, engine: &str) -> String {
+        self.endpoint_for(engine)
+            .unwrap_or_else(|| EngineEndpoints::default().endpoint_for(engine).unwrap_or_default())
     }
 }
 

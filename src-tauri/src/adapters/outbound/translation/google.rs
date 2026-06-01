@@ -16,7 +16,8 @@ pub struct GoogleTranslationProvider {
 
 #[derive(Debug, Serialize)]
 struct GoogleTranslateRequest {
-    q: String,
+    #[serde(rename = "q")]
+    q: Vec<String>,
     target: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     source: Option<String>,
@@ -55,11 +56,7 @@ impl GoogleTranslationProvider {
     }
 
     fn endpoint(&self) -> String {
-        if self.config.api_endpoint.trim().is_empty() {
-            "https://translation.googleapis.com/language/translate/v2".to_string()
-        } else {
-            self.config.api_endpoint.clone()
-        }
+        self.config.api_endpoint.clone()
     }
 
     async fn translate_inner(
@@ -70,16 +67,18 @@ impl GoogleTranslationProvider {
 
         let source = optional_lang(&request.source_lang);
         let payload = GoogleTranslateRequest {
-            q: request.text,
-            target: request.target_lang.trim().to_lowercase(),
+            q: vec![request.text],
+            target: request.target_lang.trim().to_string(),
             source: source.clone(),
             format: "text".to_string(),
         };
 
+        let endpoint = self.endpoint();
         let response = self
             .client
-            .post(self.endpoint())
+            .post(endpoint)
             .query(&[("key", self.config.api_key.trim())])
+            .header("Content-Type", "application/json; charset=utf-8")
             .json(&payload)
             .send()
             .await
@@ -121,7 +120,7 @@ impl TranslationProvider for GoogleTranslationProvider {
 }
 
 fn optional_lang(lang: &str) -> Option<String> {
-    let value = lang.trim().to_lowercase();
+    let value = lang.trim().to_string();
     if value.is_empty() || value == "auto" {
         None
     } else {
@@ -160,6 +159,6 @@ mod tests {
     #[test]
     fn optional_lang_omits_auto() {
         assert_eq!(optional_lang("auto"), None);
-        assert_eq!(optional_lang("EN"), Some("en".to_string()));
+        assert_eq!(optional_lang("EN"), Some("EN".to_string()));
     }
 }

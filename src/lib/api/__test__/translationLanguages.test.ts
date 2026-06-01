@@ -10,13 +10,38 @@ vi.mock("@tauri-apps/api/core", () => ({
 describe("getTranslationLanguages", () => {
   it("maps camelCase language fields returned by Tauri", async () => {
     invokeMock.mockResolvedValueOnce({
-      sourceLanguages: [{ code: "auto", name: "Auto Detect" }],
-      targetLanguages: [{ code: "zh", name: "Chinese" }],
+      sourceLanguages: [
+        {
+          code: "auto",
+          name: "Auto Detect",
+          names: { en: "Auto Detect", "zh-CN": "自动检测" },
+        },
+      ],
+      targetLanguages: [
+        {
+          code: "zh",
+          name: "Chinese",
+          names: { en: "Chinese", "zh-CN": "中文" },
+        },
+      ],
     });
 
     await expect(getTranslationLanguages("local")).resolves.toEqual({
-      sourceLanguages: [{ code: "auto", name: "Auto Detect" }],
-      targetLanguages: [{ code: "zh", name: "Chinese" }],
+      sourceLanguages: [
+        {
+          code: "auto",
+          name: "Auto Detect",
+          names: { en: "Auto Detect", "zh-CN": "自动检测" },
+        },
+      ],
+      targetLanguages: [
+        {
+          code: "zh",
+          name: "Chinese",
+          names: { en: "Chinese", "zh-CN": "中文" },
+        },
+      ],
+      sourceToTargetMapping: {},
     });
   });
 });

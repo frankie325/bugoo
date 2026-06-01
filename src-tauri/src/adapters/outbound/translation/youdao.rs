@@ -43,11 +43,7 @@ impl YoudaoTranslationProvider {
     ) -> Result<crate::ports::outbound::translation::TranslationResult, TranslationError> {
         validate_text(&request.text)?;
 
-        let endpoint = if self.config.api_endpoint.trim().is_empty() {
-            "https://openapi.youdao.com/api".to_string()
-        } else {
-            self.config.api_endpoint.clone()
-        };
+        let endpoint = self.config.api_endpoint.clone();
 
         let salt = format!("{}", chrono::Utc::now().timestamp_millis());
         let curtime = format!("{}", chrono::Utc::now().timestamp());
@@ -59,21 +55,21 @@ impl YoudaoTranslationProvider {
             self.config.api_secret.trim(),
         );
 
-        let source = normalize_source_lang(&request.source_lang);
-        let target = normalize_target_lang(&request.target_lang);
+        let source = request.source_lang.as_str();
+        let target = request.target_lang.as_str();
 
         let response = self
             .client
             .post(endpoint)
             .form(&[
-                ("q", request.text),
+                ("q", request.text.as_str()),
                 ("from", source),
                 ("to", target),
-                ("appKey", self.config.api_key.trim().to_string()),
-                ("salt", salt),
-                ("sign", sign),
-                ("signType", "v3".to_string()),
-                ("curtime", curtime),
+                ("appKey", self.config.api_key.trim()),
+                ("salt", salt.as_str()),
+                ("sign", sign.as_str()),
+                ("signType", "v3"),
+                ("curtime", curtime.as_str()),
             ])
             .send()
             .await
@@ -106,19 +102,6 @@ impl TranslationProvider for YoudaoTranslationProvider {
     fn translate<'a>(&'a self, request: TranslationRequest) -> TranslationFuture<'a> {
         Box::pin(async move { self.translate_inner(request).await })
     }
-}
-
-fn normalize_source_lang(lang: &str) -> String {
-    let normalized = lang.trim().to_lowercase();
-    if normalized.is_empty() || normalized == "auto" {
-        "auto".to_string()
-    } else {
-        normalized
-    }
-}
-
-fn normalize_target_lang(lang: &str) -> String {
-    lang.trim().to_lowercase()
 }
 
 fn build_sign(app_key: &str, q: &str, salt: &str, curtime: &str, app_secret: &str) -> String {

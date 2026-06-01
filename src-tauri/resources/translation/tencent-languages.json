@@ -1,45 +1,324 @@
 {
   "sourceLanguages": [
-    { "code": "auto", "name": "Auto Detect" },
-    { "code": "en", "name": "English" },
-    { "code": "zh", "name": "Chinese" },
-    { "code": "ja", "name": "Japanese" },
-    { "code": "ko", "name": "Korean" },
-    { "code": "fr", "name": "French" },
-    { "code": "de", "name": "German" },
-    { "code": "ru", "name": "Russian" },
-    { "code": "es", "name": "Spanish" },
-    { "code": "pt", "name": "Portuguese" },
-    { "code": "it", "name": "Italian" },
-    { "code": "vi", "name": "Vietnamese" },
-    { "code": "th", "name": "Thai" },
-    { "code": "ms", "name": "Malay" },
-    { "code": "id", "name": "Indonesian" },
-    { "code": "ar", "name": "Arabic" },
-    { "code": "hi", "name": "Hindi" },
-    { "code": "tr", "name": "Turkish" },
-    { "code": "pl", "name": "Polish" },
-    { "code": "nl", "name": "Dutch" }
+    {
+      "code": "zh",
+      "name": "Chinese"
+    },
+    {
+      "code": "zh-TW",
+      "name": "Chinese (Traditional)"
+    },
+    {
+      "code": "en",
+      "name": "English"
+    },
+    {
+      "code": "ja",
+      "name": "Japanese"
+    },
+    {
+      "code": "ko",
+      "name": "Korean"
+    },
+    {
+      "code": "fr",
+      "name": "French"
+    },
+    {
+      "code": "es",
+      "name": "Spanish"
+    },
+    {
+      "code": "it",
+      "name": "Italian"
+    },
+    {
+      "code": "de",
+      "name": "German"
+    },
+    {
+      "code": "tr",
+      "name": "Turkish"
+    },
+    {
+      "code": "ru",
+      "name": "Russian"
+    },
+    {
+      "code": "pt",
+      "name": "Portuguese"
+    },
+    {
+      "code": "vi",
+      "name": "Vietnamese"
+    },
+    {
+      "code": "id",
+      "name": "Indonesian"
+    },
+    {
+      "code": "th",
+      "name": "Thai"
+    },
+    {
+      "code": "ms",
+      "name": "Malay"
+    },
+    {
+      "code": "ar",
+      "name": "Arabic"
+    },
+    {
+      "code": "hi",
+      "name": "Hindi"
+    }
   ],
   "targetLanguages": [
-    { "code": "en", "name": "English" },
-    { "code": "zh", "name": "Chinese" },
-    { "code": "ja", "name": "Japanese" },
-    { "code": "ko", "name": "Korean" },
-    { "code": "fr", "name": "French" },
-    { "code": "de", "name": "German" },
-    { "code": "ru", "name": "Russian" },
-    { "code": "es", "name": "Spanish" },
-    { "code": "pt", "name": "Portuguese" },
-    { "code": "it", "name": "Italian" },
-    { "code": "vi", "name": "Vietnamese" },
-    { "code": "th", "name": "Thai" },
-    { "code": "ms", "name": "Malay" },
-    { "code": "id", "name": "Indonesian" },
-    { "code": "ar", "name": "Arabic" },
-    { "code": "hi", "name": "Hindi" },
-    { "code": "tr", "name": "Turkish" },
-    { "code": "pl", "name": "Polish" },
-    { "code": "nl", "name": "Dutch" }
-  ]
+    {
+      "code": "zh",
+      "name": "Chinese"
+    },
+    {
+      "code": "zh-TW",
+      "name": "Chinese (Traditional)"
+    },
+    {
+      "code": "en",
+      "name": "English"
+    },
+    {
+      "code": "ja",
+      "name": "Japanese"
+    },
+    {
+      "code": "ko",
+      "name": "Korean"
+    },
+    {
+      "code": "fr",
+      "name": "French"
+    },
+    {
+      "code": "es",
+      "name": "Spanish"
+    },
+    {
+      "code": "it",
+      "name": "Italian"
+    },
+    {
+      "code": "de",
+      "name": "German"
+    },
+    {
+      "code": "tr",
+      "name": "Turkish"
+    },
+    {
+      "code": "ru",
+      "name": "Russian"
+    },
+    {
+      "code": "pt",
+      "name": "Portuguese"
+    },
+    {
+      "code": "vi",
+      "name": "Vietnamese"
+    },
+    {
+      "code": "id",
+      "name": "Indonesian"
+    },
+    {
+      "code": "th",
+      "name": "Thai"
+    },
+    {
+      "code": "ms",
+      "name": "Malay"
+    },
+    {
+      "code": "ar",
+      "name": "Arabic"
+    },
+    {
+      "code": "hi",
+      "name": "Hindi"
+    }
+  ],
+  "sourceToTargetMapping": {
+    "zh": [
+      "zh-TW",
+      "en",
+      "ja",
+      "ko",
+      "fr",
+      "es",
+      "it",
+      "de",
+      "tr",
+      "ru",
+      "pt",
+      "vi",
+      "id",
+      "th",
+      "ms",
+      "ar"
+    ],
+    "zh-TW": [
+      "zh",
+      "en",
+      "ja",
+      "ko",
+      "fr",
+      "es",
+      "it",
+      "de",
+      "tr",
+      "ru",
+      "pt",
+      "vi",
+      "id",
+      "th",
+      "ms",
+      "ar"
+    ],
+    "en": [
+      "zh",
+      "zh-TW",
+      "ja",
+      "ko",
+      "fr",
+      "es",
+      "it",
+      "de",
+      "tr",
+      "ru",
+      "pt",
+      "vi",
+      "id",
+      "th",
+      "ms",
+      "ar",
+      "hi"
+    ],
+    "ja": [
+      "zh",
+      "zh-TW",
+      "en",
+      "ko"
+    ],
+    "ko": [
+      "zh",
+      "zh-TW",
+      "en",
+      "ja"
+    ],
+    "fr": [
+      "zh",
+      "zh-TW",
+      "en",
+      "es",
+      "it",
+      "de",
+      "tr",
+      "ru",
+      "pt"
+    ],
+    "es": [
+      "zh",
+      "zh-TW",
+      "en",
+      "fr",
+      "it",
+      "de",
+      "tr",
+      "ru",
+      "pt"
+    ],
+    "it": [
+      "zh",
+      "zh-TW",
+      "en",
+      "fr",
+      "es",
+      "de",
+      "tr",
+      "ru",
+      "pt"
+    ],
+    "de": [
+      "zh",
+      "zh-TW",
+      "en",
+      "fr",
+      "es",
+      "it",
+      "tr",
+      "ru",
+      "pt"
+    ],
+    "tr": [
+      "zh",
+      "zh-TW",
+      "en",
+      "fr",
+      "es",
+      "it",
+      "de",
+      "ru",
+      "pt"
+    ],
+    "ru": [
+      "zh",
+      "zh-TW",
+      "en",
+      "fr",
+      "es",
+      "it",
+      "de",
+      "tr",
+      "pt"
+    ],
+    "pt": [
+      "zh",
+      "zh-TW",
+      "en",
+      "fr",
+      "es",
+      "it",
+      "de",
+      "tr",
+      "ru"
+    ],
+    "vi": [
+      "zh",
+      "zh-TW",
+      "en"
+    ],
+    "id": [
+      "zh",
+      "zh-TW",
+      "en"
+    ],
+    "th": [
+      "zh",
+      "zh-TW",
+      "en"
+    ],
+    "ms": [
+      "zh",
+      "zh-TW",
+      "en"
+    ],
+    "ar": [
+      "zh",
+      "zh-TW",
+      "en"
+    ],
+    "hi": [
+      "en"
+    ]
+  }
 }
