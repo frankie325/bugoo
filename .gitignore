@@ -13,8 +13,6 @@ dist-ssr
 *.local
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
 .idea
 .DS_Store
 *.suo
@@ -33,3 +31,4 @@ materials/**
 src-tauri/resources/stardict-ecdict/*.dict
 src-tauri/resources/stardict-ecdict/*.idx
 src-tauri/resources/stardict-ecdict/*.ifo
+ApiKey.txt
