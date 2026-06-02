@@ -1,18 +1,26 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { SelectionText } from "./SelectionText";
 import {
   addWord,
+  createTag,
+  getTags,
   resolveWord,
+  speakText,
   type ResolvedWord,
 } from "../../lib/api";
+import type { TagItem } from "../../types/tag";
+import { getSelectionPopupState } from "./selectionPopupState";
+import { TagSelectorPopover } from "./components/TagSelectorPopover";
 
 const TEXT_UPDATED_EVENT = "selection-popup://text-updated";
 const CLOSE_POPUP_COMMAND = "close_selection_popup";
 const GET_POPUP_TEXT_COMMAND = "get_selection_popup_text";
 const CURSOR_INSIDE_POPUP_COMMAND = "is_cursor_inside_selection_popup";
+const OPEN_FLOAT_WINDOW_COMMAND = "open_float_window";
 const AUTO_CLOSE_DELAY_MS = 2000;
 
 export function SelectionPopupPage() {
@@ -26,6 +34,9 @@ export function SelectionPopupPage() {
   const [isResolving, setIsResolving] = useState(false);
   const [isSavingWord, setIsSavingWord] = useState(false);
   const [resolveError, setResolveError] = useState<string | null>(null);
+  const [tags, setTags] = useState<TagItem[]>([]);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [isTagSelectorOpen, setIsTagSelectorOpen] = useState(false);
   const resolveRequestIdRef = useRef(0);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -79,6 +90,21 @@ export function SelectionPopupPage() {
   }, [initialText]);
 
   useEffect(() => {
+    setSelectedTagIds([]);
+    setIsTagSelectorOpen(false);
+  }, [text]);
+
+  useEffect(() => {
+    getTags()
+      .then((loaded) => {
+        setTags(loaded);
+      })
+      .catch((error) => {
+        console.warn("Failed to load selection popup tags", error);
+      });
+  }, []);
+
+  useEffect(() => {
     const trimmed = text.trim();
     if (!trimmed) {
       setResolvedWord(null);
@@ -111,6 +137,18 @@ export function SelectionPopupPage() {
       });
   }, [text]);
 
+  const popupState = getSelectionPopupState({
+    text,
+    resolvedWord,
+    isResolving,
+    resolveError,
+  });
+
+  const selectedTags = useMemo(
+    () => tags.filter((tag) => selectedTagIds.includes(tag.id)),
+    [selectedTagIds, tags],
+  );
+
   const handleAddWord = useCallback(async () => {
     if (!resolvedWord || resolvedWord.wordId) {
       return;
@@ -118,6 +156,7 @@ export function SelectionPopupPage() {
 
     setIsSavingWord(true);
     try {
+      const selectedTagNames = selectedTags.map((tag) => tag.name).join(",");
       const saved = await addWord({
         word: resolvedWord.word,
         translation: resolvedWord.translation,
@@ -129,6 +168,7 @@ export function SelectionPopupPage() {
         examples: resolvedWord.examples,
         wordForms: resolvedWord.wordForms,
         memoryTip: resolvedWord.memoryTip,
+        tags: selectedTagNames,
       });
       setResolvedWord({
         wordId: saved.wordId,
@@ -147,7 +187,99 @@ export function SelectionPopupPage() {
     } finally {
       setIsSavingWord(false);
     }
-  }, [resolvedWord]);
+  }, [resolvedWord, selectedTags]);
+
+  const handleRetry = useCallback(() => {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      return;
+    }
+    setText(trimmed);
+    resolveRequestIdRef.current += 1;
+    const requestId = resolveRequestIdRef.current;
+    setResolvedWord(null);
+    setIsResolving(true);
+    setResolveError(null);
+
+    resolveWord(trimmed)
+      .then((result) => {
+        if (resolveRequestIdRef.current === requestId) {
+          setResolvedWord(result);
+        }
+      })
+      .catch((error) => {
+        if (resolveRequestIdRef.current === requestId) {
+          setResolvedWord(null);
+          setResolveError(error instanceof Error ? error.message : String(error));
+        }
+      })
+      .finally(() => {
+        if (resolveRequestIdRef.current === requestId) {
+          setIsResolving(false);
+        }
+      });
+  }, [text]);
+
+  const handleCopy = useCallback(async () => {
+    const content = resolvedWord
+      ? `${resolvedWord.word}\n${resolvedWord.translation}`
+      : text.trim();
+    if (content) {
+      await writeText(content);
+    }
+  }, [resolvedWord, text]);
+
+  const handleSpeak = useCallback(() => {
+    const speechText = resolvedWord?.word || text.trim();
+    if (speechText) {
+      void speakText(speechText, resolvedWord?.sourceLang);
+    }
+  }, [resolvedWord, text]);
+
+  const handleOpenMainWindow = useCallback(() => {
+    invoke(OPEN_FLOAT_WINDOW_COMMAND).catch((error) => {
+      console.warn("Failed to open main window from selection popup", error);
+    });
+  }, []);
+
+  const handleHideWord = useCallback(() => {
+    const trimmed = text.trim();
+    if (trimmed) {
+      sessionStorage.setItem(`bugoo:hidden-selection:${trimmed}`, String(Date.now()));
+    }
+    closePopup();
+  }, [closePopup, text]);
+
+  const handleCopyFeedback = useCallback(async () => {
+    const payload = JSON.stringify(
+      {
+        text: text.trim(),
+        resolvedWord,
+        error: resolveError,
+      },
+      null,
+      2,
+    );
+    await writeText(payload);
+  }, [resolveError, resolvedWord, text]);
+
+  const handleToggleTag = useCallback((tagId: string) => {
+    setSelectedTagIds((current) =>
+      current.includes(tagId)
+        ? current.filter((id) => id !== tagId)
+        : [...current, tagId],
+    );
+  }, []);
+
+  const handleCreateTag = useCallback(async () => {
+    const nextTag = await createTag({
+      name: `标签 ${tags.length + 1}`,
+      color: "#22C55E",
+      sort_order: tags.length,
+    });
+    setTags((current) => [...current, nextTag]);
+    setSelectedTagIds((current) => [...current, nextTag.id]);
+  }, [tags.length]);
 
   useEffect(() => {
     let disposed = false;
@@ -185,11 +317,26 @@ export function SelectionPopupPage() {
     <main className="flex min-h-screen items-center justify-center bg-transparent p-2">
       <SelectionText
         text={text}
+        state={popupState}
         resolvedWord={resolvedWord}
-        isResolving={isResolving}
+        selectedTags={selectedTags}
         isSavingWord={isSavingWord}
-        resolveError={resolveError}
+        onRetry={handleRetry}
+        onCopy={handleCopy}
+        onSpeak={handleSpeak}
         onAddWord={handleAddWord}
+        onOpenMainWindow={handleOpenMainWindow}
+        onHideWord={handleHideWord}
+        onCopyFeedback={handleCopyFeedback}
+        onOpenTagSelector={() => setIsTagSelectorOpen(true)}
+      />
+      <TagSelectorPopover
+        isOpen={isTagSelectorOpen}
+        tags={tags}
+        selectedTagIds={selectedTagIds}
+        onOpenChange={setIsTagSelectorOpen}
+        onToggleTag={handleToggleTag}
+        onCreateTag={handleCreateTag}
       />
     </main>
   );

@@ -1,7 +1,10 @@
 import { act, cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { SelectionPopupPage } from "../index";
+import { addWord, createTag, getTags, resolveWord, speakText } from "../../../lib/api";
+import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 
 const listenMock = vi.fn();
 const invokeMock = vi.fn();
@@ -16,6 +19,37 @@ vi.mock("@tauri-apps/api/event", () => ({
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
 }));
+
+vi.mock("@tauri-apps/plugin-clipboard-manager", () => ({
+  writeText: vi.fn(),
+}));
+
+vi.mock("../../../lib/api", async () => {
+  const actual = await vi.importActual<typeof import("../../../lib/api")>("../../../lib/api");
+  return {
+    ...actual,
+    resolveWord: vi.fn(),
+    addWord: vi.fn(),
+    speakText: vi.fn(),
+    getTags: vi.fn(),
+    createTag: vi.fn(),
+  };
+});
+
+const resolvedWordFixture = {
+  wordId: null,
+  word: "serendipity",
+  translation: "意外发现的好运",
+  detectedSourceLang: "en",
+  sourceLang: "en",
+  targetLang: "zh",
+  phonetic: "/ˌser.ənˈdɪp.ə.ti/",
+  meanings: [{ partOfSpeech: "noun", translations: ["意外发现的好运"] }],
+  englishDefinitions: [],
+  examples: [{ sentence: "I found this job by pure serendipity.", translation: "我纯粹是意外得到这份工作的。" }],
+  wordForms: [],
+  memoryTip: "",
+};
 
 function renderPopup(initialEntry: string) {
   return render(
@@ -62,6 +96,26 @@ describe("SelectionPopupPage", () => {
       }
       return Promise.resolve(undefined);
     });
+    vi.mocked(resolveWord).mockReset();
+    vi.mocked(addWord).mockReset();
+    vi.mocked(speakText).mockReset();
+    vi.mocked(getTags).mockReset();
+    vi.mocked(createTag).mockReset();
+    vi.mocked(getTags).mockResolvedValue([]);
+    vi.mocked(resolveWord).mockResolvedValue({
+      wordId: null,
+      word: "",
+      translation: "",
+      detectedSourceLang: null,
+      sourceLang: "en",
+      targetLang: "zh",
+      phonetic: null,
+      meanings: [],
+      englishDefinitions: [],
+      examples: [],
+      wordForms: [],
+      memoryTip: "",
+    });
   });
 
   afterEach(() => {
@@ -83,7 +137,7 @@ describe("SelectionPopupPage", () => {
 
     renderPopup("/selection-popup");
 
-    expect(screen.getByText("未读取到选中文本")).toBeTruthy();
+    expect(screen.getByText("无选区结果")).toBeTruthy();
   });
 
   it("updates displayed text from the Tauri event", async () => {
@@ -206,5 +260,35 @@ describe("SelectionPopupPage", () => {
 
     await advance(2000);
     expect(invokeMock).toHaveBeenCalledWith(CLOSE_POPUP_COMMAND);
+  });
+
+  it("copies translated text from the popup", async () => {
+    vi.useRealTimers();
+    listenMock.mockResolvedValueOnce(() => undefined);
+    vi.mocked(resolveWord).mockResolvedValue(resolvedWordFixture);
+    vi.mocked(getTags).mockResolvedValue([]);
+    const user = userEvent.setup();
+
+    renderPopup("/selection-popup?text=serendipity");
+    await screen.findAllByText("意外发现的好运");
+
+    await user.click(screen.getAllByRole("button", { name: "复制" })[0]);
+
+    expect(vi.mocked(writeText)).toHaveBeenCalledWith("serendipity\n意外发现的好运");
+  });
+
+  it("speaks the resolved word", async () => {
+    vi.useRealTimers();
+    listenMock.mockResolvedValueOnce(() => undefined);
+    vi.mocked(resolveWord).mockResolvedValue(resolvedWordFixture);
+    vi.mocked(getTags).mockResolvedValue([]);
+    const user = userEvent.setup();
+
+    renderPopup("/selection-popup?text=serendipity");
+    await screen.findAllByText("意外发现的好运");
+
+    await user.click(screen.getAllByRole("button", { name: "发音" })[0]);
+
+    expect(speakText).toHaveBeenCalledWith("serendipity", "en");
   });
 });
