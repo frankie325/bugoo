@@ -141,7 +141,6 @@ mod tests {
             api_region: String::new(),
             translation_model: String::new(),
             translation_prompt: String::new(),
-            word_detail_prompt: String::new(),
             timeout_ms: 1_000,
         }
     }

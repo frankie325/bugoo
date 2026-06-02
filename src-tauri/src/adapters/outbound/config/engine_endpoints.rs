@@ -33,19 +33,33 @@ pub enum EngineEndpointsError {
 }
 
 pub fn read_engine_endpoints(path: &Path) -> Result<EngineEndpoints, EngineEndpointsError> {
-    let content =
-        fs::read_to_string(path).map_err(|error| EngineEndpointsError::ReadFailed(error.to_string()))?;
+    let content = fs::read_to_string(path)
+        .map_err(|error| EngineEndpointsError::ReadFailed(error.to_string()))?;
     let parsed = serde_json::from_str::<EngineEndpointsFile>(&content)
         .map_err(|error| EngineEndpointsError::InvalidJson(error.to_string()))?;
 
     Ok(EngineEndpoints {
-        local: parsed.local.unwrap_or_else(|| "http://localhost:5005".to_string()),
-        baidu: parsed.baidu.unwrap_or_else(|| "https://fanyi-api.baidu.com/api/trans/vip/translate".to_string()),
-        deepl: parsed.deepl.unwrap_or_else(|| "https://api-free.deepl.com/v2/translate".to_string()),
-        google: parsed.google.unwrap_or_else(|| "https://translation.googleapis.com/language/translate/v2".to_string()),
-        microsoft: parsed.microsoft.unwrap_or_else(|| "https://api.cognitive.microsofttranslator.com/translate".to_string()),
-        tencent: parsed.tencent.unwrap_or_else(|| "https://tmt.tencentcloud.tencentcloudapi.com/api/trans/v3".to_string()),
-        youdao: parsed.youdao.unwrap_or_else(|| "https://openapi.youdao.com/api".to_string()),
+        local: parsed
+            .local
+            .unwrap_or_else(|| "http://localhost:5005".to_string()),
+        baidu: parsed
+            .baidu
+            .unwrap_or_else(|| "https://fanyi-api.baidu.com/api/trans/vip/translate".to_string()),
+        deepl: parsed
+            .deepl
+            .unwrap_or_else(|| "https://api-free.deepl.com/v2/translate".to_string()),
+        google: parsed.google.unwrap_or_else(|| {
+            "https://translation.googleapis.com/language/translate/v2".to_string()
+        }),
+        microsoft: parsed.microsoft.unwrap_or_else(|| {
+            "https://api.cognitive.microsofttranslator.com/translate".to_string()
+        }),
+        tencent: parsed.tencent.unwrap_or_else(|| {
+            "https://tmt.tencentcloud.tencentcloudapi.com/api/trans/v3".to_string()
+        }),
+        youdao: parsed
+            .youdao
+            .unwrap_or_else(|| "https://openapi.youdao.com/api".to_string()),
         custom: parsed.custom.unwrap_or_default(),
     })
 }

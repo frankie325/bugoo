@@ -3,6 +3,11 @@ import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { SelectionText } from "./SelectionText";
+import {
+  addWord,
+  resolveWord,
+  type ResolvedWord,
+} from "../../lib/api";
 
 const TEXT_UPDATED_EVENT = "selection-popup://text-updated";
 const CLOSE_POPUP_COMMAND = "close_selection_popup";
@@ -17,6 +22,11 @@ export function SelectionPopupPage() {
     return params.get("text") ?? "";
   }, [location.search]);
   const [text, setText] = useState(initialText);
+  const [resolvedWord, setResolvedWord] = useState<ResolvedWord | null>(null);
+  const [isResolving, setIsResolving] = useState(false);
+  const [isSavingWord, setIsSavingWord] = useState(false);
+  const [resolveError, setResolveError] = useState<string | null>(null);
+  const resolveRequestIdRef = useRef(0);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearCloseTimer = useCallback(() => {
@@ -69,6 +79,77 @@ export function SelectionPopupPage() {
   }, [initialText]);
 
   useEffect(() => {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      setResolvedWord(null);
+      setResolveError(null);
+      return;
+    }
+
+    const requestId = resolveRequestIdRef.current + 1;
+    resolveRequestIdRef.current = requestId;
+    setResolvedWord(null);
+    setIsResolving(true);
+    setResolveError(null);
+
+    resolveWord(trimmed)
+      .then((result) => {
+        if (resolveRequestIdRef.current === requestId) {
+          setResolvedWord(result);
+        }
+      })
+      .catch((error) => {
+        if (resolveRequestIdRef.current === requestId) {
+          setResolvedWord(null);
+          setResolveError(error instanceof Error ? error.message : String(error));
+        }
+      })
+      .finally(() => {
+        if (resolveRequestIdRef.current === requestId) {
+          setIsResolving(false);
+        }
+      });
+  }, [text]);
+
+  const handleAddWord = useCallback(async () => {
+    if (!resolvedWord || resolvedWord.wordId) {
+      return;
+    }
+
+    setIsSavingWord(true);
+    try {
+      const saved = await addWord({
+        word: resolvedWord.word,
+        translation: resolvedWord.translation,
+        sourceLang: resolvedWord.sourceLang,
+        targetLang: resolvedWord.targetLang,
+        phonetic: resolvedWord.phonetic,
+        meanings: resolvedWord.meanings,
+        englishDefinitions: resolvedWord.englishDefinitions,
+        examples: resolvedWord.examples,
+        wordForms: resolvedWord.wordForms,
+        memoryTip: resolvedWord.memoryTip,
+      });
+      setResolvedWord({
+        wordId: saved.wordId,
+        word: saved.word,
+        translation: saved.translation,
+        detectedSourceLang: resolvedWord.detectedSourceLang,
+        sourceLang: resolvedWord.sourceLang,
+        targetLang: resolvedWord.targetLang,
+        phonetic: saved.phonetic,
+        meanings: saved.meanings,
+        englishDefinitions: saved.englishDefinitions,
+        examples: saved.examples,
+        wordForms: saved.wordForms,
+        memoryTip: saved.memoryTip,
+      });
+    } finally {
+      setIsSavingWord(false);
+    }
+  }, [resolvedWord]);
+
+  useEffect(() => {
     let disposed = false;
     let unlisten: (() => void) | undefined;
 
@@ -79,11 +160,11 @@ export function SelectionPopupPage() {
       .then((dispose) => {
         if (disposed) {
           dispose();
-      } else {
-        unlisten = dispose;
-      }
-      void hydrateLatestText();
-    })
+        } else {
+          unlisten = dispose;
+        }
+        void hydrateLatestText();
+      })
       .catch((error) => {
         console.warn("Failed to listen for selection popup updates", error);
       });
@@ -102,7 +183,14 @@ export function SelectionPopupPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-transparent p-2">
-      <SelectionText text={text} />
+      <SelectionText
+        text={text}
+        resolvedWord={resolvedWord}
+        isResolving={isResolving}
+        isSavingWord={isSavingWord}
+        resolveError={resolveError}
+        onAddWord={handleAddWord}
+      />
     </main>
   );
 }

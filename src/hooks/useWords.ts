@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getWords, addWord, deleteWord, updateWord } from '../lib/api';
-import type { Word, WordUpdate } from '../lib/api';
+import type { AddWordInput, Word, WordDetail, WordUpdate } from '../lib/api';
 import { useWordStore } from '../stores/wordStore';
 
 export function useWords(search?: string) {
@@ -21,21 +21,27 @@ export function useAddWord() {
   const addWordToStore = useWordStore((state) => state.addWord);
 
   return useMutation({
-    mutationFn: ({
-      word,
-      translation,
-      sourceLang,
-      targetLang,
-      tags,
-    }: {
-      word: string;
-      translation: string;
-      sourceLang?: string;
-      targetLang?: string;
-      tags?: string;
-    }) => addWord(word, translation, sourceLang, targetLang, tags),
-    onSuccess: (newWord: Word) => {
-      addWordToStore(newWord);
+    mutationFn: (input: AddWordInput) => addWord(input),
+    onSuccess: (saved: WordDetail) => {
+      const word: Word = {
+        id: saved.wordId,
+        word: saved.word,
+        translation: saved.translation,
+        phonetic: saved.phonetic ?? undefined,
+        source_lang: 'en',
+        target_lang: 'zh',
+        status: 'new',
+        tags: '',
+        notes: '',
+        audio_url: undefined,
+        ease_factor: 2.5,
+        interval: 0,
+        repetitions: 0,
+        next_review_at: 0,
+        created_at: saved.createdAt,
+        updated_at: saved.updatedAt,
+      };
+      addWordToStore(word);
       queryClient.invalidateQueries({ queryKey: ['words'] });
     },
   });

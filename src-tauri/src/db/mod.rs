@@ -94,7 +94,6 @@ fn get_hardcoded_defaults() -> HashMap<String, String> {
         ("apiRegion".to_string(), "".to_string()),
         ("translationModel".to_string(), "".to_string()),
         ("translationPrompt".to_string(), "".to_string()),
-        ("wordDetailPrompt".to_string(), "".to_string()),
         ("translationTimeoutMs".to_string(), "15000".to_string()),
         ("themeColor".to_string(), "#10b981".to_string()),
         ("cardStyle".to_string(), "rich".to_string()),

@@ -24,8 +24,8 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(db: Arc<Database>, translation_service: TranslationService) -> Self {
-        let settings_cache = read_settings_map_from_db(db.connection())
-            .unwrap_or_else(|_| HashMap::new());
+        let settings_cache =
+            read_settings_map_from_db(db.connection()).unwrap_or_else(|_| HashMap::new());
         AppState {
             db: db.clone(),
             word_service: WordService::new(db),

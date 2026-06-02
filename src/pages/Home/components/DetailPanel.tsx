@@ -2,7 +2,6 @@ import { Button } from '@heroui/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  generateWordDetail,
   getWordDetail,
   type Word,
   type WordDetail,
@@ -17,7 +16,6 @@ export default function DetailPanel({ word, onClose }: DetailPanelProps) {
   const { t } = useTranslation();
   const [detail, setDetail] = useState<WordDetail | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
-  const [isGeneratingDetail, setIsGeneratingDetail] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
   const detailRequestIdRef = useRef(0);
 
@@ -66,31 +64,6 @@ export default function DetailPanel({ word, onClose }: DetailPanelProps) {
       detailRequestIdRef.current += 1;
     };
   }, [loadDetail]);
-
-  const handleGenerateDetail = async () => {
-    const requestId = detailRequestIdRef.current + 1;
-    detailRequestIdRef.current = requestId;
-
-    setIsLoadingDetail(false);
-    setIsGeneratingDetail(true);
-    setDetailError(null);
-
-    try {
-      const result = await generateWordDetail(word.id);
-
-      if (detailRequestIdRef.current === requestId) {
-        setDetail(result);
-      }
-    } catch (error) {
-      if (detailRequestIdRef.current === requestId) {
-        setDetailError(toReadableError(error));
-      }
-    } finally {
-      if (detailRequestIdRef.current === requestId) {
-        setIsGeneratingDetail(false);
-      }
-    }
-  };
 
   const renderEmptyText = () => (
     <p className="text-sm text-foreground-400">{t("home.detail.noDetail")}</p>
@@ -143,7 +116,6 @@ export default function DetailPanel({ word, onClose }: DetailPanelProps) {
                       size="sm"
                       variant="ghost"
                       onPress={loadDetail}
-                      isDisabled={isGeneratingDetail}
                     >
                       {t("home.detail.retryLoadDetail")}
                     </Button>
@@ -153,22 +125,39 @@ export default function DetailPanel({ word, onClose }: DetailPanelProps) {
 
               {detail ? (
                 <>
-                  <section className="flex flex-col gap-2">
-                    <h4 className="text-sm font-medium">{t("home.detail.definitions")}</h4>
-                    {detail.definitions.length > 0 ? (
+                  {detail.meanings.length > 0 && (
+                    <section className="flex flex-col gap-2">
+                      <h4 className="text-sm font-medium">{t("home.detail.meanings")}</h4>
                       <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-foreground-600">
-                        {detail.definitions.map((definition, index) => (
-                          <li key={`${definition}-${index}`}>{definition}</li>
+                        {detail.meanings.map((meaning, index) => (
+                          <li key={`${meaning.partOfSpeech}-${index}`}>
+                            <span className="font-medium">{meaning.partOfSpeech}</span>
+                            {': '}
+                            {meaning.translations.join('；')}
+                          </li>
                         ))}
                       </ul>
-                    ) : (
-                      renderEmptyText()
-                    )}
-                  </section>
+                    </section>
+                  )}
 
-                  <section className="flex flex-col gap-2">
-                    <h4 className="text-sm font-medium">{t("home.detail.examples")}</h4>
-                    {detail.examples.length > 0 ? (
+                  {detail.englishDefinitions.length > 0 && (
+                    <section className="flex flex-col gap-2">
+                      <h4 className="text-sm font-medium">{t("home.detail.englishDefinitions")}</h4>
+                      <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-foreground-600">
+                        {detail.englishDefinitions.map((group, index) => (
+                          <li key={`${group.partOfSpeech}-${index}`}>
+                            <span className="font-medium">{group.partOfSpeech}</span>
+                            {': '}
+                            {group.definitions.join('；')}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )}
+
+                  {detail.examples.length > 0 && (
+                    <section className="flex flex-col gap-2">
+                      <h4 className="text-sm font-medium">{t("home.detail.examples")}</h4>
                       <div className="flex flex-col gap-2">
                         {detail.examples.map((example, index) => (
                           <div
@@ -184,43 +173,33 @@ export default function DetailPanel({ word, onClose }: DetailPanelProps) {
                           </div>
                         ))}
                       </div>
-                    ) : (
-                      renderEmptyText()
-                    )}
-                  </section>
+                    </section>
+                  )}
 
-                  <section className="flex flex-col gap-2">
-                    <h4 className="text-sm font-medium">{t("home.detail.memoryTip")}</h4>
-                    {detail.memoryTip ? (
+                  {detail.wordForms.length > 0 && (
+                    <section className="flex flex-col gap-2">
+                      <h4 className="text-sm font-medium">{t("home.detail.wordForms")}</h4>
+                      <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-foreground-600">
+                        {detail.wordForms.map((form, index) => (
+                          <li key={`${form.type}-${index}`}>
+                            <span className="font-medium">{form.type}</span>
+                            {': '}
+                            {form.words.join(', ')}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )}
+
+                  {detail.memoryTip && (
+                    <section className="flex flex-col gap-2">
+                      <h4 className="text-sm font-medium">{t("home.detail.memoryTip")}</h4>
                       <p className="text-sm text-foreground-600">{detail.memoryTip}</p>
-                    ) : (
-                      renderEmptyText()
-                    )}
-                  </section>
-
-                  <section className="flex flex-col gap-2">
-                    <h4 className="text-sm font-medium">{t("home.detail.wordDetail")}</h4>
-                    {detail.detail ? (
-                      <p className="whitespace-pre-line text-sm text-foreground-600">
-                        {detail.detail}
-                      </p>
-                    ) : (
-                      renderEmptyText()
-                    )}
-                  </section>
+                    </section>
+                  )}
                 </>
               ) : (
-                <div className="flex flex-col gap-2">
-                  {!detailError && renderEmptyText()}
-                  <Button
-                    isPending={isGeneratingDetail}
-                    onPress={handleGenerateDetail}
-                  >
-                    {isGeneratingDetail
-                      ? t("home.detail.generatingDetail")
-                      : t("home.detail.generateDetail")}
-                  </Button>
-                </div>
+                !detailError && renderEmptyText()
               )}
             </>
           )}

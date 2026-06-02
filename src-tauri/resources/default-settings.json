@@ -19,7 +19,6 @@
   "apiRegion": "",
   "translationModel": "",
   "translationPrompt": "",
-  "wordDetailPrompt": "",
   "translationTimeoutMs": "15000",
   "themeColor": "#10b981",
   "cardStyle": "rich",

@@ -8,23 +8,29 @@ vi.mock("@tauri-apps/api/core", () => ({
 }));
 
 describe("translate", () => {
-  it("sends only text to the translate_text command", async () => {
+  it("maps backend unified translation result to frontend fields", async () => {
     invokeMock.mockResolvedValueOnce({
       translation: "你好，世界",
       detected_source_lang: "en",
       phonetic: null,
-      part_of_speech: ["interjection"],
-      definitions: ["hello world"],
+      meanings: [
+        { partOfSpeech: "interjection", translations: ["你好"] },
+      ],
+      english_definitions: [],
       examples: [{ sentence: "Hello world", translation: "你好，世界" }],
+      word_forms: [],
+      memory_tip: "",
     });
 
     await expect(translate("Hello world")).resolves.toEqual({
       translation: "你好，世界",
       detectedSourceLang: "en",
       phonetic: null,
-      partOfSpeech: ["interjection"],
-      definitions: ["hello world"],
+      meanings: [{ partOfSpeech: "interjection", translations: ["你好"] }],
+      englishDefinitions: [],
       examples: [{ sentence: "Hello world", translation: "你好，世界" }],
+      wordForms: [],
+      memoryTip: "",
     });
     expect(invokeMock.mock.calls).toStrictEqual([
       [

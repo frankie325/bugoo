@@ -146,7 +146,6 @@ export function TranslationPanel() {
   const apiRegion = settings.apiRegion || "";
   const translationModel = settings.translationModel || "";
   const translationPrompt = settings.translationPrompt || "";
-  const wordDetailPrompt = settings.wordDetailPrompt || "";
   const parsedTranslationTimeoutMs = Number(
     settings.translationTimeoutMs || String(DEFAULT_TRANSLATION_TIMEOUT_MS),
   );
@@ -461,23 +460,6 @@ export function TranslationPanel() {
                   saveSetting("translationPrompt", e.target.value)
                 }
                 placeholder={t("settings.translation.promptPlaceholder")}
-                className="w-80"
-              />
-            </SettingItem>
-
-            <Separator />
-            <SettingItem
-              title={t("settings.translation.wordDetailPrompt.title")}
-              description={t("settings.translation.wordDetailPrompt.desc")}
-            >
-              <TextArea
-                value={wordDetailPrompt}
-                onChange={(e) =>
-                  saveSetting("wordDetailPrompt", e.target.value)
-                }
-                placeholder={t(
-                  "settings.translation.wordDetailPromptPlaceholder",
-                )}
                 className="w-80"
               />
             </SettingItem>
