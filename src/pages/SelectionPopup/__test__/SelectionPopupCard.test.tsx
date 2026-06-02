@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-// userEvent is kept for the footer action test
 import { MeaningList } from "../components/MeaningList";
 import { ExamplePreview } from "../components/ExamplePreview";
 import { LoadingState } from "../components/LoadingState";
@@ -9,6 +8,23 @@ import { ErrorState } from "../components/ErrorState";
 import { ReviewStatusCard } from "../components/ReviewStatusCard";
 import { PopupFooter } from "../components/PopupFooter";
 import { MoreActionsPopover } from "../components/MoreActionsPopover";
+import { SelectionPopupCard } from "../components/SelectionPopupCard";
+import type { ResolvedWord } from "../../../lib/api";
+
+const cardWord: ResolvedWord = {
+  wordId: null,
+  word: "serendipity",
+  translation: "意外发现的好运",
+  detectedSourceLang: "en",
+  sourceLang: "en",
+  targetLang: "zh",
+  phonetic: "/ˌser.ənˈdɪp.ə.ti/",
+  meanings: [{ partOfSpeech: "noun", translations: ["意外发现的好运"] }],
+  englishDefinitions: [],
+  examples: [{ sentence: "I found this job by pure serendipity.", translation: "我纯粹是意外得到这份工作的。" }],
+  wordForms: [],
+  memoryTip: "",
+};
 
 describe("selection popup presentational pieces", () => {
   it("renders meanings grouped by part of speech", () => {
@@ -95,5 +111,51 @@ describe("selection popup presentational pieces", () => {
     );
 
     expect(screen.getByRole("button", { name: "更多操作" })).toBeTruthy();
+  });
+
+  it("renders full success card", () => {
+    render(
+      <SelectionPopupCard
+        text="serendipity"
+        state="success"
+        resolvedWord={cardWord}
+        selectedTags={[]}
+        isSavingWord={false}
+        onRetry={() => undefined}
+        onCopy={() => undefined}
+        onSpeak={() => undefined}
+        onAddWord={() => undefined}
+        onOpenMainWindow={() => undefined}
+        onHideWord={() => undefined}
+        onCopyFeedback={() => undefined}
+        onOpenTagSelector={() => undefined}
+      />,
+    );
+
+    expect(screen.getAllByText("serendipity").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("意外发现的好运").length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("button", { name: "加入生词本" }).length).toBeGreaterThan(0);
+  });
+
+  it("renders loading card", () => {
+    const { container } = render(
+      <SelectionPopupCard
+        text="serendipity"
+        state="loading"
+        resolvedWord={null}
+        selectedTags={[]}
+        isSavingWord={false}
+        onRetry={() => undefined}
+        onCopy={() => undefined}
+        onSpeak={() => undefined}
+        onAddWord={() => undefined}
+        onOpenMainWindow={() => undefined}
+        onHideWord={() => undefined}
+        onCopyFeedback={() => undefined}
+        onOpenTagSelector={() => undefined}
+      />,
+    );
+
+    expect(container.querySelector('[aria-label="正在加载翻译结果"]')).toBeTruthy();
   });
 });
