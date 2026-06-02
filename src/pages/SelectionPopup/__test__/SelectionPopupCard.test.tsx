@@ -1,10 +1,14 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+// userEvent is kept for the footer action test
 import { MeaningList } from "../components/MeaningList";
 import { ExamplePreview } from "../components/ExamplePreview";
 import { LoadingState } from "../components/LoadingState";
 import { ErrorState } from "../components/ErrorState";
 import { ReviewStatusCard } from "../components/ReviewStatusCard";
+import { PopupFooter } from "../components/PopupFooter";
+import { MoreActionsPopover } from "../components/MoreActionsPopover";
 
 describe("selection popup presentational pieces", () => {
   it("renders meanings grouped by part of speech", () => {
@@ -41,5 +45,55 @@ describe("selection popup presentational pieces", () => {
 
     expect(screen.getByText("已在生词本中")).toBeTruthy();
     expect(screen.getByText("下次复习：明天 18:00")).toBeTruthy();
+  });
+
+  it("runs footer actions", async () => {
+    const user = userEvent.setup();
+    const calls: string[] = [];
+
+    render(
+      <PopupFooter
+        isSaved={false}
+        isSavingWord={false}
+        canAddWord
+        onCopy={() => calls.push("copy")}
+        onSpeak={() => calls.push("speak")}
+        onAddWord={() => calls.push("add")}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "复制" }));
+    await user.click(screen.getByRole("button", { name: "发音" }));
+    await user.click(screen.getByRole("button", { name: "加入生词本" }));
+
+    expect(calls).toEqual(["copy", "speak", "add"]);
+  });
+
+  it("renders saved footer state", () => {
+    render(
+      <PopupFooter
+        isSaved
+        isSavingWord={false}
+        canAddWord={false}
+        onCopy={() => undefined}
+        onSpeak={() => undefined}
+        onAddWord={() => undefined}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "已加入" })).toBeTruthy();
+  });
+
+  it("renders the more actions trigger", () => {
+    render(
+      <MoreActionsPopover
+        onRetry={() => undefined}
+        onOpenMainWindow={() => undefined}
+        onHideWord={() => undefined}
+        onCopyFeedback={() => undefined}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "更多操作" })).toBeTruthy();
   });
 });
