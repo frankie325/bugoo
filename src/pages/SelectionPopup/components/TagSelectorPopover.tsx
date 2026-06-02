@@ -20,11 +20,11 @@ export function TagSelectorPopover({
   onCreateTag,
 }: TagSelectorPopoverProps) {
   return (
-    <Popover isOpen={isOpen} onOpenChange={onOpenChange} placement="right">
+    <Popover isOpen={isOpen} onOpenChange={onOpenChange}>
       <Popover.Trigger>
         <span />
       </Popover.Trigger>
-      <Popover.Content>
+      <Popover.Content placement="right">
         <Popover.Dialog className="w-64 rounded-xl bg-white p-3 shadow-xl">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-semibold text-[#111827]">选择标签</p>

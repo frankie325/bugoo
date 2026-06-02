@@ -15,13 +15,13 @@ export function MoreActionsPopover({
   onCopyFeedback,
 }: MoreActionsPopoverProps) {
   return (
-    <Popover placement="bottom end">
+    <Popover>
       <Popover.Trigger>
         <Button variant="ghost" size="sm" isIconOnly aria-label="更多操作">
           <MoreHorizontal className="size-4" aria-hidden="true" />
         </Button>
       </Popover.Trigger>
-      <Popover.Content>
+      <Popover.Content placement="bottom end">
         <Popover.Dialog className="w-40 rounded-lg bg-white p-1 shadow-xl">
           <div role="menu" className="flex flex-col">
             <button role="menuitem" type="button" onClick={onRetry} className="flex items-center gap-2 rounded-md px-2 py-2 text-left text-xs text-[#374151] hover:bg-[#F3F4F6]">
