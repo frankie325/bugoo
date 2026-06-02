@@ -39,6 +39,7 @@ export function SelectionPopupPage() {
   const [isTagSelectorOpen, setIsTagSelectorOpen] = useState(false);
   const resolveRequestIdRef = useRef(0);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTagSelectorOpenRef = useRef(false);
 
   const clearCloseTimer = useCallback(() => {
     if (closeTimerRef.current) {
@@ -76,6 +77,11 @@ export function SelectionPopupPage() {
   const scheduleAutoClose = useCallback((delayMs = AUTO_CLOSE_DELAY_MS) => {
     clearCloseTimer();
     closeTimerRef.current = setTimeout(async () => {
+      if (isTagSelectorOpenRef.current) {
+        scheduleAutoClose(AUTO_CLOSE_DELAY_MS);
+        return;
+      }
+
       const isInside = await isCursorInsidePopup();
       if (isInside) {
         scheduleAutoClose(AUTO_CLOSE_DELAY_MS);
@@ -88,6 +94,10 @@ export function SelectionPopupPage() {
   useEffect(() => {
     setText(initialText);
   }, [initialText]);
+
+  useEffect(() => {
+    isTagSelectorOpenRef.current = isTagSelectorOpen;
+  }, [isTagSelectorOpen]);
 
   useEffect(() => {
     setSelectedTagIds([]);
