@@ -1,5 +1,5 @@
 use crate::commands::AppState;
-use crate::domain::models::{EnglishDefinitionGroup, WordFormItem, WordMeaning};
+use crate::domain::models::{EnglishDefinitionGroup, Word, WordFormItem, WordMeaning};
 use crate::ports::outbound::translation::{
     TranslationError, TranslationExample, TranslationResult,
 };
@@ -60,16 +60,10 @@ pub async fn resolve_word(
     let settings = app_state.settings_cache_read()?;
     let source_setting = settings_value(&settings, "sourceLanguage", "auto");
     let target_lang = settings_value(&settings, "targetLanguage", "zh");
-    let source_lookup = if source_setting == "auto" {
-        None
-    } else {
-        Some(source_setting.as_str())
-    };
 
-    if let Some(existing) =
-        app_state
-            .word_service
-            .find_existing_word(&query, source_lookup, &target_lang)?
+    if let Some(existing) = app_state
+        .word_service
+        .find_existing_word(&query, &target_lang)?
     {
         if let Some(detail) = get_word_detail_by_id(app_state, &existing.id)? {
             return Ok(word_detail_to_resolved(
@@ -78,6 +72,7 @@ pub async fn resolve_word(
                 existing.target_lang,
             ));
         }
+        return Ok(word_to_resolved(existing));
     }
 
     let result = app_state
@@ -202,6 +197,23 @@ fn word_detail_to_resolved(
     }
 }
 
+fn word_to_resolved(word: Word) -> ResolvedWord {
+    ResolvedWord {
+        word_id: Some(word.id),
+        word: word.word,
+        translation: word.translation,
+        detected_source_lang: Some(word.source_lang.clone()),
+        source_lang: word.source_lang,
+        target_lang: word.target_lang,
+        phonetic: word.phonetic,
+        meanings: Vec::new(),
+        english_definitions: Vec::new(),
+        examples: Vec::new(),
+        word_forms: Vec::new(),
+        memory_tip: String::new(),
+    }
+}
+
 fn translation_result_to_resolved(
     word: String,
     source_lang: String,
@@ -237,4 +249,32 @@ where
     T: serde::de::DeserializeOwned,
 {
     serde_json::from_str(value).map_err(|error| format!("{field} 解析失败：{error}"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn word_to_resolved_returns_saved_word_without_details() {
+        let mut word = Word::new(
+            "word-1".to_string(),
+            "panel".to_string(),
+            "面板".to_string(),
+            "en".to_string(),
+            "zh".to_string(),
+        );
+        word.phonetic = Some("/ˈpænəl/".to_string());
+
+        let resolved = word_to_resolved(word);
+
+        assert_eq!(resolved.word_id, Some("word-1".to_string()));
+        assert_eq!(resolved.word, "panel");
+        assert_eq!(resolved.translation, "面板");
+        assert_eq!(resolved.source_lang, "en");
+        assert_eq!(resolved.target_lang, "zh");
+        assert_eq!(resolved.phonetic, Some("/ˈpænəl/".to_string()));
+        assert!(resolved.meanings.is_empty());
+        assert!(resolved.examples.is_empty());
+    }
 }

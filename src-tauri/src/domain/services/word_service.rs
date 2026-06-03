@@ -19,11 +19,10 @@ impl WordService {
     pub fn find_existing_word(
         &self,
         word: &str,
-        source_lang: Option<&str>,
         target_lang: &str,
     ) -> Result<Option<Word>, String> {
         self.repository
-            .find_by_text(word, source_lang, target_lang)
+            .find_by_text(word, target_lang)
             .map_err(|e| e.to_string())
     }
 
@@ -42,8 +41,7 @@ impl WordService {
         let source_lang = normalize_lang_or_default(&input.source_lang, "en");
         let target_lang = normalize_lang_or_default(&input.target_lang, "zh");
         let now = chrono::Utc::now().timestamp_millis();
-        let existing =
-            self.find_existing_word(&word_text, Some(source_lang.as_str()), &target_lang)?;
+        let existing = self.find_existing_word(&word_text, &target_lang)?;
 
         let mut word = existing.unwrap_or_else(|| {
             Word::new(
@@ -139,5 +137,46 @@ fn normalize_lang_or_default(value: &str, default: &str) -> String {
         default.to_string()
     } else {
         normalized
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_service() -> WordService {
+        let path =
+            std::env::temp_dir().join(format!("bugoo-word-service-{}.db", uuid::Uuid::new_v4()));
+        WordService::new(Arc::new(Database::new(path).unwrap()))
+    }
+
+    fn add_input(word: &str, source_lang: &str, target_lang: &str) -> AddWordWithDetails {
+        AddWordWithDetails {
+            word: word.to_string(),
+            translation: "面板".to_string(),
+            source_lang: source_lang.to_string(),
+            target_lang: target_lang.to_string(),
+            phonetic: None,
+            meanings: Vec::new(),
+            english_definitions: Vec::new(),
+            examples: Vec::new(),
+            word_forms: Vec::new(),
+            memory_tip: String::new(),
+            tags: String::new(),
+        }
+    }
+
+    #[test]
+    fn add_word_with_details_reuses_existing_word_when_source_lang_differs() {
+        let service = test_service();
+        let first = service
+            .add_word_with_details(add_input("panel", "en", "zh"))
+            .unwrap();
+        let second = service
+            .add_word_with_details(add_input("panel", "fr", "zh"))
+            .unwrap();
+
+        assert_eq!(second.id, first.id);
+        assert_eq!(service.get_words(None).unwrap().len(), 1);
     }
 }

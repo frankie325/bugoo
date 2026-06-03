@@ -77,16 +77,9 @@ impl WordRepository for SqliteWordRepository {
         }
     }
 
-    fn find_by_text(
-        &self,
-        word: &str,
-        source_lang: Option<&str>,
-        target_lang: &str,
-    ) -> Result<Option<Word>, DbError> {
+    fn find_by_text(&self, word: &str, target_lang: &str) -> Result<Option<Word>, DbError> {
         let conn = self.db.connection();
         let normalized = word.trim().to_lowercase();
-        let normalized_target_lang = target_lang.trim().to_lowercase();
-        let normalized_source_lang = source_lang.map(|lang| lang.trim().to_lowercase());
         if normalized.is_empty() {
             return Ok(None);
         }
@@ -94,25 +87,20 @@ impl WordRepository for SqliteWordRepository {
             .prepare(
                 "SELECT * FROM words
 	                 WHERE LOWER(word) = ?1
-	                   AND LOWER(target_lang) = ?2
-	                   AND (?3 IS NULL OR LOWER(source_lang) = ?3)
 	                 ORDER BY created_at DESC
-	                 LIMIT 1",
+	                 LIMIT 20",
             )
             .map_err(DbError::Sqlite)?;
 
-        let mut rows = stmt
-            .query(params![
-                normalized,
-                normalized_target_lang,
-                normalized_source_lang.as_deref()
-            ])
+        let words = stmt
+            .query_map(params![normalized], Self::row_to_word)
+            .map_err(DbError::Sqlite)?
+            .collect::<Result<Vec<_>, _>>()
             .map_err(DbError::Sqlite)?;
 
-        match rows.next().map_err(DbError::Sqlite)? {
-            Some(row) => Ok(Some(Self::row_to_word(row).map_err(DbError::Sqlite)?)),
-            None => Ok(None),
-        }
+        Ok(words
+            .into_iter()
+            .find(|word| language_matches(&word.target_lang, target_lang)))
     }
 
     fn save_with_details(&self, word: &Word, detail: &WordDetailDraft) -> Result<Word, DbError> {
@@ -263,6 +251,18 @@ impl WordRepository for SqliteWordRepository {
     }
 }
 
+fn language_matches(saved: &str, requested: &str) -> bool {
+    language_lookup_key(saved) == language_lookup_key(requested)
+}
+
+fn language_lookup_key(value: &str) -> String {
+    match value.trim().to_lowercase().replace('_', "-").as_str() {
+        "zh" | "zh-cn" | "zh-hans" | "zh-chs" => "zh".to_string(),
+        "zt" | "zh-tw" | "zh-hant" | "zh-cht" => "zt".to_string(),
+        normalized => normalized.to_string(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -306,10 +306,49 @@ mod tests {
         repo.save_with_details(&word, &detail_draft()).unwrap();
 
         let found = repo
-            .find_by_text("hello", Some("en"), "zh")
+            .find_by_text("hello", "zh")
             .unwrap()
             .expect("word should be found");
         assert_eq!(found.id, "word-1");
+    }
+
+    #[test]
+    fn find_by_text_matches_saved_zh_word_when_lookup_target_is_zh_cn() {
+        let db = test_db();
+        let repo = SqliteWordRepository::new(Arc::clone(&db));
+        let word = Word::new(
+            "word-1".to_string(),
+            "Panel".to_string(),
+            "面板".to_string(),
+            "en".to_string(),
+            "zh".to_string(),
+        );
+
+        repo.save_with_details(&word, &detail_draft()).unwrap();
+
+        let found = repo
+            .find_by_text("panel", "zh-CN")
+            .unwrap()
+            .expect("word should be found before falling back to dictionary");
+        assert_eq!(found.id, "word-1");
+    }
+
+    #[test]
+    fn find_by_text_does_not_match_different_target_language() {
+        let db = test_db();
+        let repo = SqliteWordRepository::new(Arc::clone(&db));
+        let word = Word::new(
+            "word-1".to_string(),
+            "Panel".to_string(),
+            "面板".to_string(),
+            "en".to_string(),
+            "zh".to_string(),
+        );
+
+        repo.save_with_details(&word, &detail_draft()).unwrap();
+
+        let found = repo.find_by_text("panel", "ja").unwrap();
+        assert!(found.is_none());
     }
 
     #[test]
@@ -328,7 +367,7 @@ mod tests {
 
         let repo = SqliteWordRepository::new(Arc::clone(&db));
         let mut word = repo
-            .find_by_text("hello", Some("en"), "zh")
+            .find_by_text("hello", "zh")
             .unwrap()
             .expect("existing word should be found");
         word.translation = "您好".to_string();
