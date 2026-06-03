@@ -11,7 +11,7 @@ use tauri::Position;
 
 #[cfg(target_os = "macos")]
 use tauri_nspanel::{
-    tauri_panel, CollectionBehavior, ManagerExt, PanelLevel, StyleMask,
+    tauri_panel, CollectionBehavior, ManagerExt, PanelLevel, StyleMask, TrackingAreaOptions,
     WebviewWindowExt as WebviewPanelExt,
 };
 
@@ -36,6 +36,20 @@ tauri_panel! {
             can_become_main_window: false,
             is_floating_panel: true
         }
+        with: {
+            tracking_area: {
+                options: TrackingAreaOptions::new()
+                    .active_always()
+                    .mouse_entered_and_exited()
+                    .cursor_update(),
+                auto_resize: true
+            }
+        }
+    })
+
+    panel_event!(SelectionPopupPanelEventHandler {
+        window_did_become_key(notification: &NSNotification) -> (),
+        window_did_resign_key(notification: &NSNotification) -> ()
     })
 }
 
@@ -145,7 +159,7 @@ fn create_selection_popup_window(app: &AppHandle, text: &str) -> Result<WebviewW
 fn show_selection_popup_window(app: &AppHandle, window: &WebviewWindow) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     if let Ok(panel) = app.get_webview_panel(SELECTION_POPUP_LABEL) {
-        panel.show_and_make_key();
+        panel.show();
         return Ok(());
     }
 
@@ -205,6 +219,21 @@ fn convert_selection_popup_window_to_panel(window: &WebviewWindow) -> Result<(),
         .to_panel::<SelectionPopupPanel>()
         .map_err(|error| error.to_string())?;
 
+    let handler = SelectionPopupPanelEventHandler::new();
+    let app_for_enter = window.app_handle().clone();
+    handler.on_mouse_entered(move |_| {
+        if let Ok(panel) = app_for_enter.get_webview_panel(SELECTION_POPUP_LABEL) {
+            panel.make_key_window();
+        }
+    });
+
+    let app_for_exit = window.app_handle().clone();
+    handler.on_mouse_exited(move |_| {
+        if let Ok(panel) = app_for_exit.get_webview_panel(SELECTION_POPUP_LABEL) {
+            panel.resign_key_window();
+        }
+    });
+
     panel.set_level(PanelLevel::Floating.value());
     panel.set_style_mask(StyleMask::empty().nonactivating_panel().into());
     panel.set_collection_behavior(
@@ -215,6 +244,7 @@ fn convert_selection_popup_window_to_panel(window: &WebviewWindow) -> Result<(),
     );
     panel.set_hides_on_deactivate(false);
     panel.set_works_when_modal(true);
+    panel.set_event_handler(Some(handler.as_ref()));
     Ok(())
 }
 
