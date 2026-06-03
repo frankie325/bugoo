@@ -32,7 +32,7 @@ const POPUP_DEFAULT_HEIGHT: u32 = 140;
 tauri_panel! {
     panel!(SelectionPopupPanel {
         config: {
-            can_become_key_window: false,
+            can_become_key_window: true,
             can_become_main_window: false,
             is_floating_panel: true
         }
@@ -145,7 +145,7 @@ fn create_selection_popup_window(app: &AppHandle, text: &str) -> Result<WebviewW
 fn show_selection_popup_window(app: &AppHandle, window: &WebviewWindow) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     if let Ok(panel) = app.get_webview_panel(SELECTION_POPUP_LABEL) {
-        panel.show();
+        panel.show_and_make_key();
         return Ok(());
     }
 
