@@ -15,6 +15,10 @@ use tauri_nspanel::{
     WebviewWindowExt as WebviewPanelExt,
 };
 
+use super::auto_close::{
+    cancel_popup_auto_close, mark_popup_content_ready, mark_popup_loading,
+    mark_popup_mouse_entered, mark_popup_mouse_exited,
+};
 #[cfg(target_os = "macos")]
 use super::geometry::macos_top_left_point_from_physical_position;
 use super::geometry::{
@@ -98,6 +102,7 @@ fn open_or_update_selection_popup_window_at(
     anchor: PhysicalPosition<f64>,
 ) -> Result<(), String> {
     update_selection_popup_text(app, text);
+    mark_popup_loading(app, text)?;
 
     if let Some(window) = app.get_webview_window(SELECTION_POPUP_LABEL) {
         log::info!("Updating existing selection popup window");
@@ -106,6 +111,7 @@ fn open_or_update_selection_popup_window_at(
         }
         position_selection_popup(&window, anchor)?;
         show_selection_popup_window(app, &window)?;
+        sync_popup_cursor_state_after_show(app);
         return Ok(());
     }
 
@@ -114,6 +120,7 @@ fn open_or_update_selection_popup_window_at(
 
     position_selection_popup(&window, anchor)?;
     show_selection_popup_window(app, &window)?;
+    sync_popup_cursor_state_after_show(app);
     Ok(())
 }
 
@@ -125,6 +132,7 @@ fn open_or_update_selection_popup_panel_at(
 ) -> Result<(), String> {
     ensure_selection_popup_panel(app)?;
     update_selection_popup_text(app, text);
+    mark_popup_loading(app, text)?;
 
     let window = app
         .get_webview_window(SELECTION_POPUP_LABEL)
@@ -138,19 +146,21 @@ fn open_or_update_selection_popup_panel_at(
     let target_position = selection_popup_target_position(&window, anchor)?;
     position_selection_popup_panel(app, target_position)?;
     show_selection_popup_window(app, &window)?;
+    sync_popup_cursor_state_after_show(app);
     Ok(())
 }
 
 fn create_selection_popup_window(app: &AppHandle, text: &str) -> Result<WebviewWindow, String> {
     let url = selection_popup_url(text);
 
-    let builder = WebviewWindowBuilder::new(app, SELECTION_POPUP_LABEL, WebviewUrl::App(url.into()))
-        .title("Bugoo Selection")
-        .inner_size(POPUP_DEFAULT_WIDTH as f64, POPUP_DEFAULT_HEIGHT as f64)
-        .decorations(false)
-        .always_on_top(true)
-        .resizable(false)
-        .visible(false);
+    let builder =
+        WebviewWindowBuilder::new(app, SELECTION_POPUP_LABEL, WebviewUrl::App(url.into()))
+            .title("Bugoo Selection")
+            .inner_size(POPUP_DEFAULT_WIDTH as f64, POPUP_DEFAULT_HEIGHT as f64)
+            .decorations(false)
+            .always_on_top(true)
+            .resizable(false)
+            .visible(false);
 
     #[cfg(not(target_os = "macos"))]
     let builder = builder.transparent(true);
@@ -170,6 +180,8 @@ fn show_selection_popup_window(app: &AppHandle, window: &WebviewWindow) -> Resul
 }
 
 pub fn close_selection_popup(app: &AppHandle) -> Result<(), String> {
+    cancel_popup_auto_close(app);
+
     #[cfg(target_os = "macos")]
     {
         let app = app.clone();
@@ -179,6 +191,18 @@ pub fn close_selection_popup(app: &AppHandle) -> Result<(), String> {
     #[cfg(not(target_os = "macos"))]
     {
         close_selection_popup_window(app)
+    }
+}
+
+pub fn selection_popup_content_ready(app: &AppHandle, text: &str) -> Result<(), String> {
+    mark_popup_content_ready(app, text)
+}
+
+fn sync_popup_cursor_state_after_show(app: &AppHandle) {
+    match is_cursor_inside_visible_selection_popup(app) {
+        Ok(true) => mark_popup_mouse_entered(app),
+        Ok(false) => mark_popup_mouse_exited(app),
+        Err(error) => log::warn!("Failed to sync selection popup cursor state: {error}"),
     }
 }
 
@@ -224,6 +248,7 @@ fn convert_selection_popup_window_to_panel(window: &WebviewWindow) -> Result<(),
     let handler = SelectionPopupPanelEventHandler::new();
     let app_for_enter = window.app_handle().clone();
     handler.on_mouse_entered(move |_| {
+        mark_popup_mouse_entered(&app_for_enter);
         if let Ok(panel) = app_for_enter.get_webview_panel(SELECTION_POPUP_LABEL) {
             panel.make_key_window();
         }
@@ -234,6 +259,7 @@ fn convert_selection_popup_window_to_panel(window: &WebviewWindow) -> Result<(),
         if let Ok(panel) = app_for_exit.get_webview_panel(SELECTION_POPUP_LABEL) {
             panel.resign_key_window();
         }
+        mark_popup_mouse_exited(&app_for_exit);
     });
 
     panel.set_level(PanelLevel::Floating.value());

@@ -23,10 +23,9 @@ import { TagChipList } from "./components/TagChipList";
 
 const TEXT_UPDATED_EVENT = "selection-popup://text-updated";
 const CLOSE_POPUP_COMMAND = "close_selection_popup";
+const CONTENT_READY_COMMAND = "selection_popup_content_ready";
 const GET_POPUP_TEXT_COMMAND = "get_selection_popup_text";
-const CURSOR_INSIDE_POPUP_COMMAND = "is_cursor_inside_selection_popup";
 const OPEN_FLOAT_WINDOW_COMMAND = "open_float_window";
-const AUTO_CLOSE_DELAY_MS = 2000;
 
 export function SelectionPopupPage() {
   const location = useLocation();
@@ -42,14 +41,6 @@ export function SelectionPopupPage() {
   const [tags, setTags] = useState<TagItem[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const resolveRequestIdRef = useRef(0);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const clearCloseTimer = useCallback(() => {
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-  }, []);
 
   const closePopup = useCallback(() => {
     invoke(CLOSE_POPUP_COMMAND).catch((error) => {
@@ -57,13 +48,10 @@ export function SelectionPopupPage() {
     });
   }, []);
 
-  const isCursorInsidePopup = useCallback(async () => {
-    try {
-      return await invoke<boolean>(CURSOR_INSIDE_POPUP_COMMAND);
-    } catch (error) {
-      console.warn("Failed to read cursor position for selection popup", error);
-      return false;
-    }
+  const notifyContentReady = useCallback((readyText: string) => {
+    invoke(CONTENT_READY_COMMAND, { text: readyText }).catch((error) => {
+      console.warn("Failed to notify selection popup content ready", error);
+    });
   }, []);
 
   const hydrateLatestText = useCallback(async () => {
@@ -76,23 +64,6 @@ export function SelectionPopupPage() {
       console.warn("Failed to hydrate selection popup text", error);
     }
   }, []);
-
-  const scheduleAutoClose = useCallback((_delayMs = AUTO_CLOSE_DELAY_MS) => {
-    clearCloseTimer();
-    // closeTimerRef.current = setTimeout(async () => {
-    //   if (isTagSelectorOpenRef.current) {
-    //     scheduleAutoClose(AUTO_CLOSE_DELAY_MS);
-    //     return;
-    //   }
-
-    //   const isInside = await isCursorInsidePopup();
-    //   if (isInside) {
-    //     scheduleAutoClose(AUTO_CLOSE_DELAY_MS);
-    //     return;
-    //   }
-    //   closePopup();
-    // }, _delayMs);
-  }, [clearCloseTimer, closePopup, isCursorInsidePopup]);
 
   useEffect(() => {
     setText(initialText);
@@ -113,10 +84,12 @@ export function SelectionPopupPage() {
   }, []);
 
   useEffect(() => {
-    const trimmed = text.trim();
+    const currentText = text;
+    const trimmed = currentText.trim();
     if (!trimmed) {
       setResolvedWord(null);
       setResolveError(null);
+      notifyContentReady(currentText);
       return;
     }
 
@@ -141,9 +114,10 @@ export function SelectionPopupPage() {
       .finally(() => {
         if (resolveRequestIdRef.current === requestId) {
           setIsResolving(false);
+          notifyContentReady(currentText);
         }
       });
-  }, [text]);
+  }, [notifyContentReady, text]);
 
   const popupState = getSelectionPopupState({
     text,
@@ -198,7 +172,8 @@ export function SelectionPopupPage() {
   }, [resolvedWord, selectedTags]);
 
   const handleRetry = useCallback(() => {
-    const trimmed = text.trim();
+    const currentText = text;
+    const trimmed = currentText.trim();
     if (!trimmed) {
       return;
     }
@@ -224,9 +199,10 @@ export function SelectionPopupPage() {
       .finally(() => {
         if (resolveRequestIdRef.current === requestId) {
           setIsResolving(false);
+          notifyContentReady(currentText);
         }
       });
-  }, [text]);
+  }, [notifyContentReady, text]);
 
   const handleCopy = useCallback(async () => {
     const content = resolvedWord
@@ -285,7 +261,6 @@ export function SelectionPopupPage() {
 
     listen<string>(TEXT_UPDATED_EVENT, (event) => {
       setText(event.payload);
-      scheduleAutoClose();
     })
       .then((dispose) => {
         if (disposed) {
@@ -302,14 +277,8 @@ export function SelectionPopupPage() {
     return () => {
       disposed = true;
       unlisten?.();
-      clearCloseTimer();
     };
-  }, [clearCloseTimer, hydrateLatestText, scheduleAutoClose]);
-
-  useEffect(() => {
-    scheduleAutoClose();
-    return clearCloseTimer;
-  }, [clearCloseTimer, scheduleAutoClose]);
+  }, [hydrateLatestText]);
 
   const displayText = resolvedWord?.word || text.trim() || "未读取到选中文本";
   const isSaved = Boolean(resolvedWord?.wordId);

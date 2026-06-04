@@ -19,6 +19,11 @@ pub fn close_selection_popup(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
+pub fn selection_popup_content_ready(app: AppHandle, text: String) -> Result<(), String> {
+    selection_ui(&app)?.selection_popup_content_ready(&text)
+}
+
+#[tauri::command]
 pub fn get_selection_popup_text(app: AppHandle) -> Option<String> {
     selection_ui(&app)
         .ok()

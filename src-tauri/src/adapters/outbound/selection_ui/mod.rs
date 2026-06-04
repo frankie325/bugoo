@@ -1,3 +1,4 @@
+mod auto_close;
 mod geometry;
 mod state;
 mod window_adapter;
@@ -10,6 +11,7 @@ use crate::ports::outbound::selection_ui::{
     SelectionPopupAnchor, SelectionUiHandle, SelectionUiPort,
 };
 
+pub use auto_close::SelectionPopupAutoCloseState;
 pub use state::SelectionPopupTextState;
 pub use window_adapter::open_accessibility_settings;
 
@@ -49,6 +51,10 @@ impl SelectionUiPort for TauriSelectionUi {
         window_adapter::close_selection_popup(&self.app)
     }
 
+    fn selection_popup_content_ready(&self, text: &str) -> Result<(), String> {
+        window_adapter::selection_popup_content_ready(&self.app, text)
+    }
+
     fn latest_selection_popup_text(&self) -> Option<String> {
         state::latest_selection_popup_text(&self.app)
     }
@@ -73,6 +79,7 @@ impl SelectionUiPort for TauriSelectionUi {
 pub fn manage_selection_ui(app: &AppHandle) -> Arc<dyn SelectionUiPort> {
     let selection_ui: Arc<dyn SelectionUiPort> = Arc::new(TauriSelectionUi::new(app.clone()));
     app.manage(SelectionPopupTextState::default());
+    app.manage(SelectionPopupAutoCloseState::default());
     app.manage(SelectionUiHandle::new(selection_ui.clone()));
     selection_ui
 }

@@ -18,7 +18,7 @@ import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 const listenMock = vi.fn();
 const invokeMock = vi.fn();
 const CLOSE_POPUP_COMMAND = "close_selection_popup";
-const CURSOR_INSIDE_POPUP_COMMAND = "is_cursor_inside_selection_popup";
+const CONTENT_READY_COMMAND = "selection_popup_content_ready";
 const GET_POPUP_TEXT_COMMAND = "get_selection_popup_text";
 
 vi.mock("@tauri-apps/api/event", () => ({
@@ -82,29 +82,12 @@ async function flushPromiseChain() {
   });
 }
 
-async function advance(ms: number) {
-  await act(async () => {
-    await vi.advanceTimersByTimeAsync(ms);
-  });
-}
-
-function closePopupCalls() {
-  return invokeMock.mock.calls.filter(
-    (call) => call[0] === CLOSE_POPUP_COMMAND,
-  ).length;
-}
-
 describe("SelectionPopupPage", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     listenMock.mockReset();
     invokeMock.mockReset();
-    invokeMock.mockImplementation((command: string) => {
-      if (command === CURSOR_INSIDE_POPUP_COMMAND) {
-        return Promise.resolve(false);
-      }
-      return Promise.resolve(undefined);
-    });
+    invokeMock.mockResolvedValue(undefined);
     vi.mocked(resolveWord).mockReset();
     vi.mocked(addWord).mockReset();
     vi.mocked(speakText).mockReset();
@@ -172,9 +155,6 @@ describe("SelectionPopupPage", () => {
       if (command === GET_POPUP_TEXT_COMMAND) {
         return Promise.resolve("first payload");
       }
-      if (command === CURSOR_INSIDE_POPUP_COMMAND) {
-        return Promise.resolve(false);
-      }
       return Promise.resolve(undefined);
     });
 
@@ -184,16 +164,32 @@ describe("SelectionPopupPage", () => {
     expect(screen.getByText("first payload")).toBeTruthy();
   });
 
-  it("auto closes after 2 seconds when mouse never enters", async () => {
+  it("does not auto close from the frontend timer", async () => {
     listenMock.mockResolvedValueOnce(() => undefined);
     renderPopup("/selection-popup?text=hello");
-    await flushMicrotasks();
+    await flushPromiseChain();
 
-    await advance(2000);
-    expect(invokeMock).toHaveBeenCalledWith(CLOSE_POPUP_COMMAND);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+
+    expect(invokeMock).not.toHaveBeenCalledWith(CLOSE_POPUP_COMMAND);
+    expect(invokeMock).not.toHaveBeenCalledWith("is_cursor_inside_selection_popup");
   });
 
-  it("restarts auto close timer after text update event", async () => {
+  it("notifies backend when the active resolve request finishes", async () => {
+    listenMock.mockResolvedValueOnce(() => undefined);
+    vi.mocked(resolveWord).mockResolvedValue(resolvedWordFixture);
+
+    renderPopup("/selection-popup?text=serendipity");
+    await flushPromiseChain();
+
+    expect(invokeMock).toHaveBeenCalledWith(CONTENT_READY_COMMAND, {
+      text: "serendipity",
+    });
+  });
+
+  it("notifies backend after text update resolve finishes", async () => {
     let eventHandler: ((event: { payload: string }) => void) | undefined;
     listenMock.mockImplementationOnce((_eventName, handler) => {
       eventHandler = handler as (event: { payload: string }) => void;
@@ -204,71 +200,54 @@ describe("SelectionPopupPage", () => {
     await flushMicrotasks();
     expect(eventHandler).toBeDefined();
 
-    await advance(1500);
-    eventHandler?.({ payload: "new text" });
-    await advance(1500);
-    expect(closePopupCalls()).toBe(0);
+    act(() => {
+      eventHandler?.({ payload: "new text" });
+    });
+    await flushPromiseChain();
 
-    await advance(500);
-    expect(invokeMock).toHaveBeenCalledWith(CLOSE_POPUP_COMMAND);
+    expect(invokeMock).toHaveBeenCalledWith(CONTENT_READY_COMMAND, {
+      text: "new text",
+    });
   });
 
-  it("keeps popup open while backend reports cursor is inside", async () => {
-    listenMock.mockResolvedValueOnce(() => undefined);
-    invokeMock.mockImplementation((command: string) => {
-      if (command === CURSOR_INSIDE_POPUP_COMMAND) {
-        return Promise.resolve(true);
-      }
-      return Promise.resolve(undefined);
+  it("does not notify backend when a stale resolve request finishes", async () => {
+    let eventHandler: ((event: { payload: string }) => void) | undefined;
+    let resolveOld: ((value: typeof resolvedWordFixture) => void) | undefined;
+    let resolveNew: ((value: typeof resolvedWordFixture) => void) | undefined;
+    listenMock.mockImplementationOnce((_eventName, handler) => {
+      eventHandler = handler as (event: { payload: string }) => void;
+      return Promise.resolve(() => undefined);
     });
+    vi.mocked(resolveWord)
+      .mockImplementationOnce(() => new Promise((resolve) => {
+        resolveOld = resolve;
+      }))
+      .mockImplementationOnce(() => new Promise((resolve) => {
+        resolveNew = resolve;
+      }));
 
-    renderPopup("/selection-popup?text=hello");
+    renderPopup("/selection-popup?text=old");
+    await flushMicrotasks();
+    act(() => {
+      eventHandler?.({ payload: "new text" });
+    });
     await flushMicrotasks();
 
-    await advance(2000);
-    expect(closePopupCalls()).toBe(0);
-  });
-
-  it("rechecks every 2 seconds while backend keeps reporting cursor inside", async () => {
-    listenMock.mockResolvedValueOnce(() => undefined);
-    invokeMock.mockImplementation((command: string) => {
-      if (command === CURSOR_INSIDE_POPUP_COMMAND) {
-        return Promise.resolve(true);
-      }
-      return Promise.resolve(undefined);
+    await act(async () => {
+      resolveOld?.(resolvedWordFixture);
+      await Promise.resolve();
+    });
+    expect(invokeMock).not.toHaveBeenCalledWith(CONTENT_READY_COMMAND, {
+      text: "old",
     });
 
-    renderPopup("/selection-popup?text=hello");
-    await flushMicrotasks();
-
-    await advance(6000);
-
-    expect(closePopupCalls()).toBe(0);
-    const cursorChecks = invokeMock.mock.calls.filter(
-      (call) => call[0] === CURSOR_INSIDE_POPUP_COMMAND,
-    ).length;
-    expect(cursorChecks).toBe(3);
-  });
-
-  it("closes on the next 2 second check when cursor leaves popup", async () => {
-    listenMock.mockResolvedValueOnce(() => undefined);
-    const cursorInsideResults = [true, false];
-    invokeMock.mockImplementation((command: string) => {
-      if (command === CURSOR_INSIDE_POPUP_COMMAND) {
-        const result = cursorInsideResults.shift() ?? false;
-        return Promise.resolve(result);
-      }
-      return Promise.resolve(undefined);
+    await act(async () => {
+      resolveNew?.({ ...resolvedWordFixture, word: "new text" });
+      await Promise.resolve();
     });
-
-    renderPopup("/selection-popup?text=hello");
-    await flushMicrotasks();
-
-    await advance(2000);
-    expect(closePopupCalls()).toBe(0);
-
-    await advance(2000);
-    expect(invokeMock).toHaveBeenCalledWith(CLOSE_POPUP_COMMAND);
+    expect(invokeMock).toHaveBeenCalledWith(CONTENT_READY_COMMAND, {
+      text: "new text",
+    });
   });
 
   it("copies translated text from the popup", async () => {
@@ -301,7 +280,7 @@ describe("SelectionPopupPage", () => {
     expect(speakText).toHaveBeenCalledWith("serendipity", "en");
   });
 
-  it("keeps popup open while tag selector is open", async () => {
+  it("does not use frontend auto close while tag selector is open", async () => {
     vi.useRealTimers();
     listenMock.mockResolvedValueOnce(() => undefined);
     vi.mocked(resolveWord).mockResolvedValue(resolvedWordFixture);
@@ -313,14 +292,9 @@ describe("SelectionPopupPage", () => {
 
     await user.click(screen.getAllByRole("button", { name: "选择标签" })[0]);
 
-    // The button click triggers isOpen=true; the auto-close must reschedule.
-    // Use a small real-time wait to ensure the ref is updated.
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // The TagSelector popover itself is HeroUI-rendered via portal, so we
-    // confirm behavior by checking that isTagSelectorOpenRef is set, which
-    // pauses auto-close. The scheduleAutoClose logic in the container keeps
-    // the timer alive while the selector is open.
-    expect(closePopupCalls()).toBe(0);
+    expect(invokeMock).not.toHaveBeenCalledWith(CLOSE_POPUP_COMMAND);
+    expect(invokeMock).not.toHaveBeenCalledWith("is_cursor_inside_selection_popup");
   });
 });
