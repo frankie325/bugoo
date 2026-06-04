@@ -206,6 +206,11 @@
         "title": "Cierre automático",
         "desc": "Cerrar la ventana emergente al perder el foco"
       },
+      "selectionMaxChars": {
+        "title": "Límite de longitud de selección",
+        "desc": "Cuando está activado, limita el número máximo de caracteres reconocidos por el detector de selección. Desactivado = sin límite.",
+        "suffix": "caracteres"
+      },
       "pace": {
         "relaxed": "Relajado",
         "normal": "Normal",

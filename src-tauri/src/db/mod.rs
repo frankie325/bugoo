@@ -85,6 +85,8 @@ fn get_hardcoded_defaults() -> HashMap<String, String> {
         ("enableSelection".to_string(), "true".to_string()),
         ("autoSpeak".to_string(), "false".to_string()),
         ("autoClose".to_string(), "true".to_string()),
+        ("maxSelectionChars".to_string(), "200".to_string()),
+        ("selectionLimitEnabled".to_string(), "true".to_string()),
         ("translationEngine".to_string(), "local".to_string()),
         ("sourceLanguage".to_string(), "auto".to_string()),
         ("targetLanguage".to_string(), "zh".to_string()),

@@ -10,6 +10,8 @@
   "enableSelection": "true",
   "autoSpeak": "false",
   "autoClose": "true",
+  "maxSelectionChars": "200",
+  "selectionLimitEnabled": "true",
   "translationEngine": "local",
   "sourceLanguage": "auto",
   "targetLanguage": "zh",

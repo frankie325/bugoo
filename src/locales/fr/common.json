@@ -206,6 +206,11 @@
         "title": "Fermeture automatique",
         "desc": "Fermer la fenêtre contextuelle en perdant le focus"
       },
+      "selectionMaxChars": {
+        "title": "Limite de longueur de sélection",
+        "desc": "Lorsqu'activé, limite le nombre maximal de caractères reconnus par l'écouteur de sélection. Désactivé = sans limite.",
+        "suffix": "caractères"
+      },
       "pace": {
         "relaxed": "Détendu",
         "normal": "Normal",

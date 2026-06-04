@@ -206,6 +206,11 @@
         "title": "Fechamento automático",
         "desc": "Fechar o pop-up ao perder o foco"
       },
+      "selectionMaxChars": {
+        "title": "Limite de comprimento da seleção",
+        "desc": "Quando ativado, limita o número máximo de caracteres reconhecidos pelo ouvinte de seleção. Desativado = sem limite.",
+        "suffix": "caracteres"
+      },
       "pace": {
         "relaxed": "Tranquilo",
         "normal": "Normal",

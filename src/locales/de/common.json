@@ -206,6 +206,11 @@
         "title": "Automatisches Schließen",
         "desc": "Popup beim Fokusverlust schließen"
       },
+      "selectionMaxChars": {
+        "title": "Auswahllängenbegrenzung",
+        "desc": "Wenn aktiviert, wird die maximale Zeichenanzahl des Auswahl-Listeners begrenzt. Deaktiviert = keine Begrenzung.",
+        "suffix": "Zeichen"
+      },
       "pace": {
         "relaxed": "Entspannt",
         "normal": "Normal",

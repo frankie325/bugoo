@@ -205,6 +205,11 @@
         "title": "自动关闭",
         "desc": "失去焦点时自动关闭弹窗"
       },
+      "selectionMaxChars": {
+        "title": "划词长度限制",
+        "desc": "开启后限制划词监听时识别的最大字符数；关闭后不做限制。",
+        "suffix": "字符"
+      },
       "pace": {
         "relaxed": "轻松",
         "normal": "标准",

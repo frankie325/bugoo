@@ -205,6 +205,11 @@
         "title": "Auto Close",
         "desc": "Automatically close the popup when losing focus"
       },
+      "selectionMaxChars": {
+        "title": "Selection Length Limit",
+        "desc": "When enabled, cap the number of characters recognized by the selection listener. Disabled = no cap.",
+        "suffix": "chars"
+      },
       "pace": {
         "relaxed": "Relaxed",
         "normal": "Normal",

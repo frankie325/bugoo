@@ -206,6 +206,11 @@
         "title": "自動關閉",
         "desc": "失去焦點時自動關閉彈窗"
       },
+      "selectionMaxChars": {
+        "title": "劃詞長度限制",
+        "desc": "開啟後限制劃詞監聽時識別的最大字元數；關閉後不做限制。",
+        "suffix": "字元"
+      },
       "pace": {
         "relaxed": "輕鬆",
         "normal": "標準",

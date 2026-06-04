@@ -206,6 +206,11 @@
         "title": "Tự động đóng",
         "desc": "Tự động đóng cửa sổ khi mất tiêu điểm"
       },
+      "selectionMaxChars": {
+        "title": "Giới hạn độ dài chọn",
+        "desc": "Khi bật, giới hạn số ký tự tối đa mà trình lắng nghe lựa chọn nhận dạng. Tắt = không giới hạn.",
+        "suffix": "ký tự"
+      },
       "pace": {
         "relaxed": "Thoải mái",
         "normal": "Tiêu chuẩn",

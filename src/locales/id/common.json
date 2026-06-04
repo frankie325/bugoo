@@ -206,6 +206,11 @@
         "title": "Tutup otomatis",
         "desc": "Tutup popup secara otomatis saat kehilangan fokus"
       },
+      "selectionMaxChars": {
+        "title": "Batas panjang pilihan",
+        "desc": "Saat diaktifkan, batasi jumlah maksimum karakter yang dikenali oleh pendengar pilihan. Dinonaktifkan = tanpa batas.",
+        "suffix": "karakter"
+      },
       "pace": {
         "relaxed": "Santai",
         "normal": "Standar",

@@ -16,6 +16,7 @@ pub trait SelectionUiPort: Send + Sync {
     ) -> Result<(), String>;
     fn close_selection_popup(&self) -> Result<(), String>;
     fn selection_popup_content_ready(&self, text: &str) -> Result<(), String>;
+    fn resize_selection_popup(&self, height: f64) -> Result<(), String>;
     fn latest_selection_popup_text(&self) -> Option<String>;
     fn is_cursor_inside_visible_selection_popup(&self) -> Result<bool, String>;
     fn focused_own_window_label(&self) -> Option<String>;
