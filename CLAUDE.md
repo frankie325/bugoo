@@ -92,6 +92,77 @@ cd src-tauri && cargo test
 - 前端的测试文件放在__test__目录下，测试什么功能__test__文件就移动到对应功能的文件夹下. 
 - 实现计划时，使用到的技术优先先从网上查找工具库，而不是自己从零实现
 - 疑难bug优先去github issue查找是否有人遇到过同样的问题
+- 绘制页面时颜色优先使用项目中和Hero组件库中已定义的css变量
+
+### 颜色变量使用规则
+
+颜色按以下优先级选择来源：
+
+1. **HeroUI v3 已定义的 CSS 变量**（参考 `https://github.com/heroui-inc/heroui/blob/v3/packages/styles/themes/shared/theme.css`）
+2. **项目自定义变量**（`src/styles/variable.css`）
+3. **Tailwind 工具类**（如 `bg-white`）
+
+**严禁**使用 `text-[#hex]` / `bg-[#hex]` / `border-[#hex]` 等硬编码颜色。
+
+#### HeroUI v3 颜色变量清单
+
+| 变量 | 用途 | Tailwind 类 |
+|------|------|------------|
+| `--color-background` / `-foreground` | 主背景/前景 | `bg-background` / `text-foreground` |
+| `--color-surface` / `-foreground` / `-hover` | 卡片/面板 | `bg-surface` / `text-surface-foreground` / `hover:bg-surface-hover` |
+| `--color-surface-secondary` / `-tertiary` | 次级/三级面板 | `bg-surface-secondary` / `bg-surface-tertiary` |
+| `--color-overlay` / `-foreground` | 浮层（popover/dropdown） | `bg-overlay` / `text-overlay-foreground` |
+| `--color-muted` | 静音/次要 | `text-muted` / `bg-muted` |
+| `--color-accent` / `-foreground` | 品牌主色 | `bg-accent` / `text-accent` |
+| `--color-accent-soft` / `-foreground` / `-hover` | 品牌主色软底 | `bg-accent-soft` / `text-accent-soft-foreground` |
+| `--color-default` / `-foreground` / `-hover` | 中性默认 | `bg-default` / `text-default-foreground` |
+| `--color-default-soft` / `-foreground` / `-hover` | 中性软底 | `bg-default-soft` / `text-default-soft-foreground` |
+| `--color-success` / `-foreground` / `-hover` | 成功 | `bg-success` / `text-success` |
+| `--color-success-soft` / `-foreground` / `-hover` | 成功软底 | `bg-success-soft` / `text-success-soft-foreground` |
+| `--color-warning` / `-foreground` / `-hover` | 警告 | `bg-warning` / `text-warning` |
+| `--color-warning-soft` / `-foreground` / `-hover` | 警告软底 | `bg-warning-soft` |
+| `--color-danger` / `-foreground` / `-hover` | 错误 | `bg-danger` / `text-danger` |
+| `--color-danger-soft` / `-foreground` / `-hover` | 错误软底 | `bg-danger-soft` |
+| `--color-border` / `-secondary` / `-tertiary` | 边框 | `border-border` / `border-border-secondary` |
+| `--color-separator` / `-secondary` / `-tertiary` | 分隔 | `bg-separator` / `bg-separator-secondary` |
+| `--color-focus` / `--color-link` | 聚焦环/链接 | `ring-focus` / `text-link` |
+| `--color-segment` / `-foreground` | 分段控件 | `bg-segment` / `text-segment-foreground` |
+| `--color-backdrop` | 模态遮罩 | `bg-backdrop` |
+
+#### ⚠️ HeroUI v3 中不存在的样式
+
+不要使用下列样式（无效，会被忽略）：
+
+- ~~`text-default-50/100/200/300/400/500/600/700/800/900`~~（无数字阶 token）
+- ~~`bg-default-50/100/200/...`~~
+- ~~`border-default-100/200/...`~~
+- ~~`text-primary` / `bg-primary` / `border-primary`~~
+- ~~`text-success-50/100/...` / `bg-success-50/100/...`~~
+- ~~`bg-accent-1/2/.../10`~~（与项目 variable.css 数字阶混淆）
+
+#### 项目自定义变量
+
+`src/styles/variable.css` 通过 `@theme { --color-accent-N: ... }` 导出**品牌绿色阶**（light/dark 各 10 阶），与 HeroUI 的 `--color-accent` 单一色不同名空间。
+
+```css
+@theme {
+  --color-accent-1: #f0fff3;  /* 品牌绿色最浅 */
+  --color-accent-6: #22c55e;  /* 品牌主色 */
+  --color-accent-10: #002b16; /* 品牌绿色最深 */
+  --accent: var(--accent-6);
+}
+```
+
+- 需要品牌色阶对比时用 `accent-1` ~ `accent-10`
+- 需要单一品牌色时用 HeroUI 的 `text-accent` / `bg-accent`（已被覆盖为品牌绿）
+
+#### 添加新颜色变量
+
+如果 HeroUI 和 variable.css 都不满足需求：
+
+1. **优先复用 HeroUI 语义 token**：用 `default` / `surface` / `border` / `muted` 的不同变体（`-hover` / `-soft` / `-foreground` / `-secondary` / `-tertiary`）
+2. **需要新的色阶**时在 `src/styles/variable.css` 按 Tailwind v4 `@theme { --color-my-purpose-N: ... }` 格式定义
+3. 通过 Tailwind 工具类使用（如 `bg-my-purpose-50`）
 
 #### 前端
 - 代码生成时，按照vercel-react-best-practices技能的指导生成代码
