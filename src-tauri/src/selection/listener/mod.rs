@@ -31,14 +31,14 @@ use crate::selection::debounce::SELECTION_RELEASE_DEBOUNCE_MS;
 #[cfg(test)]
 use crate::selection::gesture::DOUBLE_CLICK_WINDOW_MS;
 #[cfg(test)]
+use crate::selection::mouse_event::SelectionMouseEvent;
+#[cfg(any(not(target_os = "macos"), test))]
+use crate::selection::mouse_event::SelectionMouseEventKind;
+#[cfg(test)]
 use crate::selection::processor::{
     decide_own_app_event_behavior, evaluate_popup_update, OwnAppEventBehavior, PopupCloseReason,
     PopupUpdateDecision,
 };
-#[cfg(any(not(target_os = "macos"), test))]
-use crate::selection::mouse_event::SelectionMouseEventKind;
-#[cfg(test)]
-use crate::selection::mouse_event::SelectionMouseEvent;
 #[cfg(test)]
 use std::time::Duration;
 

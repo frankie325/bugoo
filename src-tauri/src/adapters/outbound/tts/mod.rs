@@ -2,23 +2,23 @@ use std::sync::Mutex;
 
 use crate::ports::outbound::speech::{SpeechService, VoiceInfo};
 
-#[cfg(target_os = "macos")]
-mod macos;
-#[cfg(target_os = "windows")]
-mod windows;
 #[cfg(target_os = "linux")]
 mod linux;
+#[cfg(target_os = "macos")]
+mod macos;
 #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
 mod unsupported;
-
-#[cfg(target_os = "macos")]
-use macos::{build_command, list_voices, stop};
 #[cfg(target_os = "windows")]
-use windows::{build_command, list_voices, stop};
+mod windows;
+
 #[cfg(target_os = "linux")]
 use linux::{build_command, list_voices, stop};
+#[cfg(target_os = "macos")]
+use macos::{build_command, list_voices, stop};
 #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
 use unsupported::{build_command, list_voices, stop};
+#[cfg(target_os = "windows")]
+use windows::{build_command, list_voices, stop};
 
 /// Adapter that uses system commands for speech synthesis.
 pub struct SystemSpeechAdapter {

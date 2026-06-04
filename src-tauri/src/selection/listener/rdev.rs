@@ -3,9 +3,7 @@
 
 use rdev::{listen, Button, Event, EventType};
 
-use crate::selection::mouse_event::{
-    MousePosition, SelectionMouseEvent, SelectionMouseEventKind,
-};
+use crate::selection::mouse_event::{MousePosition, SelectionMouseEvent, SelectionMouseEventKind};
 
 pub fn listen_selection_events<T>(callback: T) -> Result<(), String>
 where
