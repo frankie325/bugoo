@@ -6,13 +6,13 @@ type ReviewStatusCardProps = {
 
 export function ReviewStatusCard({ nextReviewText }: ReviewStatusCardProps) {
   return (
-    <div className="rounded-lg border border-[#BBF7D0] bg-[#F0FDF4] px-3 py-2 text-xs">
-      <div className="flex items-center gap-1.5 font-semibold text-[#16A34A]">
+    <div className="border-accent bg-accent-soft rounded-lg border px-3 py-2 text-xs">
+      <div className="text-accent flex items-center gap-1.5 font-semibold">
         <CheckCircle2 className="size-3.5" aria-hidden="true" />
         <span>已在生词本中</span>
       </div>
-      <p className="mt-2 text-[#4B5563]">记忆强度：★★★☆☆</p>
-      <p className="mt-1 text-[#4B5563]">下次复习：{nextReviewText}</p>
+      <p className="text-muted mt-2">记忆强度：★★★☆☆</p>
+      <p className="text-muted mt-1">下次复习：{nextReviewText}</p>
     </div>
   );
 }

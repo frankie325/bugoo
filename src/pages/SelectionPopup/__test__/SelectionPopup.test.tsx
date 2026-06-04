@@ -1,4 +1,13 @@
 import { act, cleanup, render, screen } from "@testing-library/react";
+
+// Polyfill ResizeObserver for jsdom (required by HeroUI v3 ScrollShadow and Tooltip)
+if (typeof globalThis.ResizeObserver === "undefined") {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+}
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";

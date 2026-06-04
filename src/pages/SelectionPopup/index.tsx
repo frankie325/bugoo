@@ -1,12 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
+import { Card, ScrollShadow } from "@heroui/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { SelectionText } from "./SelectionText";
 import {
   addWord,
-  createTag,
   getTags,
   resolveWord,
   speakText,
@@ -14,7 +13,13 @@ import {
 } from "../../lib/api";
 import type { TagItem } from "../../types/tag";
 import { getSelectionPopupState } from "./selectionPopupState";
-import { TagSelectorPopover } from "./components/TagSelectorPopover";
+import { ErrorState } from "./components/ErrorState";
+import { ExamplePreview } from "./components/ExamplePreview";
+import { LoadingState } from "./components/LoadingState";
+import { MeaningList } from "./components/MeaningList";
+import { PopupFooter } from "./Footer";
+import { PopupHeader } from "./Header";
+import { TagChipList } from "./components/TagChipList";
 
 const TEXT_UPDATED_EVENT = "selection-popup://text-updated";
 const CLOSE_POPUP_COMMAND = "close_selection_popup";
@@ -36,10 +41,8 @@ export function SelectionPopupPage() {
   const [resolveError, setResolveError] = useState<string | null>(null);
   const [tags, setTags] = useState<TagItem[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
-  const [isTagSelectorOpen, setIsTagSelectorOpen] = useState(false);
   const resolveRequestIdRef = useRef(0);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isTagSelectorOpenRef = useRef(false);
 
   const clearCloseTimer = useCallback(() => {
     if (closeTimerRef.current) {
@@ -74,21 +77,21 @@ export function SelectionPopupPage() {
     }
   }, []);
 
-  const scheduleAutoClose = useCallback((delayMs = AUTO_CLOSE_DELAY_MS) => {
+  const scheduleAutoClose = useCallback((_delayMs = AUTO_CLOSE_DELAY_MS) => {
     clearCloseTimer();
-    closeTimerRef.current = setTimeout(async () => {
-      if (isTagSelectorOpenRef.current) {
-        scheduleAutoClose(AUTO_CLOSE_DELAY_MS);
-        return;
-      }
+    // closeTimerRef.current = setTimeout(async () => {
+    //   if (isTagSelectorOpenRef.current) {
+    //     scheduleAutoClose(AUTO_CLOSE_DELAY_MS);
+    //     return;
+    //   }
 
-      const isInside = await isCursorInsidePopup();
-      if (isInside) {
-        scheduleAutoClose(AUTO_CLOSE_DELAY_MS);
-        return;
-      }
-      closePopup();
-    }, delayMs);
+    //   const isInside = await isCursorInsidePopup();
+    //   if (isInside) {
+    //     scheduleAutoClose(AUTO_CLOSE_DELAY_MS);
+    //     return;
+    //   }
+    //   closePopup();
+    // }, _delayMs);
   }, [clearCloseTimer, closePopup, isCursorInsidePopup]);
 
   useEffect(() => {
@@ -96,12 +99,7 @@ export function SelectionPopupPage() {
   }, [initialText]);
 
   useEffect(() => {
-    isTagSelectorOpenRef.current = isTagSelectorOpen;
-  }, [isTagSelectorOpen]);
-
-  useEffect(() => {
     setSelectedTagIds([]);
-    setIsTagSelectorOpen(false);
   }, [text]);
 
   useEffect(() => {
@@ -281,16 +279,6 @@ export function SelectionPopupPage() {
     );
   }, []);
 
-  const handleCreateTag = useCallback(async () => {
-    const nextTag = await createTag({
-      name: `标签 ${tags.length + 1}`,
-      color: "#22C55E",
-      sort_order: tags.length,
-    });
-    setTags((current) => [...current, nextTag]);
-    setSelectedTagIds((current) => [...current, nextTag.id]);
-  }, [tags.length]);
-
   useEffect(() => {
     let disposed = false;
     let unlisten: (() => void) | undefined;
@@ -323,31 +311,86 @@ export function SelectionPopupPage() {
     return clearCloseTimer;
   }, [clearCloseTimer, scheduleAutoClose]);
 
+  const displayText = resolvedWord?.word || text.trim() || "未读取到选中文本";
+  const isSaved = Boolean(resolvedWord?.wordId);
+  // "加入生词本" 按钮可用条件：解析完成且有结果且未保存。
+  // 与翻译进度解耦——解析中按钮 disabled，解析完成且未保存则可用。
+  const canAddWord = !isResolving && Boolean(resolvedWord) && !isSaved;
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-transparent p-2">
-      <SelectionText
-        text={text}
-        state={popupState}
-        resolvedWord={resolvedWord}
-        selectedTags={selectedTags}
-        isSavingWord={isSavingWord}
-        onRetry={handleRetry}
-        onCopy={handleCopy}
-        onSpeak={handleSpeak}
-        onAddWord={handleAddWord}
-        onOpenMainWindow={handleOpenMainWindow}
-        onHideWord={handleHideWord}
-        onCopyFeedback={handleCopyFeedback}
-        onOpenTagSelector={() => setIsTagSelectorOpen(true)}
-      />
-      <TagSelectorPopover
-        isOpen={isTagSelectorOpen}
-        tags={tags}
-        selectedTagIds={selectedTagIds}
-        onOpenChange={setIsTagSelectorOpen}
-        onToggleTag={handleToggleTag}
-        onCreateTag={handleCreateTag}
-      />
+    <main className="h-full w-full p-0 bg-surface">
+      <Card className="flex h-full w-full flex-col rounded-[12px] bg-white p-0 shadow-xl">
+        <Card.Content className="flex h-full flex-col p-3 gap-0">
+          <PopupHeader
+            word={displayText}
+            phonetic={resolvedWord?.phonetic ?? null}
+            onSpeak={handleSpeak}
+            onRetry={handleRetry}
+            onOpenMainWindow={handleOpenMainWindow}
+            onHideWord={handleHideWord}
+            onCopyFeedback={handleCopyFeedback}
+          />
+
+          <ScrollShadow
+            className="flex min-h-0 flex-1 flex-col my-2"
+            hideScrollBar
+          >
+            {popupState === "loading" ? (
+              <LoadingState />
+            ) : popupState === "empty" ? (
+              <ErrorState
+                title="无选区结果"
+                description="请重新选择需要翻译的内容"
+                actionLabel="关闭"
+                onAction={handleHideWord}
+              />
+            ) : popupState === "tooLong" ? (
+              <ErrorState
+                title="内容过长"
+                description="划词弹窗适合翻译 50 个字符以内的短文本"
+                actionLabel="重新翻译"
+                onAction={handleRetry}
+              />
+            ) : popupState === "error" ? (
+              <ErrorState
+                title="翻译失败"
+                description="请检查网络或稍后重试"
+                actionLabel="重试"
+                onAction={handleRetry}
+              />
+            ) : resolvedWord ? (
+              <>
+                <p className="text-foreground text-sm font-medium leading-6">
+                  {resolvedWord.translation}
+                </p>
+                <MeaningList meanings={resolvedWord.meanings} />
+                <ExamplePreview
+                  examples={resolvedWord.examples}
+                  highlightText={text.trim()}
+                />
+              </>
+            ) : null}
+          </ScrollShadow>
+
+          {resolvedWord ? (
+            <TagChipList
+              tags={tags}
+              selectedTags={selectedTags}
+              selectedTagIds={selectedTagIds}
+              onToggleTag={handleToggleTag}
+            />
+          ) : null}
+
+          <PopupFooter
+            isSaved={isSaved}
+            isSavingWord={isSavingWord}
+            canAddWord={canAddWord}
+            onCopy={handleCopy}
+            onSpeak={handleSpeak}
+            onAddWord={handleAddWord}
+          />
+        </Card.Content>
+      </Card>
     </main>
   );
 }

@@ -26,7 +26,7 @@ use super::state::update_selection_popup_text;
 const SELECTION_POPUP_LABEL: &str = "float-selection-popup";
 const ACCESSIBILITY_PERMISSION_LABEL: &str = "accessibility-permission";
 const POPUP_DEFAULT_WIDTH: u32 = 320;
-const POPUP_DEFAULT_HEIGHT: u32 = 140;
+const POPUP_DEFAULT_HEIGHT: u32 = 400;
 
 #[cfg(target_os = "macos")]
 tauri_panel! {
@@ -144,16 +144,18 @@ fn open_or_update_selection_popup_panel_at(
 fn create_selection_popup_window(app: &AppHandle, text: &str) -> Result<WebviewWindow, String> {
     let url = selection_popup_url(text);
 
-    WebviewWindowBuilder::new(app, SELECTION_POPUP_LABEL, WebviewUrl::App(url.into()))
+    let builder = WebviewWindowBuilder::new(app, SELECTION_POPUP_LABEL, WebviewUrl::App(url.into()))
         .title("Bugoo Selection")
         .inner_size(POPUP_DEFAULT_WIDTH as f64, POPUP_DEFAULT_HEIGHT as f64)
-        .min_inner_size(220.0, 96.0)
         .decorations(false)
         .always_on_top(true)
         .resizable(false)
-        .visible(false)
-        .build()
-        .map_err(|error| error.to_string())
+        .visible(false);
+
+    #[cfg(not(target_os = "macos"))]
+    let builder = builder.transparent(true);
+
+    builder.build().map_err(|error| error.to_string())
 }
 
 fn show_selection_popup_window(app: &AppHandle, window: &WebviewWindow) -> Result<(), String> {
@@ -244,9 +246,19 @@ fn convert_selection_popup_window_to_panel(window: &WebviewWindow) -> Result<(),
     );
     panel.set_hides_on_deactivate(false);
     panel.set_works_when_modal(true);
+
+    // Apply rounded-corner style: make the panel transparent and round the
+    // content layer's corners. The HTML card keeps its own CSS radius on top
+    // of this, which the panel exposes as a "real" window corner.
+    panel.set_transparent(true);
+    panel.set_corner_radius(SELECTION_POPUP_CORNER_RADIUS);
     panel.set_event_handler(Some(handler.as_ref()));
+
     Ok(())
 }
+
+#[cfg(target_os = "macos")]
+const SELECTION_POPUP_CORNER_RADIUS: f64 = 12.0;
 
 #[cfg(target_os = "macos")]
 fn run_on_main_thread_sync<T, F>(app: &AppHandle, task: F) -> Result<T, String>
