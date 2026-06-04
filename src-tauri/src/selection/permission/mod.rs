@@ -1,3 +1,6 @@
+//! 平台特定的辅助功能权限检查。实际平台实现位于子模块，
+//! 通过 `mod.rs` 的 `#[cfg(target_os)]` 守卫按平台暴露。
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AccessibilityPermission {
     Granted,
@@ -13,14 +16,14 @@ pub fn accessibility_permission() -> AccessibilityPermission {
 }
 
 #[cfg(target_os = "macos")]
-pub fn accessibility_permission_granted() -> bool {
-    unsafe { accessibility_sys::AXIsProcessTrusted() }
-}
-
+mod macos;
 #[cfg(not(target_os = "macos"))]
-pub fn accessibility_permission_granted() -> bool {
-    true
-}
+mod other;
+
+#[cfg(target_os = "macos")]
+use macos::accessibility_permission_granted;
+#[cfg(not(target_os = "macos"))]
+use other::accessibility_permission_granted;
 
 #[cfg(test)]
 mod tests {
