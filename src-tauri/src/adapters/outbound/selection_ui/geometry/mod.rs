@@ -78,15 +78,9 @@ pub(super) fn calculate_popup_position(
 }
 
 #[cfg(target_os = "macos")]
-pub(super) fn macos_top_left_point_from_physical_position(
-    position: PhysicalPosition<i32>,
-    scale_factor: f64,
-    main_display_pixels_high: f64,
-) -> (f64, f64) {
-    let logical_x = position.x as f64 / scale_factor;
-    let logical_y = position.y as f64 / scale_factor;
-    (logical_x, main_display_pixels_high - logical_y)
-}
+mod macos;
+#[cfg(target_os = "macos")]
+pub(crate) use macos::macos_top_left_point_from_physical_position;
 
 #[cfg(test)]
 mod tests {
@@ -180,17 +174,5 @@ mod tests {
             PhysicalPosition::new(100, 200),
             PhysicalSize::new(80, 40),
         ));
-    }
-
-    #[cfg(target_os = "macos")]
-    #[test]
-    fn converts_physical_position_to_macos_top_left_point() {
-        let point = macos_top_left_point_from_physical_position(
-            PhysicalPosition::new(400, 300),
-            2.0,
-            1800.0,
-        );
-
-        assert_eq!(point, (200.0, 1650.0));
     }
 }
