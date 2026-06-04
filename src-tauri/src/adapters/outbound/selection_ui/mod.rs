@@ -55,6 +55,10 @@ impl SelectionUiPort for TauriSelectionUi {
         window_adapter::selection_popup_content_ready(&self.app, text)
     }
 
+    fn resize_selection_popup(&self, height: f64) -> Result<(), String> {
+        window_adapter::resize_selection_popup(&self.app, height)
+    }
+
     fn latest_selection_popup_text(&self) -> Option<String> {
         state::latest_selection_popup_text(&self.app)
     }

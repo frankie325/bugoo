@@ -20,6 +20,7 @@ import { MeaningList } from "./components/MeaningList";
 import { PopupFooter } from "./Footer";
 import { PopupHeader } from "./Header";
 import { TagChipList } from "./components/TagChipList";
+import { useSelectionPopupResize } from "./useSelectionPopupResize";
 
 const TEXT_UPDATED_EVENT = "selection-popup://text-updated";
 const CLOSE_POPUP_COMMAND = "close_selection_popup";
@@ -41,6 +42,10 @@ export function SelectionPopupPage() {
   const [tags, setTags] = useState<TagItem[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const resolveRequestIdRef = useRef(0);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const headerRef = useRef<HTMLDivElement | null>(null);
+  const middleContentRef = useRef<HTMLDivElement | null>(null);
+  const footerRef = useRef<HTMLDivElement | null>(null);
 
   const closePopup = useCallback(() => {
     invoke(CLOSE_POPUP_COMMAND).catch((error) => {
@@ -124,6 +129,17 @@ export function SelectionPopupPage() {
     resolvedWord,
     isResolving,
     resolveError,
+  });
+
+  useSelectionPopupResize({
+    popupState,
+    resolvedWord,
+    resolveError,
+    text,
+    containerRef,
+    headerRef,
+    middleContentRef,
+    footerRef,
   });
 
   const selectedTags = useMemo(
@@ -289,75 +305,87 @@ export function SelectionPopupPage() {
   return (
     <main className="h-full w-full p-0 bg-surface">
       <Card className="flex h-full w-full flex-col rounded-[12px] bg-white p-0 shadow-xl">
-        <Card.Content className="flex h-full flex-col p-3 gap-0">
-          <PopupHeader
-            word={displayText}
-            phonetic={resolvedWord?.phonetic ?? null}
-            onSpeak={handleSpeak}
-            onRetry={handleRetry}
-            onOpenMainWindow={handleOpenMainWindow}
-            onHideWord={handleHideWord}
-            onCopyFeedback={handleCopyFeedback}
-          />
+        <Card.Content className="flex h-full flex-col p-0">
+          <div ref={containerRef} className="flex h-full flex-col gap-0 p-3">
+            <div ref={headerRef} className="shrink-0">
+              <PopupHeader
+                word={displayText}
+                phonetic={resolvedWord?.phonetic ?? null}
+                onSpeak={handleSpeak}
+                onRetry={handleRetry}
+                onOpenMainWindow={handleOpenMainWindow}
+                onHideWord={handleHideWord}
+                onCopyFeedback={handleCopyFeedback}
+              />
+            </div>
 
-          <ScrollShadow
-            className="flex min-h-0 flex-1 flex-col my-2"
-            hideScrollBar
-          >
-            {popupState === "loading" ? (
-              <LoadingState />
-            ) : popupState === "empty" ? (
-              <ErrorState
-                title="无选区结果"
-                description="请重新选择需要翻译的内容"
-                actionLabel="关闭"
-                onAction={handleHideWord}
-              />
-            ) : popupState === "tooLong" ? (
-              <ErrorState
-                title="内容过长"
-                description="划词弹窗适合翻译 50 个字符以内的短文本"
-                actionLabel="重新翻译"
-                onAction={handleRetry}
-              />
-            ) : popupState === "error" ? (
-              <ErrorState
-                title="翻译失败"
-                description="请检查网络或稍后重试"
-                actionLabel="重试"
-                onAction={handleRetry}
-              />
-            ) : resolvedWord ? (
-              <>
-                <p className="text-foreground text-sm font-medium leading-6">
-                  {resolvedWord.translation}
-                </p>
-                <MeaningList meanings={resolvedWord.meanings} />
-                <ExamplePreview
-                  examples={resolvedWord.examples}
-                  highlightText={text.trim()}
+            <ScrollShadow
+              className="flex min-h-0 flex-1 flex-col my-2"
+              hideScrollBar
+            >
+              <div
+                ref={middleContentRef}
+                className="flex flex-col"
+                data-testid="selection-popup-middle-content"
+              >
+                {popupState === "loading" ? (
+                  <LoadingState />
+                ) : popupState === "empty" ? (
+                  <ErrorState
+                    title="无选区结果"
+                    description="请重新选择需要翻译的内容"
+                    actionLabel="关闭"
+                    onAction={handleHideWord}
+                  />
+                ) : popupState === "tooLong" ? (
+                  <ErrorState
+                    title="内容过长"
+                    description="划词弹窗适合翻译 50 个字符以内的短文本"
+                    actionLabel="重新翻译"
+                    onAction={handleRetry}
+                  />
+                ) : popupState === "error" ? (
+                  <ErrorState
+                    title="翻译失败"
+                    description="请检查网络或稍后重试"
+                    actionLabel="重试"
+                    onAction={handleRetry}
+                  />
+                ) : resolvedWord ? (
+                  <>
+                    <p className="text-foreground text-sm font-medium leading-6">
+                      {resolvedWord.translation}
+                    </p>
+                    <MeaningList meanings={resolvedWord.meanings} />
+                    <ExamplePreview
+                      examples={resolvedWord.examples}
+                      highlightText={text.trim()}
+                    />
+                  </>
+                ) : null}
+              </div>
+            </ScrollShadow>
+
+            <div ref={footerRef} className="shrink-0">
+              {resolvedWord ? (
+                <TagChipList
+                  tags={tags}
+                  selectedTags={selectedTags}
+                  selectedTagIds={selectedTagIds}
+                  onToggleTag={handleToggleTag}
                 />
-              </>
-            ) : null}
-          </ScrollShadow>
+              ) : null}
 
-          {resolvedWord ? (
-            <TagChipList
-              tags={tags}
-              selectedTags={selectedTags}
-              selectedTagIds={selectedTagIds}
-              onToggleTag={handleToggleTag}
-            />
-          ) : null}
-
-          <PopupFooter
-            isSaved={isSaved}
-            isSavingWord={isSavingWord}
-            canAddWord={canAddWord}
-            onCopy={handleCopy}
-            onSpeak={handleSpeak}
-            onAddWord={handleAddWord}
-          />
+              <PopupFooter
+                isSaved={isSaved}
+                isSavingWord={isSavingWord}
+                canAddWord={canAddWord}
+                onCopy={handleCopy}
+                onSpeak={handleSpeak}
+                onAddWord={handleAddWord}
+              />
+            </div>
+          </div>
         </Card.Content>
       </Card>
     </main>

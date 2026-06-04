@@ -12,7 +12,6 @@ export function LoadingState() {
       </div>
       <Skeleton className="h-12 w-full rounded-lg" />
       <Skeleton className="h-12 w-full rounded-lg" />
-      <Skeleton className="h-12 w-full rounded-lg" />
     </div>
   );
 }

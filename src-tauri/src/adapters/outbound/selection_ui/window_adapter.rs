@@ -2,8 +2,8 @@
 use core_graphics::display::CGDisplay;
 use std::sync::mpsc;
 use tauri::{
-    AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindow,
-    WebviewWindowBuilder,
+    AppHandle, Emitter, LogicalSize, Manager, PhysicalPosition, PhysicalSize, WebviewUrl,
+    WebviewWindow, WebviewWindowBuilder,
 };
 
 #[cfg(not(target_os = "macos"))]
@@ -30,7 +30,9 @@ use super::state::update_selection_popup_text;
 const SELECTION_POPUP_LABEL: &str = "float-selection-popup";
 const ACCESSIBILITY_PERMISSION_LABEL: &str = "accessibility-permission";
 const POPUP_DEFAULT_WIDTH: u32 = 320;
-const POPUP_DEFAULT_HEIGHT: u32 = 400;
+const POPUP_DEFAULT_HEIGHT: u32 = 300;
+const POPUP_MIN_HEIGHT: f64 = 250.0;
+const POPUP_MAX_HEIGHT: f64 = 500.0;
 
 #[cfg(target_os = "macos")]
 tauri_panel! {
@@ -45,6 +47,7 @@ tauri_panel! {
                 options: TrackingAreaOptions::new()
                     .active_always()
                     .mouse_entered_and_exited()
+                    .in_visible_rect()
                     .cursor_update(),
                 auto_resize: true
             }
@@ -196,6 +199,53 @@ pub fn close_selection_popup(app: &AppHandle) -> Result<(), String> {
 
 pub fn selection_popup_content_ready(app: &AppHandle, text: &str) -> Result<(), String> {
     mark_popup_content_ready(app, text)
+}
+
+pub fn resize_selection_popup(app: &AppHandle, height: f64) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        let app = app.clone();
+        return run_on_main_thread_sync(&app, move |app| {
+            resize_selection_popup_panel_on_main_thread(&app, height)
+        });
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        resize_selection_popup_window(app, height)
+    }
+}
+
+fn resize_selection_popup_window(app: &AppHandle, height: f64) -> Result<(), String> {
+    let Some(window) = app.get_webview_window(SELECTION_POPUP_LABEL) else {
+        return Ok(());
+    };
+
+    window
+        .set_size(selection_popup_resize_size(height))
+        .map_err(|error| error.to_string())
+}
+
+#[cfg(target_os = "macos")]
+fn resize_selection_popup_panel_on_main_thread(
+    app: &AppHandle,
+    height: f64,
+) -> Result<(), String> {
+    if let Ok(panel) = app.get_webview_panel(SELECTION_POPUP_LABEL) {
+        let size = selection_popup_resize_size(height);
+        panel.set_content_size(size.width, size.height);
+        sync_popup_cursor_state_after_show(app);
+        return Ok(());
+    }
+
+    resize_selection_popup_window(app, height)
+}
+
+fn selection_popup_resize_size(height: f64) -> LogicalSize<f64> {
+    LogicalSize::new(
+        POPUP_DEFAULT_WIDTH as f64,
+        height.min(POPUP_MAX_HEIGHT).max(POPUP_MIN_HEIGHT),
+    )
 }
 
 fn sync_popup_cursor_state_after_show(app: &AppHandle) {
@@ -499,5 +549,29 @@ mod tests {
     #[test]
     fn builds_accessibility_permission_url() {
         assert_eq!(accessibility_permission_url(), "/accessibility-permission");
+    }
+
+    #[test]
+    fn builds_resize_size_with_default_logical_width() {
+        let size = selection_popup_resize_size(300.0);
+
+        assert_eq!(size.width, POPUP_DEFAULT_WIDTH as f64);
+        assert_eq!(size.height, 300.0);
+    }
+
+    #[test]
+    fn clamps_resize_height_to_popup_min_height() {
+        let size = selection_popup_resize_size(120.0);
+
+        assert_eq!(size.width, POPUP_DEFAULT_WIDTH as f64);
+        assert_eq!(size.height, POPUP_MIN_HEIGHT);
+    }
+
+    #[test]
+    fn clamps_resize_height_to_popup_max_height() {
+        let size = selection_popup_resize_size(1200.0);
+
+        assert_eq!(size.width, POPUP_DEFAULT_WIDTH as f64);
+        assert_eq!(size.height, POPUP_MAX_HEIGHT);
     }
 }

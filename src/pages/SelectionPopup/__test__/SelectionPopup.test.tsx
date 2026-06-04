@@ -20,6 +20,7 @@ const invokeMock = vi.fn();
 const CLOSE_POPUP_COMMAND = "close_selection_popup";
 const CONTENT_READY_COMMAND = "selection_popup_content_ready";
 const GET_POPUP_TEXT_COMMAND = "get_selection_popup_text";
+const RESIZE_SELECTION_POPUP_COMMAND = "resize_selection_popup";
 
 vi.mock("@tauri-apps/api/event", () => ({
   listen: (...args: unknown[]) => listenMock(...args),
@@ -80,6 +81,33 @@ async function flushPromiseChain() {
     await Promise.resolve();
     await Promise.resolve();
   });
+}
+
+function mockMiddleContentHeight(height: number) {
+  const element = screen.getByTestId("selection-popup-middle-content");
+  vi.spyOn(element, "getBoundingClientRect").mockReturnValue({
+    width: 320,
+    height,
+    top: 0,
+    right: 320,
+    bottom: height,
+    left: 0,
+    x: 0,
+    y: 0,
+    toJSON: () => ({}),
+  } as DOMRect);
+}
+
+async function flushAnimationFrame() {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(16);
+  });
+}
+
+function resizePopupCalls() {
+  return invokeMock.mock.calls.filter(
+    (call) => call[0] === RESIZE_SELECTION_POPUP_COMMAND,
+  );
 }
 
 describe("SelectionPopupPage", () => {
@@ -187,6 +215,55 @@ describe("SelectionPopupPage", () => {
     expect(invokeMock).toHaveBeenCalledWith(CONTENT_READY_COMMAND, {
       text: "serendipity",
     });
+  });
+
+  it("resizes popup for loading content and then translated content", async () => {
+    let resolveTranslation: ((value: typeof resolvedWordFixture) => void) | undefined;
+    listenMock.mockResolvedValueOnce(() => undefined);
+    vi.mocked(resolveWord).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveTranslation = resolve;
+        }),
+    );
+
+    renderPopup("/selection-popup?text=serendipity");
+    await flushPromiseChain();
+    mockMiddleContentHeight(120);
+    await flushAnimationFrame();
+
+    expect(resizePopupCalls()[0]?.[1]).toEqual(
+      expect.objectContaining({ height: 300 }),
+    );
+
+    await act(async () => {
+      resolveTranslation?.(resolvedWordFixture);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    mockMiddleContentHeight(180);
+    await flushAnimationFrame();
+
+    const resizeCalls = resizePopupCalls();
+    expect(resizeCalls.length).toBeGreaterThanOrEqual(2);
+    expect(resizeCalls[resizeCalls.length - 1]?.[1]).toEqual(
+      expect.objectContaining({ height: 250 }),
+    );
+  });
+
+  it("caps popup resize height at 500", async () => {
+    listenMock.mockResolvedValueOnce(() => undefined);
+    vi.mocked(resolveWord).mockResolvedValue(resolvedWordFixture);
+
+    renderPopup("/selection-popup?text=serendipity");
+    await flushPromiseChain();
+    mockMiddleContentHeight(900);
+    await flushAnimationFrame();
+
+    const resizeCalls = resizePopupCalls();
+    expect(resizeCalls[resizeCalls.length - 1]?.[1]).toEqual(
+      expect.objectContaining({ height: 500 }),
+    );
   });
 
   it("notifies backend after text update resolve finishes", async () => {

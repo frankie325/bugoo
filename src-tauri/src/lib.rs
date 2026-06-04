@@ -218,6 +218,7 @@ pub fn run() {
             commands::window::open_selection_popup,
             commands::window::close_selection_popup,
             commands::window::selection_popup_content_ready,
+            commands::window::resize_selection_popup,
             commands::window::get_selection_popup_text,
             commands::window::is_cursor_inside_selection_popup,
             commands::window::open_accessibility_settings,

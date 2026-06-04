@@ -24,6 +24,11 @@ pub fn selection_popup_content_ready(app: AppHandle, text: String) -> Result<(),
 }
 
 #[tauri::command]
+pub fn resize_selection_popup(app: AppHandle, height: f64) -> Result<(), String> {
+    selection_ui(&app)?.resize_selection_popup(height)
+}
+
+#[tauri::command]
 pub fn get_selection_popup_text(app: AppHandle) -> Option<String> {
     selection_ui(&app)
         .ok()
