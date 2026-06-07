@@ -31,6 +31,42 @@ pub struct Word {
     pub updated_at: i64,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct WordMeaning {
+    pub part_of_speech: String,
+    pub translations: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct EnglishDefinitionGroup {
+    pub part_of_speech: String,
+    pub definitions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct WordFormItem {
+    pub r#type: String,
+    pub words: Vec<String>,
+}
+
+pub const WORD_FORM_TYPES: &[&str] = &[
+    "lemma",
+    "lemma_variant",
+    "past_tense",
+    "past_participle",
+    "present_participle",
+    "third_person_singular",
+    "comparative",
+    "superlative",
+    "plural",
+];
+
+pub fn is_valid_word_form_type(value: &str) -> bool {
+    WORD_FORM_TYPES.contains(&value)
+}
+
 fn default_source_lang() -> String {
     "EN".to_string()
 }
@@ -74,5 +110,23 @@ impl Word {
             created_at: now,
             updated_at: now,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn is_valid_word_form_type_accepts_known_values() {
+        for kind in WORD_FORM_TYPES {
+            assert!(is_valid_word_form_type(kind));
+        }
+    }
+
+    #[test]
+    fn is_valid_word_form_type_rejects_unknown_values() {
+        assert!(!is_valid_word_form_type("abbrev"));
+        assert!(!is_valid_word_form_type(""));
     }
 }

@@ -49,31 +49,6 @@ cd src-tauri && cargo test
 ## 架构说明
 参考 @docs/architecture.md 文档
 
-### 前端 (`src/`)
-- `App.tsx` — 根组件
-- `main.tsx` — 前端入口
-- `pages/Home/`、`pages/Settings/`、`pages/SelectionPopup/`、`pages/AccessibilityPermission/` — 当前已落地页面
-- `lib/api/` — 按模块拆分的 Tauri invoke 调用封装
-- `hooks/` — React 自定义 hooks
-- `stores/` — 状态管理
-- `types/` — TypeScript 类型定义
-- `**/__test__/` — 前端 Vitest 测试目录，当前已在页面目录下按功能就近放置
-
-### Tauri 后端 (`src-tauri/src/`)
-- `main.rs` — 应用入口
-- `lib.rs` — Tauri 构建与依赖装配
-- `commands/` — IPC 命令入口（words、tags、review、translate、settings、tts、window、word_details）
-- `db/` — SQLite 访问与 migration
-- `domain/` — 领域模型与服务
-- `ports/`、`adapters/` — 六边形架构端口与适配器实现
-- `scheduler/` — 艾宾浩斯复习与通知调度
-- `selection/` — 划词监听、权限检查、手势过滤与弹窗联动
-
-### Tauri 资源 (`src-tauri/resources/`)
-- `stardict-ecdict/` — 本地只读 StarDict ECDICT 词典资源
-
-**注意：** Rust 后端大部分模块尚为空实现，需要按模块逐步开发。
-
 
 ## HEROUI组件库的使用说明
 优先使用heroui中的组件，而不是自定义样式
@@ -88,8 +63,6 @@ cd src-tauri && cargo test
 
 - 优先使用pnpm安装前端包
 - 该项目使用中文和我对话，文档输出均使用中文
-- rust代码严格遵循六边形架构去设计实现
-- 前端的测试文件放在__test__目录下，测试什么功能__test__文件就移动到对应功能的文件夹下. 
 - 实现计划时，使用到的技术优先先从网上查找工具库，而不是自己从零实现
 - 疑难bug优先去github issue查找是否有人遇到过同样的问题
 
@@ -99,7 +72,24 @@ cd src-tauri && cargo test
 #### 后端
 - 代码生成时，按照rust-best-practices技能的指导生成代码
 
-### 命名规则
+<!-- TRELLIS:START -->
+# Trellis 工作流说明
 
-前端命名规则
-- pages页面文件、components组件文件都以大写首字母驼峰进行命名
+以下指令面向本项目中的 AI 助手。
+
+本项目由 Trellis 管理。你需要的工作知识存放在 `.trellis/` 下：
+
+- `.trellis/workflow.md` — 开发阶段、何时创建任务、skill 路由
+- `.trellis/spec/` — 按包和层组织的编码规范（在特定层写代码前先阅读）
+- `.trellis/workspace/` — 每个开发者的会话日志
+- `.trellis/tasks/` — 活跃和已归档的任务（PRD、研究、jsonl 上下文）
+
+如果你的平台支持 Trellis 命令（如 `/trellis:finish-work`、`/trellis:continue`），优先使用命令而非手动步骤。并非所有平台都提供所有命令。
+
+如果你使用 Codex 或其他能调用 agent 的工具，额外的项目级辅助工具可能位于：
+- `.agents/skills/` — 可复用的 Trellis skills
+- `.codex/agents/` — 可选的自定义 sub-agent
+
+由 Trellis 管理。此 block 之外的编辑会被保留；block 之内的编辑可能被后续 `trellis update` 覆盖。
+
+<!-- TRELLIS:END -->

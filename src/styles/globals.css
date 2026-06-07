@@ -5,6 +5,20 @@
 @layer base {
   html {
     color: var(--color-foreground);
+    overflow: hidden;
+  }
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  #root {
+    width: 100%;
+    height: 100%;
   }
 }
 

@@ -142,11 +142,6 @@
         "desc": "Add terminology, tone, or output style constraints for quick translation"
       },
       "promptPlaceholder": "Example: keep software product terms consistent and only return natural Chinese",
-      "wordDetailPrompt": {
-        "title": "Word Detail Prompt",
-        "desc": "Add extra constraints for generating examples, definitions, and memory tips"
-      },
-      "wordDetailPromptPlaceholder": "Example: make examples close to daily usage and keep memory tips short and clear",
       "timeout": {
         "title": "Request Timeout",
         "desc": "Translation and detail generation requests fail automatically after this time"
@@ -210,6 +205,11 @@
       "autoClose": {
         "title": "ปิดอัตโนมัติ",
         "desc": "ปิดป๊อปอัปโดยอัตโนมัติเมื่อเสียโฟกัส"
+      },
+      "selectionMaxChars": {
+        "title": "จำกัดความยาวการเลือก",
+        "desc": "เมื่อเปิดใช้งาน จำกัดจำนวนอักขระสูงสุดที่ตัวฟังการเลือกจะรู้จัก ปิดใช้งาน = ไม่จำกัด",
+        "suffix": "อักขระ"
       },
       "pace": {
         "relaxed": "ผ่อนคลาย",

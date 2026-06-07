@@ -38,6 +38,8 @@ export function ReviewPanel() {
   const enableSelection = settings.enableSelection !== "false";
   const autoSpeak = settings.autoSpeak === "true";
   const autoClose = settings.autoClose !== "false";
+  const selectionLimitEnabled = settings.selectionLimitEnabled !== "false";
+  const maxSelectionChars = Number(settings.maxSelectionChars || 200);
 
   const isCustomLimit = dailyLimitOptions.every(
     (opt) => opt.value !== dailyLimit,
@@ -184,6 +186,52 @@ export function ReviewPanel() {
                 <Switch.Thumb />
               </Switch.Control>
             </Switch>
+          </SettingItem>
+
+          <Separator />
+
+          {/* 划词长度限制 */}
+          <SettingItem
+            title={t("settings.review.selectionMaxChars.title")}
+            description={t("settings.review.selectionMaxChars.desc")}
+          >
+            <div className="flex items-center gap-3">
+              <Switch
+                isSelected={selectionLimitEnabled}
+                onChange={(val) =>
+                  updateSetting("selectionLimitEnabled", String(val))
+                }
+              >
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
+              </Switch>
+              {selectionLimitEnabled && (
+                <>
+                  <NumberField
+                    value={maxSelectionChars}
+                    minValue={1}
+                    maxValue={10000}
+                    step={10}
+                    onChange={(val) =>
+                      updateSetting("maxSelectionChars", String(val ?? 200))
+                    }
+                    className="w-40"
+                  >
+                    <NumberField.Group>
+                      <NumberField.DecrementButton aria-label="decrement" />
+                      <NumberField.Input
+                        aria-label={t("settings.review.selectionMaxChars.title")}
+                      />
+                      <NumberField.IncrementButton aria-label="increment" />
+                    </NumberField.Group>
+                  </NumberField>
+                  <span className="text-sm text-muted">
+                    {t("settings.review.selectionMaxChars.suffix")}
+                  </span>
+                </>
+              )}
+            </div>
           </SettingItem>
         </Card.Content>
       </Card>

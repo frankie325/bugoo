@@ -1,9 +1,11 @@
 use crate::commands::AppState;
-use crate::ports::outbound::translation::{TranslationError, TranslationExample};
-use crate::ports::outbound::word_insight::GeneratedWordDetail;
-use chrono::Utc;
+use crate::domain::models::{EnglishDefinitionGroup, Word, WordFormItem, WordMeaning};
+use crate::ports::outbound::translation::{
+    TranslationError, TranslationExample, TranslationResult,
+};
 use rusqlite::{params, OptionalExtension};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct WordDetail {
@@ -11,38 +13,29 @@ pub struct WordDetail {
     pub word: String,
     pub translation: String,
     pub phonetic: Option<String>,
-    pub part_of_speech: Vec<String>,
-    pub definitions: Vec<String>,
+    pub meanings: Vec<WordMeaning>,
+    pub english_definitions: Vec<EnglishDefinitionGroup>,
     pub examples: Vec<TranslationExample>,
+    pub word_forms: Vec<WordFormItem>,
     pub memory_tip: String,
-    pub detail: String,
-    pub provider: String,
-    pub raw_json: String,
     pub created_at: i64,
     pub updated_at: i64,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct WordDetailInput {
-    pub word_id: String,
+#[derive(Debug, Clone, Serialize)]
+pub struct ResolvedWord {
+    pub word_id: Option<String>,
+    pub word: String,
     pub translation: String,
+    pub detected_source_lang: Option<String>,
+    pub source_lang: String,
+    pub target_lang: String,
     pub phonetic: Option<String>,
-    pub part_of_speech: Vec<String>,
-    pub definitions: Vec<String>,
+    pub meanings: Vec<WordMeaning>,
+    pub english_definitions: Vec<EnglishDefinitionGroup>,
     pub examples: Vec<TranslationExample>,
+    pub word_forms: Vec<WordFormItem>,
     pub memory_tip: String,
-    pub detail: String,
-    pub provider: String,
-    pub raw_json: String,
-}
-
-#[derive(Debug, Clone)]
-struct WordSummary {
-    id: String,
-    word: String,
-    translation: String,
-    source_lang: String,
-    target_lang: String,
 }
 
 #[tauri::command]
@@ -54,45 +47,62 @@ pub fn get_word_detail(
 }
 
 #[tauri::command]
-pub async fn generate_word_detail(
+pub async fn resolve_word(
     state: tauri::State<'_, AppState>,
-    word_id: String,
-) -> Result<WordDetail, String> {
+    text: String,
+) -> Result<ResolvedWord, String> {
     let app_state = state.inner();
-    let word = read_word_summary(app_state, &word_id)?
-        .ok_or_else(|| TranslationError::WordNotFound.to_string())?;
+    let query = text.trim().to_string();
+    if query.is_empty() {
+        return Err(TranslationError::EmptyText.to_string());
+    }
+
     let settings = app_state.settings_cache_read()?;
-    let engine = settings
-        .get("translationEngine")
-        .map(|s| s.trim().to_lowercase())
-        .unwrap_or_else(|| "custom".to_string());
+    let source_setting = settings_value(&settings, "sourceLanguage", "auto");
+    let target_lang = settings_value(&settings, "targetLanguage", "zh");
 
-    let generated = app_state
+    if let Some(existing) = app_state
+        .word_service
+        .find_existing_word(&query, &target_lang)?
+    {
+        if let Some(detail) = get_word_detail_by_id(app_state, &existing.id)? {
+            return Ok(word_detail_to_resolved(
+                detail,
+                existing.source_lang,
+                existing.target_lang,
+            ));
+        }
+        return Ok(word_to_resolved(existing));
+    }
+
+    let result = app_state
         .translation_service
-        .generate_word_detail(
-            settings,
-            word.word.clone(),
-            word.translation.clone(),
-            word.source_lang,
-            word.target_lang,
-        )
+        .translate(settings, query.clone())
         .await?;
+    let resolved_source_lang = result
+        .detected_source_lang
+        .clone()
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| {
+            if source_setting == "auto" {
+                "en".to_string()
+            } else {
+                source_setting.clone()
+            }
+        });
 
-    let raw_json = serde_json::to_string(&generated).map_err(|error| error.to_string())?;
-    let input = generated_word_detail_to_input(word.id, engine, raw_json, generated);
-
-    save_word_detail_for_state(app_state, input)
+    Ok(translation_result_to_resolved(
+        query,
+        resolved_source_lang,
+        target_lang,
+        result,
+    ))
 }
 
-#[tauri::command]
-pub fn save_word_detail(
-    state: tauri::State<AppState>,
-    detail: WordDetailInput,
-) -> Result<WordDetail, String> {
-    save_word_detail_for_state(state.inner(), detail)
-}
-
-fn get_word_detail_by_id(state: &AppState, word_id: &str) -> Result<Option<WordDetail>, String> {
+pub fn get_word_detail_by_id(
+    state: &AppState,
+    word_id: &str,
+) -> Result<Option<WordDetail>, String> {
     let conn = state.db.connection();
     let mut stmt = conn
         .prepare(
@@ -101,13 +111,11 @@ fn get_word_detail_by_id(state: &AppState, word_id: &str) -> Result<Option<WordD
                 w.word,
                 w.translation,
                 w.phonetic,
-                d.part_of_speech_json,
-                d.definitions_json,
+                d.meanings_json,
+                d.english_definitions_json,
                 d.examples_json,
+                d.word_forms_json,
                 d.memory_tip,
-                d.detail,
-                d.provider,
-                d.raw_json,
                 d.created_at,
                 d.updated_at
              FROM word_details d
@@ -117,24 +125,18 @@ fn get_word_detail_by_id(state: &AppState, word_id: &str) -> Result<Option<WordD
         .map_err(|error| error.to_string())?;
 
     stmt.query_row(params![word_id], |row| {
-        let part_of_speech_json: String = row.get(4)?;
-        let definitions_json: String = row.get(5)?;
-        let examples_json: String = row.get(6)?;
-
         Ok((
             row.get::<_, String>(0)?,
             row.get::<_, String>(1)?,
             row.get::<_, String>(2)?,
             row.get::<_, Option<String>>(3)?,
-            part_of_speech_json,
-            definitions_json,
-            examples_json,
+            row.get::<_, String>(4)?,
+            row.get::<_, String>(5)?,
+            row.get::<_, String>(6)?,
             row.get::<_, String>(7)?,
             row.get::<_, String>(8)?,
-            row.get::<_, String>(9)?,
-            row.get::<_, String>(10)?,
-            row.get::<_, i64>(11)?,
-            row.get::<_, i64>(12)?,
+            row.get::<_, i64>(9)?,
+            row.get::<_, i64>(10)?,
         ))
     })
     .optional()
@@ -145,13 +147,11 @@ fn get_word_detail_by_id(state: &AppState, word_id: &str) -> Result<Option<WordD
             word,
             translation,
             phonetic,
-            part_of_speech_json,
-            definitions_json,
+            meanings_json,
+            english_definitions_json,
             examples_json,
+            word_forms_json,
             memory_tip,
-            detail,
-            provider,
-            raw_json,
             created_at,
             updated_at,
         )| {
@@ -160,13 +160,14 @@ fn get_word_detail_by_id(state: &AppState, word_id: &str) -> Result<Option<WordD
                 word,
                 translation,
                 phonetic,
-                part_of_speech: parse_json_field(&part_of_speech_json, "part_of_speech_json")?,
-                definitions: parse_json_field(&definitions_json, "definitions_json")?,
+                meanings: parse_json_field(&meanings_json, "meanings_json")?,
+                english_definitions: parse_json_field(
+                    &english_definitions_json,
+                    "english_definitions_json",
+                )?,
                 examples: parse_json_field(&examples_json, "examples_json")?,
+                word_forms: parse_json_field(&word_forms_json, "word_forms_json")?,
                 memory_tip,
-                detail,
-                provider,
-                raw_json,
                 created_at,
                 updated_at,
             })
@@ -175,112 +176,72 @@ fn get_word_detail_by_id(state: &AppState, word_id: &str) -> Result<Option<WordD
     .transpose()
 }
 
-fn save_word_detail_for_state(
-    state: &AppState,
-    detail: WordDetailInput,
-) -> Result<WordDetail, String> {
-    let word = read_word_summary(state, &detail.word_id)?
-        .ok_or_else(|| TranslationError::WordNotFound.to_string())?;
-    let part_of_speech_json =
-        serde_json::to_string(&detail.part_of_speech).map_err(|error| error.to_string())?;
-    let definitions_json =
-        serde_json::to_string(&detail.definitions).map_err(|error| error.to_string())?;
-    let examples_json =
-        serde_json::to_string(&detail.examples).map_err(|error| error.to_string())?;
-    let raw_json = normalize_raw_json(&detail)?;
-    let now = Utc::now().timestamp();
-
-    {
-        let conn = state.db.connection();
-        let created_at = conn
-            .query_row(
-                "SELECT created_at FROM word_details WHERE word_id = ?1",
-                params![detail.word_id],
-                |row| row.get::<_, i64>(0),
-            )
-            .optional()
-            .map_err(|error| error.to_string())?
-            .unwrap_or(now);
-
-        conn.execute(
-            "UPDATE words SET translation = ?2, phonetic = ?3, updated_at = ?4 WHERE id = ?1",
-            params![word.id, detail.translation, detail.phonetic, now],
-        )
-        .map_err(|error| error.to_string())?;
-
-        conn.execute(
-            "INSERT OR REPLACE INTO word_details
-                (word_id, part_of_speech_json, definitions_json, examples_json, memory_tip,
-                 detail, provider, raw_json, created_at, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
-            params![
-                detail.word_id,
-                part_of_speech_json,
-                definitions_json,
-                examples_json,
-                detail.memory_tip,
-                detail.detail,
-                detail.provider,
-                raw_json,
-                created_at,
-                now,
-            ],
-        )
-        .map_err(|error| error.to_string())?;
-    }
-
-    get_word_detail_by_id(state, &detail.word_id)?
-        .ok_or_else(|| TranslationError::WordNotFound.to_string())
-}
-
-fn read_word_summary(state: &AppState, word_id: &str) -> Result<Option<WordSummary>, String> {
-    let conn = state.db.connection();
-    conn.query_row(
-        "SELECT id, word, translation, source_lang, target_lang FROM words WHERE id = ?1",
-        params![word_id],
-        |row| {
-            Ok(WordSummary {
-                id: row.get("id")?,
-                word: row.get("word")?,
-                translation: row.get("translation")?,
-                source_lang: row.get("source_lang").unwrap_or_else(|_| "EN".to_string()),
-                target_lang: row.get("target_lang").unwrap_or_else(|_| "ZH".to_string()),
-            })
-        },
-    )
-    .optional()
-    .map_err(|error| error.to_string())
-}
-
-fn generated_word_detail_to_input(
-    word_id: String,
-    provider: String,
-    raw_json: String,
-    generated: GeneratedWordDetail,
-) -> WordDetailInput {
-    WordDetailInput {
-        word_id,
-        translation: generated.translation,
-        phonetic: generated.phonetic,
-        part_of_speech: generated.part_of_speech,
-        definitions: generated.definitions,
-        examples: generated.examples,
-        memory_tip: generated.memory_tip,
-        detail: generated.detail,
-        provider,
-        raw_json,
+fn word_detail_to_resolved(
+    detail: WordDetail,
+    source_lang: String,
+    target_lang: String,
+) -> ResolvedWord {
+    ResolvedWord {
+        word_id: Some(detail.word_id),
+        word: detail.word,
+        translation: detail.translation,
+        detected_source_lang: Some(source_lang.clone()),
+        source_lang,
+        target_lang,
+        phonetic: detail.phonetic,
+        meanings: detail.meanings,
+        english_definitions: detail.english_definitions,
+        examples: detail.examples,
+        word_forms: detail.word_forms,
+        memory_tip: detail.memory_tip,
     }
 }
 
-fn normalize_raw_json(detail: &WordDetailInput) -> Result<String, String> {
-    let raw_json = detail.raw_json.trim();
-    if raw_json.is_empty() {
-        return serde_json::to_string(detail).map_err(|error| error.to_string());
+fn word_to_resolved(word: Word) -> ResolvedWord {
+    ResolvedWord {
+        word_id: Some(word.id),
+        word: word.word,
+        translation: word.translation,
+        detected_source_lang: Some(word.source_lang.clone()),
+        source_lang: word.source_lang,
+        target_lang: word.target_lang,
+        phonetic: word.phonetic,
+        meanings: Vec::new(),
+        english_definitions: Vec::new(),
+        examples: Vec::new(),
+        word_forms: Vec::new(),
+        memory_tip: String::new(),
     }
+}
 
-    serde_json::from_str::<serde_json::Value>(raw_json)
-        .map_err(|error| format!("raw_json 不是合法 JSON：{error}"))?;
-    Ok(raw_json.to_string())
+fn translation_result_to_resolved(
+    word: String,
+    source_lang: String,
+    target_lang: String,
+    result: TranslationResult,
+) -> ResolvedWord {
+    ResolvedWord {
+        word_id: None,
+        word,
+        translation: result.translation,
+        detected_source_lang: result.detected_source_lang,
+        source_lang,
+        target_lang,
+        phonetic: result.phonetic,
+        meanings: result.meanings,
+        english_definitions: result.english_definitions,
+        examples: result.examples,
+        word_forms: result.word_forms,
+        memory_tip: result.memory_tip,
+    }
+}
+
+fn settings_value(settings: &HashMap<String, String>, key: &str, default: &str) -> String {
+    settings
+        .get(key)
+        .map(|value| value.trim().to_lowercase())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| default.to_string())
 }
 
 fn parse_json_field<T>(value: &str, field: &str) -> Result<T, String>
@@ -288,4 +249,32 @@ where
     T: serde::de::DeserializeOwned,
 {
     serde_json::from_str(value).map_err(|error| format!("{field} 解析失败：{error}"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn word_to_resolved_returns_saved_word_without_details() {
+        let mut word = Word::new(
+            "word-1".to_string(),
+            "panel".to_string(),
+            "面板".to_string(),
+            "en".to_string(),
+            "zh".to_string(),
+        );
+        word.phonetic = Some("/ˈpænəl/".to_string());
+
+        let resolved = word_to_resolved(word);
+
+        assert_eq!(resolved.word_id, Some("word-1".to_string()));
+        assert_eq!(resolved.word, "panel");
+        assert_eq!(resolved.translation, "面板");
+        assert_eq!(resolved.source_lang, "en");
+        assert_eq!(resolved.target_lang, "zh");
+        assert_eq!(resolved.phonetic, Some("/ˈpænəl/".to_string()));
+        assert!(resolved.meanings.is_empty());
+        assert!(resolved.examples.is_empty());
+    }
 }

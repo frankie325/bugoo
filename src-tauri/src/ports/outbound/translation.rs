@@ -1,3 +1,4 @@
+use crate::domain::models::{EnglishDefinitionGroup, WordFormItem, WordMeaning};
 use serde::{Deserialize, Serialize};
 use std::future::Future;
 use std::pin::Pin;
@@ -22,16 +23,18 @@ pub struct TranslationConfig {
     pub api_region: String,
     pub translation_model: String,
     pub translation_prompt: String,
-    pub word_detail_prompt: String,
     pub timeout_ms: u64,
 }
 
 pub const DEFAULT_ENDPOINT_LOCAL: &str = "http://localhost:5005";
 pub const DEFAULT_ENDPOINT_BAIDU: &str = "https://fanyi-api.baidu.com/api/trans/vip/translate";
 pub const DEFAULT_ENDPOINT_DEEPL: &str = "https://api-free.deepl.com/v2/translate";
-pub const DEFAULT_ENDPOINT_GOOGLE: &str = "https://translation.googleapis.com/language/translate/v2";
-pub const DEFAULT_ENDPOINT_MICROSOFT: &str = "https://api.cognitive.microsofttranslator.com/translate";
-pub const DEFAULT_ENDPOINT_TENCENT: &str = "https://tmt.tencentcloud.tencentcloudapi.com/api/trans/v3";
+pub const DEFAULT_ENDPOINT_GOOGLE: &str =
+    "https://translation.googleapis.com/language/translate/v2";
+pub const DEFAULT_ENDPOINT_MICROSOFT: &str =
+    "https://api.cognitive.microsofttranslator.com/translate";
+pub const DEFAULT_ENDPOINT_TENCENT: &str =
+    "https://tmt.tencentcloud.tencentcloudapi.com/api/trans/v3";
 pub const DEFAULT_ENDPOINT_YOUDAO: &str = "https://openapi.youdao.com/api";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -82,8 +85,11 @@ impl EngineEndpoints {
     }
 
     pub fn endpoint_or_default(&self, engine: &str) -> String {
-        self.endpoint_for(engine)
-            .unwrap_or_else(|| EngineEndpoints::default().endpoint_for(engine).unwrap_or_default())
+        self.endpoint_for(engine).unwrap_or_else(|| {
+            EngineEndpoints::default()
+                .endpoint_for(engine)
+                .unwrap_or_default()
+        })
     }
 }
 
@@ -98,9 +104,11 @@ pub struct TranslationResult {
     pub translation: String,
     pub detected_source_lang: Option<String>,
     pub phonetic: Option<String>,
-    pub part_of_speech: Vec<String>,
-    pub definitions: Vec<String>,
+    pub meanings: Vec<WordMeaning>,
+    pub english_definitions: Vec<EnglishDefinitionGroup>,
     pub examples: Vec<TranslationExample>,
+    pub word_forms: Vec<WordFormItem>,
+    pub memory_tip: String,
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -127,8 +135,6 @@ pub enum TranslationError {
     InvalidResponse,
     #[error("单词详情返回格式异常")]
     InvalidJson,
-    #[error("单词不存在")]
-    WordNotFound,
     #[error("当前翻译引擎不支持该语言：{0}")]
     UnsupportedLanguage(String),
 }

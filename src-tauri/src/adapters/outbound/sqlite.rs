@@ -1,6 +1,6 @@
 use crate::db::{Database, DbError};
 use crate::domain::models::Word;
-use crate::ports::outbound::repository::WordRepository;
+use crate::ports::outbound::repository::{WordDetailDraft, WordRepository};
 use rusqlite::params;
 use std::sync::Arc;
 
@@ -36,33 +36,6 @@ impl SqliteWordRepository {
 }
 
 impl WordRepository for SqliteWordRepository {
-    fn create(&self, word: Word) -> Result<Word, DbError> {
-        let conn = self.db.connection();
-        conn.execute(
-            "INSERT INTO words (id, word, translation, phonetic, source_lang, target_lang, status, tags, notes, audio_url, ease_factor, interval, repetitions, next_review_at, created_at, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)",
-            params![
-                word.id,
-                word.word,
-                word.translation,
-                word.phonetic,
-                word.source_lang,
-                word.target_lang,
-                word.status,
-                word.tags,
-                word.notes,
-                word.audio_url,
-                word.ease_factor,
-                word.interval,
-                word.repetitions,
-                word.next_review_at,
-                word.created_at,
-                word.updated_at,
-            ],
-        ).map_err(DbError::Sqlite)?;
-        Ok(word)
-    }
-
     fn find_all(&self, search: Option<&str>) -> Result<Vec<Word>, DbError> {
         let conn = self.db.connection();
         let mut stmt = match search {
@@ -104,6 +77,143 @@ impl WordRepository for SqliteWordRepository {
         }
     }
 
+    fn find_by_text(&self, word: &str, target_lang: &str) -> Result<Option<Word>, DbError> {
+        let conn = self.db.connection();
+        let normalized = word.trim().to_lowercase();
+        if normalized.is_empty() {
+            return Ok(None);
+        }
+        let mut stmt = conn
+            .prepare(
+                "SELECT * FROM words
+	                 WHERE LOWER(word) = ?1
+	                 ORDER BY created_at DESC
+	                 LIMIT 20",
+            )
+            .map_err(DbError::Sqlite)?;
+
+        let words = stmt
+            .query_map(params![normalized], Self::row_to_word)
+            .map_err(DbError::Sqlite)?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(DbError::Sqlite)?;
+
+        Ok(words
+            .into_iter()
+            .find(|word| language_matches(&word.target_lang, target_lang)))
+    }
+
+    fn save_with_details(&self, word: &Word, detail: &WordDetailDraft) -> Result<Word, DbError> {
+        let meanings_json = serde_json::to_string(&detail.meanings)?;
+        let english_definitions_json = serde_json::to_string(&detail.english_definitions)?;
+        let examples_json = serde_json::to_string(&detail.examples)?;
+        let word_forms_json = serde_json::to_string(&detail.word_forms)?;
+
+        let mut conn = self.db.connection();
+        let tx = conn.transaction().map_err(DbError::Sqlite)?;
+        let existing_count: i64 = tx
+            .query_row(
+                "SELECT COUNT(*) FROM words WHERE id = ?1",
+                params![&word.id],
+                |row| row.get(0),
+            )
+            .map_err(DbError::Sqlite)?;
+
+        if existing_count > 0 {
+            tx.execute(
+                "UPDATE words
+                 SET word = ?2,
+                     translation = ?3,
+                     phonetic = ?4,
+                     source_lang = ?5,
+                     target_lang = ?6,
+                     status = ?7,
+                     tags = ?8,
+                     notes = ?9,
+                     audio_url = ?10,
+                     ease_factor = ?11,
+                     interval = ?12,
+                     repetitions = ?13,
+                     next_review_at = ?14,
+                     updated_at = ?15
+                 WHERE id = ?1",
+                params![
+                    &word.id,
+                    &word.word,
+                    &word.translation,
+                    &word.phonetic,
+                    &word.source_lang,
+                    &word.target_lang,
+                    &word.status,
+                    &word.tags,
+                    &word.notes,
+                    &word.audio_url,
+                    word.ease_factor,
+                    word.interval,
+                    word.repetitions,
+                    &word.next_review_at,
+                    word.updated_at,
+                ],
+            )
+            .map_err(DbError::Sqlite)?;
+        } else {
+            tx.execute(
+                "INSERT INTO words
+                    (id, word, translation, phonetic, source_lang, target_lang,
+                     status, tags, notes, audio_url, ease_factor, interval, repetitions,
+                     next_review_at, created_at, updated_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)",
+                params![
+                    &word.id,
+                    &word.word,
+                    &word.translation,
+                    &word.phonetic,
+                    &word.source_lang,
+                    &word.target_lang,
+                    &word.status,
+                    &word.tags,
+                    &word.notes,
+                    &word.audio_url,
+                    word.ease_factor,
+                    word.interval,
+                    word.repetitions,
+                    &word.next_review_at,
+                    word.created_at,
+                    word.updated_at,
+                ],
+            )
+            .map_err(DbError::Sqlite)?;
+        }
+
+        tx.execute(
+            "INSERT INTO word_details
+                (word_id, meanings_json, english_definitions_json, examples_json,
+                 word_forms_json, memory_tip, created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+             ON CONFLICT(word_id) DO UPDATE SET
+                meanings_json = excluded.meanings_json,
+                english_definitions_json = excluded.english_definitions_json,
+                examples_json = excluded.examples_json,
+                word_forms_json = excluded.word_forms_json,
+                memory_tip = excluded.memory_tip,
+                updated_at = excluded.updated_at",
+            params![
+                &word.id,
+                &meanings_json,
+                &english_definitions_json,
+                &examples_json,
+                &word_forms_json,
+                &detail.memory_tip,
+                word.created_at,
+                word.updated_at,
+            ],
+        )
+        .map_err(DbError::Sqlite)?;
+
+        tx.commit().map_err(DbError::Sqlite)?;
+        Ok(word.clone())
+    }
+
     fn update(&self, word: &Word) -> Result<Word, DbError> {
         let conn = self.db.connection();
         conn.execute(
@@ -138,5 +248,152 @@ impl WordRepository for SqliteWordRepository {
         conn.execute("DELETE FROM words WHERE id = ?1", params![id])
             .map_err(DbError::Sqlite)?;
         Ok(())
+    }
+}
+
+fn language_matches(saved: &str, requested: &str) -> bool {
+    language_lookup_key(saved) == language_lookup_key(requested)
+}
+
+fn language_lookup_key(value: &str) -> String {
+    match value.trim().to_lowercase().replace('_', "-").as_str() {
+        "zh" | "zh-cn" | "zh-hans" | "zh-chs" => "zh".to_string(),
+        "zt" | "zh-tw" | "zh-hant" | "zh-cht" => "zt".to_string(),
+        normalized => normalized.to_string(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ports::outbound::translation::TranslationExample;
+    use std::sync::Arc;
+
+    fn test_db() -> Arc<Database> {
+        let path =
+            std::env::temp_dir().join(format!("bugoo-sqlite-repo-{}.db", uuid::Uuid::new_v4()));
+        Arc::new(Database::new(path).unwrap())
+    }
+
+    fn detail_draft() -> WordDetailDraft {
+        WordDetailDraft {
+            meanings: vec![crate::domain::models::WordMeaning {
+                part_of_speech: "int".to_string(),
+                translations: vec!["你好".to_string()],
+            }],
+            english_definitions: Vec::new(),
+            examples: vec![TranslationExample {
+                sentence: "Hello there.".to_string(),
+                translation: "你好。".to_string(),
+            }],
+            word_forms: Vec::new(),
+            memory_tip: "问候语".to_string(),
+        }
+    }
+
+    #[test]
+    fn find_by_text_matches_language_case_insensitively() {
+        let db = test_db();
+        let repo = SqliteWordRepository::new(Arc::clone(&db));
+        let word = Word::new(
+            "word-1".to_string(),
+            "Hello".to_string(),
+            "你好".to_string(),
+            "EN".to_string(),
+            "ZH".to_string(),
+        );
+
+        repo.save_with_details(&word, &detail_draft()).unwrap();
+
+        let found = repo
+            .find_by_text("hello", "zh")
+            .unwrap()
+            .expect("word should be found");
+        assert_eq!(found.id, "word-1");
+    }
+
+    #[test]
+    fn find_by_text_matches_saved_zh_word_when_lookup_target_is_zh_cn() {
+        let db = test_db();
+        let repo = SqliteWordRepository::new(Arc::clone(&db));
+        let word = Word::new(
+            "word-1".to_string(),
+            "Panel".to_string(),
+            "面板".to_string(),
+            "en".to_string(),
+            "zh".to_string(),
+        );
+
+        repo.save_with_details(&word, &detail_draft()).unwrap();
+
+        let found = repo
+            .find_by_text("panel", "zh-CN")
+            .unwrap()
+            .expect("word should be found before falling back to dictionary");
+        assert_eq!(found.id, "word-1");
+    }
+
+    #[test]
+    fn find_by_text_does_not_match_different_target_language() {
+        let db = test_db();
+        let repo = SqliteWordRepository::new(Arc::clone(&db));
+        let word = Word::new(
+            "word-1".to_string(),
+            "Panel".to_string(),
+            "面板".to_string(),
+            "en".to_string(),
+            "zh".to_string(),
+        );
+
+        repo.save_with_details(&word, &detail_draft()).unwrap();
+
+        let found = repo.find_by_text("panel", "ja").unwrap();
+        assert!(found.is_none());
+    }
+
+    #[test]
+    fn save_with_details_upserts_detail_for_existing_word_without_duplicate() {
+        let db = test_db();
+        {
+            let conn = db.connection();
+            conn.execute(
+                "INSERT INTO words
+                    (id, word, translation, source_lang, target_lang, created_at, updated_at)
+                 VALUES ('word-1', 'hello', '你好', 'EN', 'ZH', 1, 1)",
+                [],
+            )
+            .unwrap();
+        }
+
+        let repo = SqliteWordRepository::new(Arc::clone(&db));
+        let mut word = repo
+            .find_by_text("hello", "zh")
+            .unwrap()
+            .expect("existing word should be found");
+        word.translation = "您好".to_string();
+        word.source_lang = "en".to_string();
+        word.target_lang = "zh".to_string();
+        word.updated_at = 2;
+
+        repo.save_with_details(&word, &detail_draft()).unwrap();
+
+        let conn = db.connection();
+        let word_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM words WHERE LOWER(word) = 'hello'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        let detail_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM word_details WHERE word_id = 'word-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        assert_eq!(word_count, 1);
+        assert_eq!(detail_count, 1);
     }
 }

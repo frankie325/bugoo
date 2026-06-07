@@ -32,9 +32,11 @@ pub(crate) fn empty_translation_result(
         translation,
         detected_source_lang,
         phonetic: None,
-        part_of_speech: Vec::new(),
-        definitions: Vec::new(),
+        meanings: Vec::new(),
+        english_definitions: Vec::new(),
         examples: Vec::new(),
+        word_forms: Vec::new(),
+        memory_tip: String::new(),
     }
 }
 
@@ -146,8 +148,10 @@ mod tests {
         assert_eq!(result.translation, "你好");
         assert_eq!(result.detected_source_lang, Some("en".to_string()));
         assert_eq!(result.phonetic, None);
-        assert!(result.part_of_speech.is_empty());
-        assert!(result.definitions.is_empty());
+        assert!(result.meanings.is_empty());
+        assert!(result.english_definitions.is_empty());
         assert!(result.examples.is_empty());
+        assert!(result.word_forms.is_empty());
+        assert!(result.memory_tip.is_empty());
     }
 }

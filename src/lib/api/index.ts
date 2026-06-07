@@ -5,8 +5,11 @@ export {
 } from "./translate";
 export {
   getWordDetail,
-  generateWordDetail,
+  resolveWord,
   type WordDetail,
+  type ResolvedWord,
+  type EnglishDefinitionGroup,
+  type WordFormItem,
 } from "./wordDetails";
 export {
   addWord,
@@ -15,6 +18,8 @@ export {
   updateWord,
   type Word,
   type WordUpdate,
+  type AddWordInput,
+  type WordMeaning,
 } from "./word";
 export { getSettings, setSetting, seedSettings } from "./settings";
 export {

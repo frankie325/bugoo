@@ -1,20 +1,19 @@
 use crate::adapters::outbound::translation::http_utils::{
     format_http_error, map_reqwest_error, timeout_duration,
 };
+use crate::domain::models::{
+    is_valid_word_form_type, EnglishDefinitionGroup, WordFormItem, WordMeaning,
+};
 use crate::domain::services::translation_service::{normalize_endpoint, validate_text};
 use crate::ports::outbound::translation::{
     TranslationConfig, TranslationError, TranslationExample, TranslationFuture,
     TranslationProvider, TranslationRequest, TranslationResult,
-};
-use crate::ports::outbound::word_insight::{
-    GeneratedWordDetail, WordInsightFuture, WordInsightProvider, WordInsightRequest,
 };
 use log::debug;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
 const SYSTEM_TRANSLATION_PROMPT: &str = include_str!("prompts/system_translation_prompt.txt");
-const WORD_DETAIL_PROMPT: &str = include_str!("prompts/word_detail_prompt.txt");
 
 #[derive(Clone)]
 pub struct CustomTranslationProvider {
@@ -64,24 +63,16 @@ struct TranslationResponse {
     detected_source_lang: Option<String>,
     #[serde(default)]
     phonetic: Option<String>,
-    #[serde(default, alias = "part_of_speech")]
-    part_of_speech: Vec<String>,
     #[serde(default)]
-    definitions: Vec<String>,
+    meanings: Vec<WordMeaning>,
+    #[serde(default, alias = "english_definitions")]
+    english_definitions: Vec<EnglishDefinitionGroup>,
     #[serde(default)]
     examples: Vec<TranslationExample>,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct WordDetailResponse {
-    translation: String,
-    phonetic: Option<String>,
-    part_of_speech: Vec<String>,
-    definitions: Vec<String>,
-    examples: Vec<TranslationExample>,
+    #[serde(default, alias = "word_forms")]
+    word_forms: Vec<WordFormItem>,
+    #[serde(default)]
     memory_tip: String,
-    detail: String,
 }
 
 impl CustomTranslationProvider {
@@ -111,16 +102,7 @@ impl CustomTranslationProvider {
         validate_text(&request.text)?;
 
         let user_prompt = format!(
-            "请将以下文本从 {source_lang} 翻译为 {target_lang}，只返回 JSON：\n\
-             {{\n\
-             \"translation\":\"string\",\n\
-             \"detectedSourceLang\":\"string | null\",\n\
-             \"phonetic\":\"string | null\",\n\
-             \"partOfSpeech\":[\"string\"],\n\
-             \"definitions\":[\"string\"],\n\
-             \"examples\":[{{\"sentence\":\"string\",\"translation\":\"string\"}}]\n\
-             }}\n\n\
-             文本：{text}",
+            "请将以下文本从 {source_lang} 翻译为 {target_lang}，并返回统一 JSON 结构。\n\n文本：{text}",
             source_lang = request.source_lang,
             target_lang = request.target_lang,
             text = request.text
@@ -131,27 +113,6 @@ impl CustomTranslationProvider {
             .await?;
 
         parse_translation_result(&content)
-    }
-
-    async fn generate_word_detail_inner(
-        &self,
-        request: WordInsightRequest,
-    ) -> Result<GeneratedWordDetail, TranslationError> {
-        validate_text(&request.word)?;
-
-        let user_prompt = format!(
-            "单词：{word}\n译文：{translation}\n来源语言：{source_lang}\n目标语言：{target_lang}",
-            word = request.word,
-            translation = request.translation,
-            source_lang = request.source_lang,
-            target_lang = request.target_lang
-        );
-
-        let content = self
-            .send_chat_completion(self.build_word_detail_system_prompt(), user_prompt)
-            .await?;
-
-        parse_word_detail(&content).map_err(|_| TranslationError::InvalidJson)
     }
 
     async fn send_chat_completion(
@@ -217,21 +178,11 @@ impl CustomTranslationProvider {
     fn build_translation_system_prompt(&self) -> String {
         append_custom_prompt(SYSTEM_TRANSLATION_PROMPT, &self.config.translation_prompt)
     }
-
-    fn build_word_detail_system_prompt(&self) -> String {
-        append_custom_prompt(WORD_DETAIL_PROMPT, &self.config.word_detail_prompt)
-    }
 }
 
 impl TranslationProvider for CustomTranslationProvider {
     fn translate<'a>(&'a self, request: TranslationRequest) -> TranslationFuture<'a> {
         Box::pin(async move { self.translate_inner(request).await })
-    }
-}
-
-impl WordInsightProvider for CustomTranslationProvider {
-    fn generate_word_detail<'a>(&'a self, request: WordInsightRequest) -> WordInsightFuture<'a> {
-        Box::pin(async move { self.generate_word_detail_inner(request).await })
     }
 }
 
@@ -257,38 +208,57 @@ fn parse_translation_result(content: &str) -> Result<TranslationResult, Translat
     let json_str = extract_json(content);
     let parsed = serde_json::from_str::<TranslationResponse>(json_str)
         .map_err(|_| TranslationError::InvalidJson)?;
-    Ok(TranslationResult {
+    let result = TranslationResult {
         translation: parsed.translation,
         detected_source_lang: parsed.detected_source_lang,
         phonetic: parsed.phonetic,
-        part_of_speech: parsed.part_of_speech,
-        definitions: parsed.definitions,
+        meanings: parsed.meanings,
+        english_definitions: parsed.english_definitions,
         examples: parsed.examples,
-    })
+        word_forms: parsed.word_forms,
+        memory_tip: parsed.memory_tip,
+    };
+
+    validate_translation_result(&result)?;
+    Ok(result)
 }
 
-fn parse_word_detail(content: &str) -> Result<GeneratedWordDetail, TranslationError> {
-    let json_str = extract_json(content);
-    let parsed = serde_json::from_str::<WordDetailResponse>(json_str)
-        .map_err(|_| TranslationError::InvalidJson)?;
-    if parsed.translation.trim().is_empty()
-        || parsed.memory_tip.trim().is_empty()
-        || parsed.detail.trim().is_empty()
-        || parsed.definitions.is_empty()
-        || parsed.examples.is_empty()
+fn validate_translation_result(result: &TranslationResult) -> Result<(), TranslationError> {
+    if result.translation.trim().is_empty()
+        || result.meanings.is_empty()
+        || result.examples.is_empty()
     {
         return Err(TranslationError::InvalidJson);
     }
 
-    Ok(GeneratedWordDetail {
-        translation: parsed.translation,
-        phonetic: parsed.phonetic,
-        part_of_speech: parsed.part_of_speech,
-        definitions: parsed.definitions,
-        examples: parsed.examples,
-        memory_tip: parsed.memory_tip,
-        detail: parsed.detail,
-    })
+    for meaning in &result.meanings {
+        if meaning.part_of_speech.trim().is_empty()
+            || meaning.translations.is_empty()
+            || meaning
+                .translations
+                .iter()
+                .any(|value| value.trim().is_empty())
+        {
+            return Err(TranslationError::InvalidJson);
+        }
+    }
+
+    for example in &result.examples {
+        if example.sentence.trim().is_empty() || example.translation.trim().is_empty() {
+            return Err(TranslationError::InvalidJson);
+        }
+    }
+
+    for form in &result.word_forms {
+        if !is_valid_word_form_type(&form.r#type)
+            || form.words.is_empty()
+            || form.words.iter().any(|value| value.trim().is_empty())
+        {
+            return Err(TranslationError::InvalidJson);
+        }
+    }
+
+    Ok(())
 }
 
 /// Extract JSON from LLM response content.
@@ -357,7 +327,6 @@ mod tests {
             api_region: String::new(),
             translation_model: "test-model".to_string(),
             translation_prompt: String::new(),
-            word_detail_prompt: String::new(),
             timeout_ms: 1_000,
         }
     }
@@ -392,7 +361,6 @@ mod tests {
     fn prompt_builders_append_custom_prompt() {
         let mut config = valid_config();
         config.translation_prompt = "保持术语一致。".to_string();
-        config.word_detail_prompt = "偏向商务语境。".to_string();
         let provider = CustomTranslationProvider::new(config).unwrap();
 
         assert!(provider
@@ -401,54 +369,38 @@ mod tests {
         assert!(provider
             .build_translation_system_prompt()
             .contains("保持术语一致。"));
-        assert!(provider
-            .build_word_detail_system_prompt()
-            .contains(WORD_DETAIL_PROMPT.trim()));
-        assert!(provider
-            .build_word_detail_system_prompt()
-            .contains("偏向商务语境。"));
-    }
-
-    #[test]
-    fn parse_word_detail_accepts_camel_case_fields() {
-        let content = r#"{
-            "translation": "苹果",
-            "phonetic": "ˈæpəl",
-            "partOfSpeech": ["noun"],
-            "definitions": ["一种水果"],
-            "examples": [
-                {"sentence": "I ate an apple.", "translation": "我吃了一个苹果。"}
-            ],
-            "memoryTip": "apple 可以联想到苹果。",
-            "detail": "常用作可数名词。"
-        }"#;
-
-        let detail = parse_word_detail(content).unwrap();
-
-        assert_eq!(detail.translation, "苹果");
-        assert_eq!(detail.part_of_speech, vec!["noun"]);
-        assert_eq!(detail.memory_tip, "apple 可以联想到苹果。");
     }
 
     #[test]
     fn parse_translation_result_accepts_valid_json() {
         let content = r#"{
-            "translation": "你好",
+            "translation": "破产的；身无分文的",
             "detectedSourceLang": "en",
-            "phonetic": null,
-            "partOfSpeech": ["interjection"],
-            "definitions": ["问候语"],
+            "phonetic": "broʊk",
+            "meanings": [
+                {"partOfSpeech": "adj", "translations": ["破产的", "身无分文的"]}
+            ],
+            "englishDefinitions": [
+                {"partOfSpeech": "adj", "definitions": ["having no money"]}
+            ],
             "examples": [
-                {"sentence": "Hello there.", "translation": "你好。"}
-            ]
+                {"sentence": "He went broke.", "translation": "他破产了。"}
+            ],
+            "wordForms": [
+                {"type": "lemma", "words": ["break"]}
+            ],
+            "memoryTip": "broke 可以联想到 break。"
         }"#;
 
         let result = parse_translation_result(content).unwrap();
 
-        assert_eq!(result.translation, "你好");
-        assert_eq!(result.detected_source_lang, Some("en".to_string()));
-        assert_eq!(result.part_of_speech, vec!["interjection"]);
-        assert_eq!(result.examples[0].sentence, "Hello there.");
+        assert_eq!(result.translation, "破产的；身无分文的");
+        assert_eq!(result.meanings[0].part_of_speech, "adj");
+        assert_eq!(
+            result.english_definitions[0].definitions[0],
+            "having no money"
+        );
+        assert_eq!(result.word_forms[0].r#type, "lemma");
     }
 
     #[test]
@@ -459,77 +411,43 @@ mod tests {
     }
 
     #[test]
-    fn parse_word_detail_rejects_empty_required_semantic_fields() {
+    fn parse_translation_result_rejects_empty_meanings() {
         let content = r#"{
-            "translation": " ",
-            "phonetic": null,
-            "partOfSpeech": ["noun"],
-            "definitions": ["一种水果"],
-            "examples": [
-                {"sentence": "I ate an apple.", "translation": "我吃了一个苹果。"}
-            ],
-            "memoryTip": "apple 可以联想到苹果。",
-            "detail": "常用作可数名词。"
+            "translation": "hi",
+            "meanings": [],
+            "examples": [{"sentence": "Hi.", "translation": "嗨。"}]
         }"#;
-
-        let result = parse_word_detail(content);
-
-        assert!(matches!(result, Err(TranslationError::InvalidJson)));
+        assert!(matches!(
+            parse_translation_result(content),
+            Err(TranslationError::InvalidJson)
+        ));
     }
 
     #[test]
-    fn parse_word_detail_rejects_empty_memory_tip() {
+    fn parse_translation_result_rejects_empty_examples() {
         let content = r#"{
-            "translation": "苹果",
-            "phonetic": null,
-            "partOfSpeech": ["noun"],
-            "definitions": ["一种水果"],
-            "examples": [
-                {"sentence": "I ate an apple.", "translation": "我吃了一个苹果。"}
-            ],
-            "memoryTip": " ",
-            "detail": "常用作可数名词。"
+            "translation": "hi",
+            "meanings": [{"partOfSpeech": "n", "translations": ["嗨"]}],
+            "examples": []
         }"#;
-
-        let result = parse_word_detail(content);
-
-        assert!(matches!(result, Err(TranslationError::InvalidJson)));
+        assert!(matches!(
+            parse_translation_result(content),
+            Err(TranslationError::InvalidJson)
+        ));
     }
 
     #[test]
-    fn parse_word_detail_rejects_empty_detail() {
+    fn parse_translation_result_rejects_invalid_word_form_type() {
         let content = r#"{
-            "translation": "苹果",
-            "phonetic": null,
-            "partOfSpeech": ["noun"],
-            "definitions": ["一种水果"],
-            "examples": [
-                {"sentence": "I ate an apple.", "translation": "我吃了一个苹果。"}
-            ],
-            "memoryTip": "apple 可以联想到苹果。",
-            "detail": " "
+            "translation": "hi",
+            "meanings": [{"partOfSpeech": "n", "translations": ["嗨"]}],
+            "examples": [{"sentence": "Hi.", "translation": "嗨。"}],
+            "wordForms": [{"type": "abbrev", "words": ["hi"]}]
         }"#;
-
-        let result = parse_word_detail(content);
-
-        assert!(matches!(result, Err(TranslationError::InvalidJson)));
-    }
-
-    #[test]
-    fn parse_word_detail_rejects_empty_definitions_and_examples() {
-        let content = r#"{
-            "translation": "苹果",
-            "phonetic": null,
-            "partOfSpeech": ["noun"],
-            "definitions": [],
-            "examples": [],
-            "memoryTip": "apple 可以联想到苹果。",
-            "detail": "常用作可数名词。"
-        }"#;
-
-        let result = parse_word_detail(content);
-
-        assert!(matches!(result, Err(TranslationError::InvalidJson)));
+        assert!(matches!(
+            parse_translation_result(content),
+            Err(TranslationError::InvalidJson)
+        ));
     }
 
     #[test]

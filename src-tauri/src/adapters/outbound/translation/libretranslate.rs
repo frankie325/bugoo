@@ -40,10 +40,10 @@ impl LibreTranslateProvider {
         request: TranslationRequest,
     ) -> Result<crate::ports::outbound::translation::TranslationResult, TranslationError> {
         validate_text(&request.text)?;
-        
+
         let source = request.source_lang.clone();
         let target = request.target_lang.clone();
-        
+
         let mut form_data: Vec<(String, String)> = vec![
             ("q".to_string(), request.text.clone()),
             ("source".to_string(), source.clone()),
@@ -119,7 +119,6 @@ mod tests {
             api_region: String::new(),
             translation_model: String::new(),
             translation_prompt: String::new(),
-            word_detail_prompt: String::new(),
             timeout_ms: 1_000,
         }
     }

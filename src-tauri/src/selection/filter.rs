@@ -2,10 +2,12 @@ use std::time::Instant;
 
 use super::types::SelectionCandidate;
 
-const MAX_SELECTION_CHARS: usize = 50;
-pub fn filter_selection_text(raw_text: &str, captured_at: Instant) -> Option<SelectionCandidate> {
+pub fn filter_selection_text(
+    raw_text: &str,
+    captured_at: Instant,
+) -> Option<SelectionCandidate> {
     let text = raw_text.trim();
-    if text.is_empty() || text.chars().nth(MAX_SELECTION_CHARS).is_some() {
+    if text.is_empty() {
         return None;
     }
 
@@ -26,13 +28,6 @@ mod tests {
     }
 
     #[test]
-    fn rejects_text_longer_than_50_chars() {
-        let now = Instant::now();
-        let text = "a".repeat(51);
-        assert_eq!(filter_selection_text(&text, now), None);
-    }
-
-    #[test]
     fn accepts_trimmed_text_within_limit() {
         let now = Instant::now();
         assert_eq!(
@@ -49,5 +44,12 @@ mod tests {
         let now = Instant::now();
         assert!(filter_selection_text("hello", now).is_some());
         assert!(filter_selection_text("hello", now).is_some());
+    }
+
+    #[test]
+    fn accepts_long_text_regardless_of_length() {
+        let now = Instant::now();
+        let text = "a".repeat(100_000);
+        assert!(filter_selection_text(&text, now).is_some());
     }
 }

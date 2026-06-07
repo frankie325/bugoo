@@ -141,11 +141,6 @@
         "desc": "为快速翻译增加术语、语气或输出风格约束"
       },
       "promptPlaceholder": "例如：保持软件产品术语一致，只返回自然中文",
-      "wordDetailPrompt": {
-        "title": "单词详情提示词",
-        "desc": "为例句、释义和记忆技巧生成增加额外约束"
-      },
-      "wordDetailPromptPlaceholder": "例如：例句贴近日常使用，记忆技巧简短易懂",
       "timeout": {
         "title": "请求超时时间",
         "desc": "翻译和详情生成请求超过该时间后自动失败"
@@ -209,6 +204,11 @@
       "autoClose": {
         "title": "自动关闭",
         "desc": "失去焦点时自动关闭弹窗"
+      },
+      "selectionMaxChars": {
+        "title": "划词长度限制",
+        "desc": "开启后限制划词监听时识别的最大字符数；关闭后不做限制。",
+        "suffix": "字符"
       },
       "pace": {
         "relaxed": "轻松",

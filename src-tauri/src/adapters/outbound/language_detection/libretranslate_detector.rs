@@ -61,7 +61,10 @@ impl LibreTranslateLanguageDetector {
         if !response.status().is_success() {
             let status = response.status();
             let body = response.text().await.unwrap_or_default();
-            return Err(format!("LibreTranslate /detect returned {}: {}", status, body));
+            return Err(format!(
+                "LibreTranslate /detect returned {}: {}",
+                status, body
+            ));
         }
 
         let items = response

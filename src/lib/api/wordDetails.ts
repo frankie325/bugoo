@@ -1,21 +1,44 @@
 import { invoke } from "@tauri-apps/api/core";
-
+import type { WordMeaning } from "./word";
 import type { TranslationExample } from "./translate";
+
+export interface EnglishDefinitionGroup {
+  partOfSpeech: string;
+  definitions: string[];
+}
+
+export interface WordFormItem {
+  type: string;
+  words: string[];
+}
 
 export interface WordDetail {
   wordId: string;
   word: string;
   translation: string;
   phonetic: string | null;
-  partOfSpeech: string[];
-  definitions: string[];
+  meanings: WordMeaning[];
+  englishDefinitions: EnglishDefinitionGroup[];
   examples: TranslationExample[];
+  wordForms: WordFormItem[];
   memoryTip: string;
-  detail: string;
-  provider: string;
-  rawJson: string;
   createdAt: number;
   updatedAt: number;
+}
+
+export interface ResolvedWord {
+  wordId: string | null;
+  word: string;
+  translation: string;
+  detectedSourceLang: string | null;
+  sourceLang: string;
+  targetLang: string;
+  phonetic: string | null;
+  meanings: WordMeaning[];
+  englishDefinitions: EnglishDefinitionGroup[];
+  examples: TranslationExample[];
+  wordForms: WordFormItem[];
+  memoryTip: string;
 }
 
 interface RustWordDetail {
@@ -23,34 +46,64 @@ interface RustWordDetail {
   word: string;
   translation: string;
   phonetic: string | null;
-  part_of_speech: string[];
-  definitions: string[];
+  meanings: WordMeaning[];
+  english_definitions: EnglishDefinitionGroup[];
   examples: TranslationExample[];
+  word_forms: WordFormItem[];
   memory_tip: string;
-  detail: string;
-  provider: string;
-  raw_json: string;
   created_at: number;
   updated_at: number;
 }
 
-function toWordDetail(detail: RustWordDetail): WordDetail {
+interface RustResolvedWord {
+  word_id: string | null;
+  word: string;
+  translation: string;
+  detected_source_lang: string | null;
+  source_lang: string;
+  target_lang: string;
+  phonetic: string | null;
+  meanings: WordMeaning[];
+  english_definitions: EnglishDefinitionGroup[];
+  examples: TranslationExample[];
+  word_forms: WordFormItem[];
+  memory_tip: string;
+}
+
+export function toWordDetail(detail: RustWordDetail): WordDetail {
   return {
     wordId: detail.word_id,
     word: detail.word,
     translation: detail.translation,
     phonetic: detail.phonetic,
-    partOfSpeech: Array.isArray(detail.part_of_speech)
-      ? detail.part_of_speech
+    meanings: Array.isArray(detail.meanings) ? detail.meanings : [],
+    englishDefinitions: Array.isArray(detail.english_definitions)
+      ? detail.english_definitions
       : [],
-    definitions: Array.isArray(detail.definitions) ? detail.definitions : [],
     examples: Array.isArray(detail.examples) ? detail.examples : [],
+    wordForms: Array.isArray(detail.word_forms) ? detail.word_forms : [],
     memoryTip: detail.memory_tip,
-    detail: detail.detail,
-    provider: detail.provider,
-    rawJson: detail.raw_json,
     createdAt: detail.created_at,
     updatedAt: detail.updated_at,
+  };
+}
+
+function toResolvedWord(result: RustResolvedWord): ResolvedWord {
+  return {
+    wordId: result.word_id,
+    word: result.word,
+    translation: result.translation,
+    detectedSourceLang: result.detected_source_lang,
+    sourceLang: result.source_lang,
+    targetLang: result.target_lang,
+    phonetic: result.phonetic,
+    meanings: Array.isArray(result.meanings) ? result.meanings : [],
+    englishDefinitions: Array.isArray(result.english_definitions)
+      ? result.english_definitions
+      : [],
+    examples: Array.isArray(result.examples) ? result.examples : [],
+    wordForms: Array.isArray(result.word_forms) ? result.word_forms : [],
+    memoryTip: result.memory_tip ?? "",
   };
 }
 
@@ -64,10 +117,7 @@ export async function getWordDetail(
   return detail ? toWordDetail(detail) : null;
 }
 
-export async function generateWordDetail(wordId: string): Promise<WordDetail> {
-  const detail = await invoke<RustWordDetail>("generate_word_detail", {
-    wordId,
-  });
-
-  return toWordDetail(detail);
+export async function resolveWord(text: string): Promise<ResolvedWord> {
+  const result = await invoke<RustResolvedWord>("resolve_word", { text });
+  return toResolvedWord(result);
 }

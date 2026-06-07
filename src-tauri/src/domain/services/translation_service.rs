@@ -1,22 +1,19 @@
 use crate::adapters::outbound::translation::{
     baidu::BaiduTranslationProvider, custom::CustomTranslationProvider,
-    deepl::DeepLTranslationProvider, engine_languages::EngineLanguages,
-    engine_languages::is_engine_source_language_supported,
-    engine_languages::is_engine_target_language_supported,
-       google::GoogleTranslationProvider,
-    libretranslate::LibreTranslateProvider, microsoft::MicrosoftTranslationProvider,
-    tencent::TencentTranslationProvider, youdao::YoudaoTranslationProvider,
+    deepl::DeepLTranslationProvider, engine_languages::is_engine_source_language_supported,
+    engine_languages::is_engine_target_language_supported, engine_languages::EngineLanguages,
+    google::GoogleTranslationProvider, libretranslate::LibreTranslateProvider,
+    microsoft::MicrosoftTranslationProvider, tencent::TencentTranslationProvider,
+    youdao::YoudaoTranslationProvider,
 };
+use crate::domain::models::{EnglishDefinitionGroup, WordMeaning};
 use crate::ports::outbound::dictionary::{
-    should_lookup_dictionary, DictionaryLookupRequest, DictionaryProvider,
+    should_lookup_dictionary, DictionaryLookupRequest, DictionaryLookupResult, DictionaryProvider,
 };
 use crate::ports::outbound::language_detection::{DetectedLanguage, LanguageDetector};
 use crate::ports::outbound::translation::{
-    EngineEndpoints, TranslationConfig, TranslationError,
-    TranslationProvider, TranslationRequest, TranslationResult,
-};
-use crate::ports::outbound::word_insight::{
-    GeneratedWordDetail, WordInsightProvider, WordInsightRequest,
+    EngineEndpoints, TranslationConfig, TranslationError, TranslationProvider, TranslationRequest,
+    TranslationResult,
 };
 use log::warn;
 use std::collections::HashMap;
@@ -98,18 +95,26 @@ impl TranslationService {
             // local engine uses LibreTranslate, stored under "local" key in engine_languages
             if let Some(local_languages) = self.engine_languages.get("local") {
                 if !is_engine_source_language_supported(local_languages, source_lang) {
-                    return Err(TranslationError::UnsupportedLanguage(source_lang.to_string()));
+                    return Err(TranslationError::UnsupportedLanguage(
+                        source_lang.to_string(),
+                    ));
                 }
                 if !is_engine_target_language_supported(local_languages, target_lang) {
-                    return Err(TranslationError::UnsupportedLanguage(target_lang.to_string()));
+                    return Err(TranslationError::UnsupportedLanguage(
+                        target_lang.to_string(),
+                    ));
                 }
             }
         } else if let Some(languages) = self.engine_languages.get(engine) {
             if !is_engine_source_language_supported(languages, source_lang) {
-                return Err(TranslationError::UnsupportedLanguage(source_lang.to_string()));
+                return Err(TranslationError::UnsupportedLanguage(
+                    source_lang.to_string(),
+                ));
             }
             if !is_engine_target_language_supported(languages, target_lang) {
-                return Err(TranslationError::UnsupportedLanguage(target_lang.to_string()));
+                return Err(TranslationError::UnsupportedLanguage(
+                    target_lang.to_string(),
+                ));
             }
         }
         Ok(())
@@ -150,13 +155,17 @@ impl TranslationService {
                         target_lang: resolved_languages.target_lang.clone(),
                     }) {
                         Ok(Some(result)) => {
+                            let meanings = dictionary_meanings(&result);
+                            let english_definitions = dictionary_english_definitions(&result);
                             return Ok(TranslationResult {
                                 translation: result.translation,
                                 detected_source_lang: Some(resolved_languages.source_lang),
                                 phonetic: result.phonetic,
-                                part_of_speech: result.part_of_speech,
-                                definitions: result.definitions,
+                                meanings,
+                                english_definitions,
                                 examples: result.examples,
+                                word_forms: Vec::new(),
+                                memory_tip: String::new(),
                             });
                         }
                         Ok(None) => {}
@@ -199,29 +208,69 @@ impl TranslationService {
         };
         provider.translate(request).await.map_err(|e| e.to_string())
     }
+}
 
-    pub async fn generate_word_detail(
-        &self,
-        settings: HashMap<String, String>,
-        word: String,
-        translation: String,
-        source_lang: String,
-        target_lang: String,
-    ) -> Result<GeneratedWordDetail, String> {
-        validate_text(&word).map_err(|e| e.to_string())?;
-        let config = build_translation_config(&settings);
-        let provider = create_word_insight_provider(config)?;
-        let request = WordInsightRequest {
-            word,
-            translation,
-            source_lang,
-            target_lang,
-        };
-        provider
-            .generate_word_detail(request)
-            .await
-            .map_err(|e| e.to_string())
-    }
+fn dictionary_meanings(result: &DictionaryLookupResult) -> Vec<WordMeaning> {
+    result
+        .part_of_speech
+        .iter()
+        .filter_map(|part_of_speech| {
+            let translations = definitions_for_part_of_speech(&result.definitions, part_of_speech)
+                .into_iter()
+                .map(strip_part_of_speech_prefix)
+                .filter(|definition| !definition.is_empty())
+                .collect::<Vec<_>>();
+
+            if translations.is_empty() {
+                None
+            } else {
+                Some(WordMeaning {
+                    part_of_speech: part_of_speech.clone(),
+                    translations,
+                })
+            }
+        })
+        .collect()
+}
+
+fn dictionary_english_definitions(result: &DictionaryLookupResult) -> Vec<EnglishDefinitionGroup> {
+    result
+        .part_of_speech
+        .iter()
+        .filter_map(|part_of_speech| {
+            let definitions = definitions_for_part_of_speech(&result.definitions, part_of_speech);
+            if definitions.is_empty() {
+                None
+            } else {
+                Some(EnglishDefinitionGroup {
+                    part_of_speech: part_of_speech.clone(),
+                    definitions,
+                })
+            }
+        })
+        .collect()
+}
+
+fn definitions_for_part_of_speech(definitions: &[String], part_of_speech: &str) -> Vec<String> {
+    let prefix = format!("{part_of_speech}.");
+    definitions
+        .iter()
+        .filter_map(|definition| {
+            let trimmed = definition.trim();
+            if trimmed.starts_with(&prefix) {
+                Some(trimmed.to_string())
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
+fn strip_part_of_speech_prefix(definition: String) -> String {
+    definition
+        .split_once('.')
+        .map(|(_, value)| value.trim().to_string())
+        .unwrap_or(definition)
 }
 
 pub fn validate_text(text: &str) -> Result<(), TranslationError> {
@@ -244,7 +293,6 @@ fn build_translation_config(settings: &HashMap<String, String>) -> TranslationCo
         api_region: setting_or_default(settings, "apiRegion", ""),
         translation_model: setting_or_default(settings, "translationModel", ""),
         translation_prompt: setting_or_default(settings, "translationPrompt", ""),
-        word_detail_prompt: setting_or_default(settings, "wordDetailPrompt", ""),
         timeout_ms: setting_or_default(settings, "translationTimeoutMs", "15000")
             .parse::<u64>()
             .unwrap_or(15_000),
@@ -279,19 +327,6 @@ fn create_translation_provider(
         "youdao" => YoudaoTranslationProvider::new(config)
             .map(|provider| Box::new(provider) as Box<dyn TranslationProvider>)
             .map_err(|error| error.to_string()),
-        engine => Err(TranslationError::UnsupportedEngine(engine.to_string()).to_string()),
-    }
-}
-
-fn create_word_insight_provider(
-    config: TranslationConfig,
-) -> Result<Box<dyn WordInsightProvider>, String> {
-    match config.engine.trim().to_lowercase().as_str() {
-        "custom" => CustomTranslationProvider::new(config)
-            .map(|provider| Box::new(provider) as Box<dyn WordInsightProvider>)
-            .map_err(|error| error.to_string()),
-        "local" | "libretranslate" | "deepl" | "google" | "microsoft" | "baidu" | "tencent"
-        | "youdao" => Err(TranslationError::UnsupportedEngine(config.engine).to_string()),
         engine => Err(TranslationError::UnsupportedEngine(engine.to_string()).to_string()),
     }
 }
@@ -376,10 +411,6 @@ mod tests {
             result: DetectedLanguage::Known("en".to_string()),
             calls: Arc::new(std::sync::atomic::AtomicUsize::new(0)),
         })
-    }
-
-    fn test_engine_endpoints() -> EngineEndpoints {
-        EngineEndpoints::default()
     }
 
     fn service_with_dictionary(
@@ -572,6 +603,20 @@ mod tests {
                 .unwrap();
 
         assert_eq!(result.translation, "int. 你好");
+        assert_eq!(
+            result.meanings,
+            vec![WordMeaning {
+                part_of_speech: "int".to_string(),
+                translations: vec!["你好".to_string()],
+            }]
+        );
+        assert_eq!(
+            result.english_definitions,
+            vec![EnglishDefinitionGroup {
+                part_of_speech: "int".to_string(),
+                definitions: vec!["int. 你好".to_string()],
+            }]
+        );
     }
 
     #[test]
@@ -581,8 +626,7 @@ mod tests {
             result: DetectedLanguage::Known("en".to_string()),
             calls: Arc::clone(&calls),
         });
-        let service =
-            service_with_detector_and_config(None, detector, EngineEndpoints::default());
+        let service = service_with_detector_and_config(None, detector, EngineEndpoints::default());
         let settings = HashMap::from([
             ("translationEngine".to_string(), "custom".to_string()),
             ("sourceLanguage".to_string(), "auto".to_string()),
