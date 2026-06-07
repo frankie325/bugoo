@@ -49,31 +49,6 @@ cd src-tauri && cargo test
 ## 架构说明
 参考 @docs/architecture.md 文档
 
-### 前端 (`src/`)
-- `App.tsx` — 根组件
-- `main.tsx` — 前端入口
-- `pages/Home/`、`pages/Settings/`、`pages/SelectionPopup/`、`pages/AccessibilityPermission/` — 当前已落地页面
-- `lib/api/` — 按模块拆分的 Tauri invoke 调用封装
-- `hooks/` — React 自定义 hooks
-- `stores/` — 状态管理
-- `types/` — TypeScript 类型定义
-- `**/__test__/` — 前端 Vitest 测试目录，当前已在页面目录下按功能就近放置
-
-### Tauri 后端 (`src-tauri/src/`)
-- `main.rs` — 应用入口
-- `lib.rs` — Tauri 构建与依赖装配
-- `commands/` — IPC 命令入口（words、tags、review、translate、settings、tts、window、word_details）
-- `db/` — SQLite 访问与 migration
-- `domain/` — 领域模型与服务
-- `ports/`、`adapters/` — 六边形架构端口与适配器实现
-- `scheduler/` — 艾宾浩斯复习与通知调度
-- `selection/` — 划词监听、权限检查、手势过滤与弹窗联动
-
-### Tauri 资源 (`src-tauri/resources/`)
-- `stardict-ecdict/` — 本地只读 StarDict ECDICT 词典资源
-
-**注意：** Rust 后端大部分模块尚为空实现，需要按模块逐步开发。
-
 
 ## HEROUI组件库的使用说明
 优先使用heroui中的组件，而不是自定义样式
@@ -88,81 +63,8 @@ cd src-tauri && cargo test
 
 - 优先使用pnpm安装前端包
 - 该项目使用中文和我对话，文档输出均使用中文
-- rust代码严格遵循六边形架构去设计实现
-- 前端的测试文件放在__test__目录下，测试什么功能__test__文件就移动到对应功能的文件夹下. 
 - 实现计划时，使用到的技术优先先从网上查找工具库，而不是自己从零实现
 - 疑难bug优先去github issue查找是否有人遇到过同样的问题
-- 绘制页面时颜色优先使用项目中和Hero组件库中已定义的css变量
-
-### 颜色变量使用规则
-
-颜色按以下优先级选择来源：
-
-1. **HeroUI v3 已定义的 CSS 变量**（参考 `https://github.com/heroui-inc/heroui/blob/v3/packages/styles/themes/shared/theme.css`）
-2. **项目自定义变量**（`src/styles/variable.css`）
-3. **Tailwind 工具类**（如 `bg-white`）
-
-**严禁**使用 `text-[#hex]` / `bg-[#hex]` / `border-[#hex]` 等硬编码颜色。
-
-#### HeroUI v3 颜色变量清单
-
-| 变量 | 用途 | Tailwind 类 |
-|------|------|------------|
-| `--color-background` / `-foreground` | 主背景/前景 | `bg-background` / `text-foreground` |
-| `--color-surface` / `-foreground` / `-hover` | 卡片/面板 | `bg-surface` / `text-surface-foreground` / `hover:bg-surface-hover` |
-| `--color-surface-secondary` / `-tertiary` | 次级/三级面板 | `bg-surface-secondary` / `bg-surface-tertiary` |
-| `--color-overlay` / `-foreground` | 浮层（popover/dropdown） | `bg-overlay` / `text-overlay-foreground` |
-| `--color-muted` | 静音/次要 | `text-muted` / `bg-muted` |
-| `--color-accent` / `-foreground` | 品牌主色 | `bg-accent` / `text-accent` |
-| `--color-accent-soft` / `-foreground` / `-hover` | 品牌主色软底 | `bg-accent-soft` / `text-accent-soft-foreground` |
-| `--color-default` / `-foreground` / `-hover` | 中性默认 | `bg-default` / `text-default-foreground` |
-| `--color-default-soft` / `-foreground` / `-hover` | 中性软底 | `bg-default-soft` / `text-default-soft-foreground` |
-| `--color-success` / `-foreground` / `-hover` | 成功 | `bg-success` / `text-success` |
-| `--color-success-soft` / `-foreground` / `-hover` | 成功软底 | `bg-success-soft` / `text-success-soft-foreground` |
-| `--color-warning` / `-foreground` / `-hover` | 警告 | `bg-warning` / `text-warning` |
-| `--color-warning-soft` / `-foreground` / `-hover` | 警告软底 | `bg-warning-soft` |
-| `--color-danger` / `-foreground` / `-hover` | 错误 | `bg-danger` / `text-danger` |
-| `--color-danger-soft` / `-foreground` / `-hover` | 错误软底 | `bg-danger-soft` |
-| `--color-border` / `-secondary` / `-tertiary` | 边框 | `border-border` / `border-border-secondary` |
-| `--color-separator` / `-secondary` / `-tertiary` | 分隔 | `bg-separator` / `bg-separator-secondary` |
-| `--color-focus` / `--color-link` | 聚焦环/链接 | `ring-focus` / `text-link` |
-| `--color-segment` / `-foreground` | 分段控件 | `bg-segment` / `text-segment-foreground` |
-| `--color-backdrop` | 模态遮罩 | `bg-backdrop` |
-
-#### ⚠️ HeroUI v3 中不存在的样式
-
-不要使用下列样式（无效，会被忽略）：
-
-- ~~`text-default-50/100/200/300/400/500/600/700/800/900`~~（无数字阶 token）
-- ~~`bg-default-50/100/200/...`~~
-- ~~`border-default-100/200/...`~~
-- ~~`text-primary` / `bg-primary` / `border-primary`~~
-- ~~`text-success-50/100/...` / `bg-success-50/100/...`~~
-- ~~`bg-accent-1/2/.../10`~~（与项目 variable.css 数字阶混淆）
-
-#### 项目自定义变量
-
-`src/styles/variable.css` 通过 `@theme { --color-accent-N: ... }` 导出**品牌绿色阶**（light/dark 各 10 阶），与 HeroUI 的 `--color-accent` 单一色不同名空间。
-
-```css
-@theme {
-  --color-accent-1: #f0fff3;  /* 品牌绿色最浅 */
-  --color-accent-6: #22c55e;  /* 品牌主色 */
-  --color-accent-10: #002b16; /* 品牌绿色最深 */
-  --accent: var(--accent-6);
-}
-```
-
-- 需要品牌色阶对比时用 `accent-1` ~ `accent-10`
-- 需要单一品牌色时用 HeroUI 的 `text-accent` / `bg-accent`（已被覆盖为品牌绿）
-
-#### 添加新颜色变量
-
-如果 HeroUI 和 variable.css 都不满足需求：
-
-1. **优先复用 HeroUI 语义 token**：用 `default` / `surface` / `border` / `muted` 的不同变体（`-hover` / `-soft` / `-foreground` / `-secondary` / `-tertiary`）
-2. **需要新的色阶**时在 `src/styles/variable.css` 按 Tailwind v4 `@theme { --color-my-purpose-N: ... }` 格式定义
-3. 通过 Tailwind 工具类使用（如 `bg-my-purpose-50`）
 
 #### 前端
 - 代码生成时，按照vercel-react-best-practices技能的指导生成代码
@@ -170,7 +72,23 @@ cd src-tauri && cargo test
 #### 后端
 - 代码生成时，按照rust-best-practices技能的指导生成代码
 
-### 命名规则
+<!-- TRELLIS:START -->
+# Trellis 工作流说明
 
-前端命名规则
-- pages页面文件、components组件文件都以大写首字母驼峰进行命名
+以下指令面向本项目中的 AI 助手。
+
+本项目由 Trellis 管理。你需要的工作知识存放在 `.trellis/` 下：
+
+- `.trellis/workflow.md` — 开发阶段、何时创建任务、skill 路由
+- `.trellis/spec/` — 按包和层组织的编码规范（在特定层写代码前先阅读）
+- `.trellis/workspace/` — 每个开发者的会话日志
+- `.trellis/tasks/` — 活跃和已归档的任务（PRD、研究、jsonl 上下文）
+
+如果你的平台支持 Trellis 命令（如 `/trellis:finish-work`、`/trellis:continue`），优先使用命令而非手动步骤。并非所有平台都提供所有命令。
+
+如果你使用 Codex 或其他能调用 agent 的工具，额外的项目级辅助工具可能位于：
+- `.agents/skills/` — 可复用的 Trellis skills
+- `.codex/agents/` — 可选的自定义 sub-agent
+
+由 Trellis 管理。此 block 之外的编辑会被保留；block 之内的编辑可能被后续 `trellis update` 覆盖。
+<!-- TRELLIS:END -->
